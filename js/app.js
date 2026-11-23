@@ -103,13 +103,7 @@
           this.ensureTeacherDefaultProfile(session.studentId);
           this.syncDailyReset();
           document.body.classList.toggle('crt-active', Boolean(this.state.crt));
-          try {
-            this.cloudQuestions = await FirebaseService.fetchCustomQuestions();
-            this.lockedUnits = await FirebaseService.fetchLockedUnits();
-          } catch (e) {
-            this.cloudQuestions = [];
-            this.lockedUnits = [];
-          }
+          await this.refreshCloudCourseData();
           this.closeModal('modal-auth');
           this.renderHUD();
           this.renderDashboard();
@@ -124,6 +118,29 @@
         this.renderHUD();
         this.renderDashboard();
         if (!this.state.profile.created) this.openProfileModal(true);
+      }
+    },
+
+    async refreshCloudCourseData() {
+      if (!global.FirebaseService) return;
+      try {
+        this.cloudQuestions = await FirebaseService.fetchCustomQuestions();
+      } catch (e) {
+        this.cloudQuestions = [];
+      }
+      try {
+        this.lockedUnits = await FirebaseService.fetchLockedUnits();
+      } catch (e) {
+        this.lockedUnits = [];
+      }
+      if (typeof FirebaseService.subscribeLockedUnits === 'function') {
+        FirebaseService.subscribeLockedUnits((locked) => {
+          this.lockedUnits = locked;
+          this.renderDashboard();
+          if (!document.getElementById('modal-teacher')?.classList.contains('hidden')) {
+            this.renderTeacherUnitLocks();
+          }
+        });
       }
     },
 
@@ -515,9 +532,7 @@
       this.applyLoadedState(res.state, res.studentId);
       this.ensureTeacherDefaultProfile(res.studentId);
       this.syncDailyReset();
-      try {
-        this.cloudQuestions = await FirebaseService.fetchCustomQuestions();
-      } catch (e) { this.cloudQuestions = []; }
+      await this.refreshCloudCourseData();
       this.closeModal('modal-auth');
       this.renderHUD();
       this.renderDashboard();
@@ -585,6 +600,7 @@
       this.currentUid = res.uid;
       this.isTeacher = false;
       this.applyLoadedState(res.state || fresh, res.studentId);
+      await this.refreshCloudCourseData();
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
         this.syncLeaderboardEntry();
@@ -629,6 +645,7 @@
       this.currentUid = res.uid;
       this.isTeacher = false;
       this.applyLoadedState(res.state, res.studentId);
+      await this.refreshCloudCourseData();
       this.closeModal('modal-auth');
       this.renderHUD();
       this.renderDashboard();
@@ -645,11 +662,15 @@
       this.stopBattleTimer();
       this.saveState(true);
       if (global.FirebaseService) {
+        if (typeof FirebaseService.unsubscribeLockedUnits === 'function') {
+          FirebaseService.unsubscribeLockedUnits();
+        }
         await FirebaseService.flushSave();
         await FirebaseService.logout();
       }
       this.currentUid = null;
       this.isTeacher = false;
+      this.lockedUnits = [];
       this.state = createDefaultState();
       this.closeModal('modal-profile');
       this.closeModal('modal-teacher');

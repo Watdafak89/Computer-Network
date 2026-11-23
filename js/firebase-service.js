@@ -831,6 +831,7 @@
             try { localStorage.setItem(LOCAL_LOCK_KEY, JSON.stringify(locked)); } catch (e) { /* ignore */ }
             return locked;
           }
+          try { localStorage.setItem(LOCAL_LOCK_KEY, JSON.stringify([])); } catch (e) { /* ignore */ }
           return [];
         } catch (err) {
           console.warn('[NetQuest] fetchLockedUnits fallback:', err);
@@ -841,6 +842,35 @@
         return raw ? normalize(JSON.parse(raw)) : [];
       } catch (e) {
         return [];
+      }
+    },
+
+    subscribeLockedUnits(callback) {
+      if (this._unsubLockedUnits) {
+        try { this._unsubLockedUnits(); } catch (e) { /* ignore */ }
+        this._unsubLockedUnits = null;
+      }
+      if (!this.isCloud() || !this.db || !this.auth || !this.auth.currentUser) return;
+      const LOCAL_LOCK_KEY = 'netquest_locked_units_v1';
+      const normalize = (arr) => Array.isArray(arr)
+        ? [...new Set(arr.map((n) => Number(n)).filter((n) => Number.isInteger(n) && n >= 1 && n <= 10))].sort((a, b) => a - b)
+        : [];
+      this._unsubLockedUnits = this.db.collection('courseSettings').doc('unitLocks').onSnapshot(
+        (doc) => {
+          const locked = doc.exists ? normalize(doc.data().lockedUnits) : [];
+          try { localStorage.setItem(LOCAL_LOCK_KEY, JSON.stringify(locked)); } catch (e) { /* ignore */ }
+          if (typeof callback === 'function') callback(locked);
+        },
+        (err) => {
+          console.warn('[NetQuest] subscribeLockedUnits error:', err);
+        }
+      );
+    },
+
+    unsubscribeLockedUnits() {
+      if (this._unsubLockedUnits) {
+        try { this._unsubLockedUnits(); } catch (e) { /* ignore */ }
+        this._unsubLockedUnits = null;
       }
     },
 
