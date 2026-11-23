@@ -1068,3 +1068,87 @@ body.crt-active::after {
     border: 6px double #b45309 !important;
   }
 }
+
+/* Firebase Auth & Cloud Status Styles */
+.cloud-pill {
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 2px solid #475569;
+  background: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cloud-online {
+  border-color: var(--emerald);
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.14);
+}
+
+.cloud-local {
+  border-color: var(--amber);
+  color: #fde047;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.auth-tab {
+  padding: 10px;
+  background: #0b1224;
+  border: 3px solid #334155;
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 0.96rem;
+  cursor: pointer;
+}
+
+.auth-tab.active {
+  background: #162038;
+  border-color: var(--cyan);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.22);
+}
+
+.auth-banner {
+  padding: 10px 12px;
+  margin-bottom: 14px;
+  font-size: 0.86rem;
+  border: 2px solid #334155;
+  background: #0b1224;
+}
+
+.auth-error {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: rgba(239, 68, 68, 0.16);
+  border: 2px solid var(--crimson);
+  color: #fca5a5;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.px-textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 9px 12px;
+  background: #020617;
+  border: 2px solid #475569;
+  color: #6ee7b7;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  resize: vertical;
+}
+
+.px-textarea:focus {
+  outline: none;
+  border-color: var(--cyan);
+}

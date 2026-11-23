@@ -53,22 +53,78 @@
 
   const App = {
     state: createDefaultState(),
+    currentUid: null,
+    cloudQuestions: [],
     currentUnitId: 1,
     currentTab: 'codex',
     selectedClassTemp: 'paladin',
+    selectedAuthClass: 'paladin',
     battle: null,
     arcade: null,
     labState: {},
 
     init() {
-      this.loadState();
-      this.syncDailyReset();
-      if (this.state.crt) document.body.classList.add('crt-active');
+      if (global.FirebaseService) {
+        FirebaseService.init();
+      }
+      this.updateCloudBadge();
       this.renderHUD();
       this.renderDashboard();
 
-      if (!this.state.profile.created) {
-        this.openProfileModal(true);
+      if (global.FirebaseService) {
+        FirebaseService.onAuthReady(async (session) => {
+          if (!session) {
+            this.currentUid = null;
+            this.state = createDefaultState();
+            document.body.classList.remove('crt-active');
+            this.renderHUD();
+            this.renderDashboard();
+            this.openAuthModal('login');
+            return;
+          }
+
+          this.currentUid = session.uid;
+          this.applyLoadedState(session.state, session.studentId);
+          this.syncDailyReset();
+          document.body.classList.toggle('crt-active', Boolean(this.state.crt));
+          try {
+            this.cloudQuestions = await FirebaseService.fetchCustomQuestions();
+          } catch (e) {
+            this.cloudQuestions = [];
+          }
+          this.closeModal('modal-auth');
+          this.renderHUD();
+          this.renderDashboard();
+          if (!this.state.profile.created) {
+            this.openProfileModal(true);
+          }
+        });
+      } else {
+        this.loadState();
+        this.syncDailyReset();
+        if (this.state.crt) document.body.classList.add('crt-active');
+        this.renderHUD();
+        this.renderDashboard();
+        if (!this.state.profile.created) this.openProfileModal(true);
+      }
+    },
+
+    applyLoadedState(loadedState, fallbackStudentId = '') {
+      const def = createDefaultState();
+      if (loadedState && typeof loadedState === 'object') {
+        this.state = {
+          ...def,
+          ...loadedState,
+          profile: { ...def.profile, ...(loadedState.profile || {}) },
+          inventory: { ...def.inventory, ...(loadedState.inventory || {}) },
+          unitProgress: { ...def.unitProgress, ...(loadedState.unitProgress || {}) },
+          daily: { ...def.daily, ...(loadedState.daily || {}) }
+        };
+      } else {
+        this.state = def;
+      }
+      if (fallbackStudentId && !this.state.profile.studentId) {
+        this.state.profile.studentId = fallbackStudentId;
       }
     },
 
@@ -76,27 +132,66 @@
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
-          const parsed = JSON.parse(raw);
-          const def = createDefaultState();
-          this.state = {
-            ...def,
-            ...parsed,
-            profile: { ...def.profile, ...(parsed.profile || {}) },
-            inventory: { ...def.inventory, ...(parsed.inventory || {}) },
-            unitProgress: { ...def.unitProgress, ...(parsed.unitProgress || {}) },
-            daily: { ...def.daily, ...(parsed.daily || {}) }
-          };
+          this.applyLoadedState(JSON.parse(raw));
         }
       } catch (e) {
         this.state = createDefaultState();
       }
     },
 
-    saveState() {
+    buildStudentSummary() {
+      const { current } = this.getRankInfo(this.state.xp);
+      const cleared = Object.values(this.state.unitProgress).filter((u) => u.bossCleared).length;
+      return {
+        name: this.state.profile.name || this.state.profile.studentId || 'ผู้เรียน',
+        studentId: this.state.profile.studentId || '',
+        classRoom: this.state.profile.classRoom || 'ปวช.',
+        heroClass: this.state.profile.heroClass || 'paladin',
+        level: current.level,
+        xp: this.state.xp,
+        unitsCleared: cleared,
+        badgeCount: this.state.badges.length,
+        arcadeHighScore: this.state.arcadeHighScore || 0,
+        updatedAt: todayKey()
+      };
+    },
+
+    saveState(immediate = false) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
         this.syncLeaderboardEntry();
+        if (global.FirebaseService && this.currentUid && this.state.profile.created) {
+          FirebaseService.saveStudentState(this.currentUid, this.state, this.buildStudentSummary(), immediate);
+        }
       } catch (e) { /* ignore storage quota */ }
+    },
+
+    updateCloudBadge() {
+      const isCloud = global.FirebaseService && FirebaseService.isCloud();
+      const info = global.FirebaseService ? FirebaseService.getActiveConfigInfo() : { projectId: '' };
+      const hudPill = document.getElementById('hud-cloud-status');
+      const authPill = document.getElementById('auth-cloud-pill');
+      const banner = document.getElementById('auth-mode-banner');
+
+      [hudPill, authPill].forEach((el) => {
+        if (!el) return;
+        el.classList.remove('cloud-online', 'cloud-local');
+        if (isCloud) {
+          el.classList.add('cloud-online');
+          el.textContent = `☁️ Firebase: ${info.projectId}`;
+        } else {
+          el.classList.add('cloud-local');
+          el.textContent = '💾 Local Mode';
+        }
+      });
+
+      if (banner) {
+        if (isCloud) {
+          banner.innerHTML = `<b style="color:var(--emerald);">☁️ เชื่อมต่อ Firebase Cloud สำเร็จ (${info.projectId})</b> — นักเรียนล็อกอินด้วยรหัสนักศึกษาเพื่อเซฟข้อมูลข้ามเครื่องและอัปเดต Leaderboard Real-time`;
+        } else {
+          banner.innerHTML = `<b style="color:var(--amber);">💾 กำลังทำงานในโหมดเครื่องท้องถิ่น (Local Mode)</b> — ยังไม่ได้ตั้งค่า Firebase Config แต่สามารถลงทะเบียน/ล็อกอินด้วยรหัสนักศึกษาบนเครื่องนี้ได้ทันที (ครูใส่ค่าได้ที่ปุ่ม ⚙️ ตั้งค่า Firebase)`;
+        }
+      }
     },
 
     syncDailyReset() {
@@ -292,19 +387,225 @@
       this.renderClassCards();
     },
 
+    /* ---------------- AUTHENTICATION (STUDENT ID + FIREBASE) ---------------- */
+    openAuthModal(tab = 'login') {
+      this.updateCloudBadge();
+      this.renderAuthClassCards();
+      this.switchAuthTab(tab);
+      this.showAuthError('');
+      document.getElementById('modal-auth').classList.remove('hidden');
+    },
+
+    switchAuthTab(tab) {
+      soundFX.playSelect();
+      const isLogin = tab === 'login';
+      document.getElementById('auth-tab-login').classList.toggle('active', isLogin);
+      document.getElementById('auth-tab-register').classList.toggle('active', !isLogin);
+      document.getElementById('auth-pane-login').classList.toggle('hidden', !isLogin);
+      document.getElementById('auth-pane-register').classList.toggle('hidden', isLogin);
+      this.showAuthError('');
+    },
+
+    renderAuthClassCards() {
+      const grid = document.getElementById('auth-class-grid');
+      if (!grid) return;
+      grid.innerHTML = GameData.CLASSES.map((c) => `
+        <div class="class-card ${this.selectedAuthClass === c.id ? 'selected' : ''}" onclick="App.selectAuthClass('${c.id}')">
+          <div style="display:flex; justify-content:center; margin-bottom:6px;">
+            ${PixelSprites.render(c.sprite, 56)}
+          </div>
+          <div style="font-weight:700; color:${c.color}; font-size:0.9rem;">${c.name}</div>
+          <div style="font-size:0.82rem; color:#fff;">${c.thName}</div>
+          <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">${c.perk}</div>
+        </div>
+      `).join('');
+    },
+
+    selectAuthClass(id) {
+      soundFX.playSelect();
+      this.selectedAuthClass = id;
+      this.renderAuthClassCards();
+    },
+
+    showAuthError(msg) {
+      const box = document.getElementById('auth-error-box');
+      if (!box) return;
+      if (!msg) {
+        box.classList.add('hidden');
+        box.textContent = '';
+      } else {
+        box.classList.remove('hidden');
+        box.textContent = `⚠️ ${msg}`;
+      }
+    },
+
+    async submitLogin() {
+      const sid = document.getElementById('auth-login-sid').value.trim();
+      const pass = document.getElementById('auth-login-pass').value;
+      const btn = document.getElementById('btn-login-submit');
+      this.showAuthError('');
+      if (!sid || !pass) {
+        this.showAuthError('กรุณากรอกรหัสนักศึกษาและรหัสผ่านให้ครบถ้วน');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '⏳ กำลังตรวจสอบ...';
+      const res = await FirebaseService.loginStudent({ studentId: sid, password: pass });
+      btn.disabled = false;
+      btn.textContent = '🔑 เข้าสู่ระบบทันที';
+
+      if (!res.ok) {
+        soundFX.playPlayerHurt();
+        this.showAuthError(res.error);
+        return;
+      }
+
+      this.currentUid = res.uid;
+      this.applyLoadedState(res.state, res.studentId);
+      this.syncDailyReset();
+      try {
+        this.cloudQuestions = await FirebaseService.fetchCustomQuestions();
+      } catch (e) { this.cloudQuestions = []; }
+      this.closeModal('modal-auth');
+      this.renderHUD();
+      this.renderDashboard();
+      soundFX.playPowerUp();
+      this.toast(`🔑 เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ ${this.state.profile.name || res.studentId}`);
+    },
+
+    async submitRegister() {
+      const sid = document.getElementById('auth-reg-sid').value.trim();
+      const name = document.getElementById('auth-reg-name').value.trim();
+      const room = document.getElementById('auth-reg-room').value.trim() || 'ปวช.2/1';
+      const pass = document.getElementById('auth-reg-pass').value;
+      const pass2 = document.getElementById('auth-reg-pass2').value;
+      const btn = document.getElementById('btn-reg-submit');
+      this.showAuthError('');
+
+      if (!sid || !name || !pass) {
+        this.showAuthError('กรุณากรอกรหัสนักศึกษา ชื่อ-นามสกุล และรหัสผ่านให้ครบถ้วน');
+        return;
+      }
+      if (pass !== pass2) {
+        this.showAuthError('รหัสผ่านทั้งสองช่องไม่ตรงกัน');
+        return;
+      }
+
+      const fresh = createDefaultState();
+      const cls = this.getClassObj(this.selectedAuthClass);
+      fresh.profile = {
+        name,
+        studentId: sid,
+        classRoom: room,
+        heroClass: this.selectedAuthClass,
+        created: true
+      };
+      fresh.hp = cls.baseHp;
+      if (this.selectedAuthClass === 'paladin') {
+        fresh.inventory.shield = (fresh.inventory.shield || 0) + 1;
+      }
+      fresh.badges = ['first_login'];
+
+      btn.disabled = true;
+      btn.textContent = '⏳ กำลังสร้างบัญชี...';
+      const res = await FirebaseService.registerStudent({
+        studentId: sid,
+        password: pass,
+        name,
+        classRoom: room,
+        heroClass: this.selectedAuthClass,
+        initialState: fresh
+      });
+      btn.disabled = false;
+      btn.textContent = '🚀 ลงทะเบียนและเริ่มผจญภัย!';
+
+      if (!res.ok) {
+        soundFX.playPlayerHurt();
+        this.showAuthError(res.error);
+        return;
+      }
+
+      this.currentUid = res.uid;
+      this.applyLoadedState(res.state || fresh, res.studentId);
+      this.saveState(true);
+      this.closeModal('modal-auth');
+      this.renderHUD();
+      this.renderDashboard();
+      soundFX.playLevelUp();
+      this.toast(`🎉 ลงทะเบียนสำเร็จ! ยินดีต้อนรับ ${name} (${res.studentId})`);
+    },
+
+    async quickDemoLogin() {
+      soundFX.playSelect();
+      const demoId = '6720901099';
+      const demoPass = '123456';
+      this.showAuthError('');
+      let res = await FirebaseService.loginStudent({ studentId: demoId, password: demoPass });
+      if (!res.ok) {
+        const fresh = createDefaultState();
+        fresh.profile = {
+          name: 'นายณัฐวุฒิ นักเครือข่าย (เดโม)',
+          studentId: demoId,
+          classRoom: 'ปวช.2/1',
+          heroClass: 'paladin',
+          created: true
+        };
+        fresh.badges = ['first_login'];
+        res = await FirebaseService.registerStudent({
+          studentId: demoId,
+          password: demoPass,
+          name: fresh.profile.name,
+          classRoom: 'ปวช.2/1',
+          heroClass: 'paladin',
+          initialState: fresh
+        });
+      }
+      if (!res.ok) {
+        this.showAuthError(res.error);
+        return;
+      }
+      this.currentUid = res.uid;
+      this.applyLoadedState(res.state, res.studentId);
+      this.closeModal('modal-auth');
+      this.renderHUD();
+      this.renderDashboard();
+      soundFX.playPowerUp();
+      this.toast(`⚡ เข้าสู่ระบบด้วยบัญชีเดโม (${demoId}) สำเร็จ!`);
+    },
+
+    async logoutStudent() {
+      if (!this.currentUid) {
+        this.openAuthModal('login');
+        return;
+      }
+      if (!confirm('ต้องการออกจากระบบเพื่อสลับบัญชีนักศึกษาหรือไม่?')) return;
+      this.stopBattleTimer();
+      this.saveState(true);
+      await FirebaseService.logout();
+      this.currentUid = null;
+      this.state = createDefaultState();
+      this.closeModal('modal-profile');
+      this.closeModal('modal-teacher');
+      this.showWorldMap();
+      this.renderHUD();
+      this.renderDashboard();
+      this.openAuthModal('login');
+      this.toast('🚪 ออกจากระบบเรียบร้อยแล้ว');
+    },
+
     fillDemoStudent() {
       soundFX.playSelect();
       document.getElementById('inp-name').value = 'นายณัฐวุฒิ นักเครือข่าย';
-      document.getElementById('inp-sid').value = '6720901099';
       document.getElementById('inp-room').value = 'ปวช.2/1';
     },
 
     saveProfile() {
       const name = document.getElementById('inp-name').value.trim();
-      const sid = document.getElementById('inp-sid').value.trim();
+      const sid = this.state.profile.studentId || document.getElementById('inp-sid').value.trim();
       const room = document.getElementById('inp-room').value.trim() || 'ปวช.2/1';
       if (!name || !sid) {
-        alert('กรุณากรอกชื่อ-นามสกุล และรหัสนักศึกษาก่อนเริ่มเกม');
+        alert('กรุณากรอกชื่อ-นามสกุลก่อนบันทึก');
         return;
       }
       const isNew = !this.state.profile.created;
@@ -323,12 +624,12 @@
         }
         this.unlockBadge('first_login');
       }
-      this.saveState();
+      this.saveState(true);
       this.closeModal('modal-profile');
       this.renderHUD();
       this.renderDashboard();
       soundFX.playPowerUp();
-      this.toast(`ยินดีต้อนรับ ${name} เข้าสู่ NetQuest 16-Bit!`);
+      this.toast(`บันทึกข้อมูล ${name} เรียบร้อย!`);
     },
 
     closeModal(id) {
@@ -1422,14 +1723,21 @@
     getUnitQuestions(unitId) {
       const unit = GameData.UNITS.find((u) => u.id === unitId);
       const base = unit ? [...unit.quiz] : [];
+      const extra = [];
       try {
         const raw = localStorage.getItem(CUSTOM_Q_KEY);
         if (raw) {
-          const custom = JSON.parse(raw).filter((q) => Number(q.unitId) === unitId);
-          return base.concat(custom);
+          JSON.parse(raw).forEach((q) => {
+            if (Number(q.unitId) === unitId) extra.push(q);
+          });
         }
       } catch (e) { /* ignore */ }
-      return base;
+      (this.cloudQuestions || []).forEach((q) => {
+        if (Number(q.unitId) === unitId && !extra.some((x) => x.q === q.q)) {
+          extra.push(q);
+        }
+      });
+      return base.concat(extra);
     },
 
     renderBossLobby(unit) {
@@ -1956,11 +2264,25 @@
       localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(list));
     },
 
-    openLeaderboard() {
+    async openLeaderboard() {
       soundFX.playSelect();
       this.syncLeaderboardEntry();
-      const list = this.getLeaderboardData();
+      document.getElementById('leaderboard-body').innerHTML = `<div style="padding:20px; text-align:center; color:var(--cyan);">⏳ กำลังดึงข้อมูลอันดับล่าสุด...</div>`;
+      document.getElementById('modal-leaderboard').classList.remove('hidden');
+
+      const fallback = this.getLeaderboardData();
+      const list = global.FirebaseService
+        ? await FirebaseService.fetchLeaderboard(fallback)
+        : fallback;
+      const isCloud = global.FirebaseService && FirebaseService.isCloud();
+
       document.getElementById('leaderboard-body').innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:0.85rem;">
+          <span style="color:${isCloud ? 'var(--emerald)' : 'var(--amber)'}; font-weight:700;">
+            ${isCloud ? '☁️ ซิงก์อันดับ Real-time จาก Cloud Firestore' : '💾 แสดงอันดับจากบัญชีในเครื่องนี้ + ข้อมูลจำลอง'}
+          </span>
+          <button class="px-btn px-btn-sm" onclick="App.openLeaderboard()">🔄 รีเฟรช</button>
+        </div>
         <table class="pixel-table">
           <thead>
             <tr><th>อันดับ</th><th>รหัสนักศึกษา</th><th>ชื่อ-นามสกุล</th><th>ห้อง</th><th>LV</th><th>XP</th><th>ผ่าน (หน่วย)</th><th>เหรียญ</th></tr>
@@ -1981,11 +2303,13 @@
           </tbody>
         </table>
       `;
-      document.getElementById('modal-leaderboard').classList.remove('hidden');
     },
 
-    exportCSV() {
-      const list = this.getLeaderboardData();
+    async exportCSV() {
+      const fallback = this.getLeaderboardData();
+      const list = global.FirebaseService
+        ? await FirebaseService.fetchLeaderboard(fallback)
+        : fallback;
       const header = ['Rank', 'StudentID', 'Name', 'ClassRoom', 'Level', 'XP', 'UnitsCleared', 'Badges', 'UpdatedAt'];
       const rows = list.map((r, i) => [
         i + 1, r.studentId, `"${r.name}"`, `"${r.classRoom}"`, r.level, r.xp, `${r.unitsCleared}/6`, r.badgeCount, r.updatedAt
@@ -2066,16 +2390,39 @@
 
     openTeacherModal() {
       soundFX.playSelect();
-      let customCount = 0;
-      try {
-        customCount = JSON.parse(localStorage.getItem(CUSTOM_Q_KEY) || '[]').length;
-      } catch (e) { /* ignore */ }
+      let customCount = (this.cloudQuestions || []).length;
+      if (customCount === 0) {
+        try {
+          customCount = JSON.parse(localStorage.getItem(CUSTOM_Q_KEY) || '[]').length;
+        } catch (e) { /* ignore */ }
+      }
+      const fbInfo = global.FirebaseService
+        ? FirebaseService.getActiveConfigInfo()
+        : { mode: 'local', projectId: '', source: 'none' };
 
       document.getElementById('teacher-body').innerHTML = `
         <div style="display:flex; flex-direction:column; gap:16px;">
+          <div class="pixel-box pixel-box-cyan" style="padding:14px;">
+            <h4 style="color:var(--cyan); margin-bottom:8px;">☁️ ตั้งค่าฐานข้อมูล Firebase (Auth + Cloud Firestore)</h4>
+            <div style="font-size:0.86rem; margin-bottom:8px;">
+              สถานะปัจจุบัน:
+              <b style="color:${fbInfo.mode === 'firebase' ? 'var(--emerald)' : 'var(--amber)'};">
+                ${fbInfo.mode === 'firebase' ? `☁️ เชื่อมต่อ Firebase Cloud แล้ว (Project: ${fbInfo.projectId})` : '💾 โหมดเครื่องท้องถิ่น (Local Mode - ยังไม่ได้วางค่า firebaseConfig)'}
+              </b>
+            </div>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:8px;">
+              วางโค้ด <code>firebaseConfig</code> ที่คัดลอกจาก Firebase Console → Project Settings → Web App ลงในช่องด้านล่าง (หรือวางในไฟล์ <code>js/firebase-config.js</code>)
+            </p>
+            <textarea id="tf-config-input" class="px-textarea" placeholder='วาง { apiKey: "...", authDomain: "...", projectId: "...", ... } ที่นี่...'></textarea>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+              <button class="px-btn px-btn-cyan px-btn-sm" onclick="App.saveFirebaseConfigUI()">💾 บันทึกและเชื่อมต่อ Firebase</button>
+              <button class="px-btn px-btn-sm" onclick="App.resetFirebaseConfigUI()">🔄 รีเซ็ต Config ในเบราว์เซอร์</button>
+            </div>
+          </div>
+
           <div class="pixel-box" style="padding:14px;">
             <h4 style="color:var(--amber); margin-bottom:8px;">➕ เพิ่มข้อสอบพิเศษเข้าคลังบอส (Custom Teacher Question)</h4>
-            <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:10px;">ข้อสอบที่ครูเพิ่มไว้ในเครื่องนี้: <b>${customCount} ข้อ</b></p>
+            <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:10px;">ข้อสอบพิเศษในระบบ: <b>${customCount} ข้อ</b></p>
             <div style="display:grid; gap:8px;">
               <select id="tq-unit" class="px-select">
                 ${GameData.UNITS.map((u) => `<option value="${u.id}">${u.code}: ${u.title}</option>`).join('')}
@@ -2102,7 +2449,7 @@
             <h4 style="color:var(--cyan); margin-bottom:8px;">⚙️ จัดการห้องเรียนและข้อมูลผู้เล่น</h4>
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
               <button class="px-btn px-btn-emerald px-btn-sm" onclick="App.exportCSV()">📥 ส่งออกคะแนนทั้งห้อง (.CSV)</button>
-              <button class="px-btn px-btn-amber px-btn-sm" onclick="App.switchNewStudent()">👤 สลับนักศึกษาคนใหม่ (Reset ตัวละคร)</button>
+              <button class="px-btn px-btn-amber px-btn-sm" onclick="App.switchNewStudent()">👤 ออกจากระบบ / สลับนักศึกษาคนถัดไป</button>
             </div>
           </div>
         </div>
@@ -2110,7 +2457,27 @@
       document.getElementById('modal-teacher').classList.remove('hidden');
     },
 
-    saveTeacherQuestion() {
+    saveFirebaseConfigUI() {
+      const raw = document.getElementById('tf-config-input').value;
+      const res = FirebaseService.saveRuntimeConfig(raw);
+      if (!res.ok) {
+        soundFX.playPlayerHurt();
+        alert(res.error);
+        return;
+      }
+      soundFX.playPowerUp();
+      this.toast(`☁️ บันทึก Config (${res.config.projectId}) แล้ว! กำลังรีโหลดเพื่อเชื่อมต่อ Firebase...`);
+      setTimeout(() => location.reload(), 900);
+    },
+
+    resetFirebaseConfigUI() {
+      FirebaseService.clearRuntimeConfig();
+      soundFX.playSelect();
+      this.toast('🔄 ล้าง Firebase Config ที่บันทึกในเบราว์เซอร์แล้ว กำลังรีโหลด...');
+      setTimeout(() => location.reload(), 700);
+    },
+
+    async saveTeacherQuestion() {
       const unitId = Number(document.getElementById('tq-unit').value);
       const q = document.getElementById('tq-q').value.trim();
       const opts = [0, 1, 2, 3].map((i) => document.getElementById(`tq-${i}`).value.trim());
@@ -2120,23 +2487,21 @@
         alert('กรุณากรอกคำถามและตัวเลือกให้ครบทั้ง 4 ข้อ');
         return;
       }
-      let list = [];
-      try { list = JSON.parse(localStorage.getItem(CUSTOM_Q_KEY) || '[]'); } catch (e) { list = []; }
-      list.push({ unitId, q, options: opts, ans, exp });
-      localStorage.setItem(CUSTOM_Q_KEY, JSON.stringify(list));
+      const qObj = { unitId, q, options: opts, ans, exp };
+      const res = global.FirebaseService
+        ? await FirebaseService.addCustomQuestion(qObj)
+        : { ok: true, synced: false };
+      if (!this.cloudQuestions) this.cloudQuestions = [];
+      this.cloudQuestions.push(qObj);
       soundFX.playPowerUp();
-      this.toast(`✔ เพิ่มข้อสอบใหม่เข้าหน่วยที่ ${unitId} แล้ว!`);
+      this.toast(res.synced
+        ? `✔ เพิ่มข้อสอบใหม่เข้าหน่วยที่ ${unitId} และซิงก์ขึ้น Cloud Firestore แล้ว!`
+        : `✔ เพิ่มข้อสอบใหม่เข้าหน่วยที่ ${unitId} บนเครื่องนี้แล้ว!`);
       this.openTeacherModal();
     },
 
     switchNewStudent() {
-      if (!confirm('ต้องการล้างข้อมูลผู้เล่นปัจจุบันบนเบราว์เซอร์เพื่อให้นักศึกษาคนถัดไปเข้าเล่นหรือไม่? (ตารางอันดับ Leaderboard ยังถูกเก็บไว้)')) return;
-      this.state = createDefaultState();
-      this.saveState();
-      this.closeModal('modal-teacher');
-      this.renderHUD();
-      this.renderDashboard();
-      this.openProfileModal(true);
+      this.logoutStudent();
     }
   };
 

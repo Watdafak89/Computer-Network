@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // นักเรียนที่ล็อกอินแล้ว สามารถอ่านตารางผู้นำได้ทุกคน
+    // แต่แก้ไข/บันทึกข้อมูลได้เฉพาะเอกสารที่เป็น UID ของตนเองเท่านั้น
+    match /students/{userId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+    }
+
+    // ข้อสอบพิเศษจากครูผู้สอน: นักเรียนที่ล็อกอินอ่านได้
+    match /customQuestions/{docId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if false;
+    }
+  }
+}
