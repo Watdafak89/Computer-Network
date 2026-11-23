@@ -1114,7 +1114,7 @@
       this.labState[2] = { standard: 'T568B', pins: Array(8).fill(null), crimped: false, testerPassed: false, attempts: 0 };
       el.innerHTML = `
         <div class="pixel-box lab-panel">
-          <h3 style="color:var(--amber); margin-bottom:8px;">🔬 Lab 2: ห้องปฏิบัติการเข้าหัวสาย LAN RJ-45 &amp; ติดตั้งอุปกรณ์</h3>
+          <h3 style="color:var(--amber); margin-bottom:8px;">🔬 Lab 4: ห้องปฏิบัติการเข้าหัวสาย LAN RJ-45 &amp; ติดตั้งอุปกรณ์</h3>
           <div class="lab-grid-2">
             <div class="rj45-shell">
               <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
@@ -1356,19 +1356,22 @@
           <p style="color:var(--text-muted); margin-bottom:12px;">
             จับคู่ชื่อชั้นสื่อสาร หน่วยข้อมูล (PDU) และโปรโตคอล/อุปกรณ์ประจำ Layer 7 ลงมาถึง Layer 1 ให้ถูกต้อง แล้วรัน Encapsulation Simulation
           </p>
+          <div class="topo-board" style="margin-bottom:14px;">
+            <div id="lab3-svg-wrap"></div>
+          </div>
           <div class="osi-stack-list">
             ${rows.map((lvl) => `
               <div class="osi-row">
                 <b style="color:var(--amber);">Layer ${lvl}</b>
-                <select id="osi-name-${lvl}" class="osi-select">
+                <select id="osi-name-${lvl}" class="osi-select" onchange="App.renderLab3SVG()">
                   <option value="">-- เลือกชื่อชั้น --</option>
                   ${layerOpts.map((o) => `<option value="${o}">${o}</option>`).join('')}
                 </select>
-                <select id="osi-pdu-${lvl}" class="osi-select">
+                <select id="osi-pdu-${lvl}" class="osi-select" onchange="App.renderLab3SVG()">
                   <option value="">-- เลือก PDU --</option>
                   ${pduOpts.map((p) => `<option value="${p}">${p}</option>`).join('')}
                 </select>
-                <select id="osi-proto-${lvl}" class="osi-select">
+                <select id="osi-proto-${lvl}" class="osi-select" onchange="App.renderLab3SVG()">
                   <option value="">-- โปรโตคอล/อุปกรณ์ --</option>
                   ${protoOpts.map((pr) => `<option value="${pr}">${pr}</option>`).join('')}
                 </select>
@@ -1383,6 +1386,41 @@
             สถานะโรงงานแพ็กเก็ต: รอตรวจความถูกต้องของชั้น OSI...
           </div>
         </div>
+      `;
+      this.renderLab3SVG();
+    },
+
+    renderLab3SVG(activeLvl = 0) {
+      const wrap = document.getElementById('lab3-svg-wrap');
+      if (!wrap) return;
+      const expected = { 7: 'Application', 6: 'Presentation', 5: 'Session', 4: 'Transport', 3: 'Network', 2: 'Data Link', 1: 'Physical' };
+      const colors = { 7: '#7c3aed', 6: '#6d28d9', 5: '#5b21b6', 4: '#2563eb', 3: '#0284c7', 2: '#0d9488', 1: '#16a34a' };
+      const rowsHtml = [7, 6, 5, 4, 3, 2, 1].map((lvl, idx) => {
+        const y = 18 + idx * 28;
+        const nVal = document.getElementById(`osi-name-${lvl}`)?.value || '';
+        const pVal = document.getElementById(`osi-pdu-${lvl}`)?.value || '';
+        const ok = nVal === expected[lvl];
+        const glow = activeLvl === lvl;
+        const fill = glow ? '#f59e0b' : ok ? colors[lvl] : '#1e293b';
+        const stroke = glow ? '#fde047' : ok ? '#4ade80' : '#475569';
+        return `
+          <rect x="28" y="${y}" width="310" height="22" fill="${fill}" stroke="${stroke}" stroke-width="${glow ? 3 : 2}"/>
+          <text x="42" y="${y + 15}" fill="#fff" font-size="11" font-weight="bold">L${lvl}: ${nVal || '???'}</text>
+          <text x="326" y="${y + 15}" fill="${ok ? '#bbf7d0' : '#94a3b8'}" font-size="10" text-anchor="end">${pVal || 'PDU ?'}</text>
+        `;
+      }).join('');
+      wrap.innerHTML = `
+        <svg viewBox="0 0 600 225" class="pixel-infographic-svg" shape-rendering="crispEdges">
+          <rect width="600" height="225" fill="#070d1d"/>
+          ${rowsHtml}
+          <rect x="364" y="22" width="212" height="182" fill="#0f172a" stroke="#a855f7" stroke-width="2"/>
+          <text x="470" y="44" fill="#c084fc" font-size="12" font-weight="bold" text-anchor="middle">PACKET ENCAPSULATION</text>
+          <rect x="394" y="58" width="152" height="24" fill="#312e81" stroke="#38bdf8"/><text x="470" y="74" fill="#e0f2fe" font-size="10" text-anchor="middle">L7-5: [ DATA ]</text>
+          <rect x="386" y="88" width="168" height="24" fill="#1e3a8a" stroke="#38bdf8"/><text x="470" y="104" fill="#e0f2fe" font-size="10" text-anchor="middle">L4: [ TCP | DATA ]</text>
+          <rect x="378" y="118" width="184" height="24" fill="#0c4a6e" stroke="#22d3ee"/><text x="470" y="134" fill="#e0f2fe" font-size="10" text-anchor="middle">L3: [ IP | TCP | DATA ]</text>
+          <rect x="372" y="148" width="196" height="24" fill="#115e59" stroke="#4ade80"/><text x="470" y="164" fill="#dcfce7" font-size="10" text-anchor="middle">L2: [ MAC | IP | DATA | FCS ]</text>
+          <text x="470" y="192" fill="#facc15" font-size="11" font-family="monospace" text-anchor="middle">L1: 10110010 01101001...</text>
+        </svg>
       `;
     },
 
@@ -1452,11 +1490,14 @@
       this.labState[4] = { testedPing: false, allFixed: false };
       el.innerHTML = `
         <div class="pixel-box lab-panel">
-          <h3 style="color:var(--cyan); margin-bottom:8px;">🔬 Lab 4: หมอรักษาเครือข่าย IPv4 &amp; Cyber CLI Terminal</h3>
+          <h3 style="color:var(--cyan); margin-bottom:8px;">🔬 Lab 8: หมอรักษาเครือข่าย IPv4 &amp; Cyber CLI Terminal</h3>
           <p style="color:var(--text-muted); margin-bottom:12px;">
             วงเครือข่ายห้องแล็บคือ <b>192.168.10.0 /24</b> | Subnet Mask: <b>255.255.255.0</b> | Gateway Router: <b>192.168.10.1</b><br/>
             ภารกิจ: แก้ค่า IP ของ PC ทั้ง 3 เครื่องที่มีปัญหา แล้วรันคำสั่ง <code>ping 192.168.10.1</code> และ <code>ping 8.8.8.8</code> ใน Terminal!
           </p>
+          <div class="topo-board" style="margin-bottom:14px;">
+            <div id="lab8-svg-wrap"></div>
+          </div>
           <div class="lab-grid-2">
             <div>
               <div class="pc-fix-card" id="pc-card-1">
@@ -1515,6 +1556,41 @@
           </div>
         </div>
       `;
+      this.renderLab8SVG(false, false, false);
+    },
+
+    renderLab8SVG(ok1 = false, ok2 = false, ok3 = false) {
+      const wrap = document.getElementById('lab8-svg-wrap');
+      if (!wrap) return;
+      const all = ok1 && ok2 && ok3;
+      const c1 = ok1 ? '#22c55e' : '#ef4444';
+      const c2 = ok2 ? '#22c55e' : '#ef4444';
+      const c3 = ok3 ? '#22c55e' : '#ef4444';
+      wrap.innerHTML = `
+        <svg viewBox="0 0 600 185" class="pixel-infographic-svg" shape-rendering="crispEdges">
+          <rect width="600" height="185" fill="#070d1d"/>
+          <line x1="120" y1="38" x2="232" y2="92" stroke="${c1}" stroke-width="3" stroke-dasharray="${ok1 ? '' : '6,4'}"/>
+          <line x1="120" y1="92" x2="232" y2="92" stroke="${c2}" stroke-width="3" stroke-dasharray="${ok2 ? '' : '6,4'}"/>
+          <line x1="120" y1="146" x2="232" y2="92" stroke="${c3}" stroke-width="3" stroke-dasharray="${ok3 ? '' : '6,4'}"/>
+          <line x1="308" y1="92" x2="386" y2="92" stroke="${all ? '#22c55e' : '#f59e0b'}" stroke-width="4"/>
+          <line x1="474" y1="92" x2="520" y2="92" stroke="${all ? '#38bdf8' : '#ef4444'}" stroke-width="4" stroke-dasharray="${all ? '' : '6,4'}"/>
+
+          <rect x="20" y="20" width="102" height="36" fill="#0f172a" stroke="${c1}" stroke-width="2"/><text x="71" y="42" fill="${c1}" font-size="11" font-weight="bold" text-anchor="middle">PC-01 ${ok1 ? '✔' : '✖'}</text>
+          <rect x="20" y="74" width="102" height="36" fill="#0f172a" stroke="${c2}" stroke-width="2"/><text x="71" y="96" fill="${c2}" font-size="11" font-weight="bold" text-anchor="middle">PC-02 ${ok2 ? '✔' : '✖'}</text>
+          <rect x="20" y="128" width="102" height="36" fill="#0f172a" stroke="${c3}" stroke-width="2"/><text x="71" y="150" fill="${c3}" font-size="11" font-weight="bold" text-anchor="middle">PC-03 ${ok3 ? '✔' : '✖'}</text>
+
+          <rect x="232" y="70" width="76" height="44" fill="#1d4ed8" stroke="#93c5fd" stroke-width="2"/>
+          <text x="270" y="96" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">SWITCH</text>
+
+          <rect x="386" y="64" width="88" height="56" fill="#0f172a" stroke="#f59e0b" stroke-width="2"/>
+          <text x="430" y="88" fill="#facc15" font-size="10" font-weight="bold" text-anchor="middle">GATEWAY</text>
+          <text x="430" y="106" fill="#cbd5e1" font-size="9" text-anchor="middle">192.168.10.1</text>
+
+          <rect x="520" y="64" width="66" height="56" fill="#0f172a" stroke="${all ? '#38bdf8' : '#64748b'}" stroke-width="2"/>
+          <text x="553" y="88" fill="${all ? '#38bdf8' : '#94a3b8'}" font-size="10" font-weight="bold" text-anchor="middle">🌐 DNS</text>
+          <text x="553" y="106" fill="#cbd5e1" font-size="9" text-anchor="middle">8.8.8.8</text>
+        </svg>
+      `;
     },
 
     lab4IsValidOctetHost(ip, usedIps) {
@@ -1546,6 +1622,7 @@
       document.getElementById('pc-card-1').classList.toggle('fixed', ok1);
       document.getElementById('pc-card-2').classList.toggle('fixed', ok2);
       document.getElementById('pc-card-3').classList.toggle('fixed', ok3);
+      this.renderLab8SVG(ok1, ok2, ok3);
 
       if (ok1 && ok2 && ok3) {
         this.labState[4].allFixed = true;
@@ -1607,34 +1684,37 @@
       el.innerHTML = `
         <div class="pixel-box lab-panel">
           <h3 style="color:var(--cyan); margin-bottom:8px;">🔬 Lab 5: ศูนย์ควบคุม Wi-Fi ความเร็วสูง &amp; DHCP Server (DORA)</h3>
+          <div class="topo-board" style="margin-bottom:14px;">
+            <div id="lab5-svg-wrap"></div>
+          </div>
           <div class="lab-grid-2">
             <div class="pixel-box" style="padding:14px;">
               <h4 style="color:var(--amber); margin-bottom:10px;">📡 ตั้งค่า Router ไร้สาย &amp; DHCP Pool</h4>
               <div style="display:flex; flex-direction:column; gap:10px; font-size:0.88rem;">
                 <div>
                   <label>1. เลือกย่านความถี่สำหรับห้อง Lab ที่มีโน้ตบุ๊กหนาแน่น 35 เครื่อง:</label>
-                  <select id="l5-band" class="px-select">
+                  <select id="l5-band" class="px-select" onchange="App.renderLab5SVG()">
                     <option value="24old">2.4 GHz (802.11b)</option>
                     <option value="5ax">5 GHz (Wi-Fi 6 / 802.11ax)</option>
                   </select>
                 </div>
                 <div>
                   <label>2. กรณีใช้คลื่น 2.4 GHz ต้องตั้ง Channel ชุดใดที่ไม่กวนกัน:</label>
-                  <select id="l5-ch" class="px-select">
+                  <select id="l5-ch" class="px-select" onchange="App.renderLab5SVG()">
                     <option value="123">Channel 1, 2, 3</option>
                     <option value="1611">Channel 1, 6, 11</option>
                   </select>
                 </div>
                 <div>
                   <label>3. มาตรฐานการเข้ารหัสความปลอดภัย Wi-Fi ที่แนะนำ:</label>
-                  <select id="l5-sec" class="px-select">
+                  <select id="l5-sec" class="px-select" onchange="App.renderLab5SVG()">
                     <option value="wep">WEP (64-bit)</option>
                     <option value="wpa3">WPA3-Personal / Enterprise</option>
                   </select>
                 </div>
                 <div>
                   <label>4. ตั้งค่า DHCP IP Pool ช่วงที่แจกให้ลูกข่าย (Gateway คือ 192.168.50.1):</label>
-                  <select id="l5-pool" class="px-select">
+                  <select id="l5-pool" class="px-select" onchange="App.renderLab5SVG()">
                     <option value="bad">192.168.50.1 - 192.168.50.10 (ชน Gateway!)</option>
                     <option value="good">192.168.50.100 - 192.168.50.200 (ถูกต้อง)</option>
                   </select>
@@ -1651,6 +1731,43 @@
             </div>
           </div>
         </div>
+      `;
+      this.renderLab5SVG(0);
+    },
+
+    renderLab5SVG(doraStep = 0) {
+      const wrap = document.getElementById('lab5-svg-wrap');
+      if (!wrap) return;
+      const band = document.getElementById('l5-band')?.value || '24old';
+      const ch = document.getElementById('l5-ch')?.value || '123';
+      const sec = document.getElementById('l5-sec')?.value || 'wep';
+      const pool = document.getElementById('l5-pool')?.value || 'bad';
+      const secColor = sec === 'wpa3' ? '#22c55e' : '#ef4444';
+      const waveColor = band === '5ax' ? '#38bdf8' : '#f59e0b';
+      const doraLabels = ['รอเชื่อมต่อ', '1. DISCOVER ➜', '2. ⬅ OFFER', '3. REQUEST ➜', '4. ✔ ACK (.101)'];
+      wrap.innerHTML = `
+        <svg viewBox="0 0 600 185" class="pixel-infographic-svg" shape-rendering="crispEdges">
+          <rect width="600" height="185" fill="#070d1d"/>
+          <rect x="26" y="42" width="136" height="96" fill="#0f172a" stroke="${waveColor}" stroke-width="3"/>
+          <text x="94" y="66" fill="${waveColor}" font-size="12" font-weight="bold" text-anchor="middle">📡 WI-FI AP</text>
+          <text x="94" y="88" fill="#e2e8f0" font-size="10" text-anchor="middle">${band === '5ax' ? '5 GHz Wi-Fi 6' : '2.4 GHz (802.11b)'}</text>
+          <text x="94" y="106" fill="${ch === '1611' ? '#4ade80' : '#fca5a5'}" font-size="10" text-anchor="middle">Ch: ${ch === '1611' ? '1 / 6 / 11' : '1, 2, 3 (ชนกัน)'}</text>
+          <text x="94" y="124" fill="${secColor}" font-size="10" font-weight="bold" text-anchor="middle">🔒 ${sec === 'wpa3' ? 'WPA3 SECURE' : 'WEP UNSAFE'}</text>
+
+          <line x1="166" y1="90" x2="310" y2="90" stroke="${doraStep > 0 ? '#22c55e' : waveColor}" stroke-width="4" stroke-dasharray="8,6"/>
+          <rect x="192" y="68" width="96" height="22" fill="#1e293b" stroke="${doraStep === 4 ? '#4ade80' : '#38bdf8'}"/>
+          <text x="240" y="83" fill="#fff" font-size="10" text-anchor="middle">${doraLabels[doraStep] || doraLabels[0]}</text>
+
+          <rect x="314" y="42" width="122" height="96" fill="#0f172a" stroke="${doraStep === 4 ? '#22c55e' : '#64748b'}" stroke-width="3"/>
+          <text x="375" y="72" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">💻 CLIENT</text>
+          <text x="375" y="96" fill="${doraStep === 4 ? '#4ade80' : '#94a3b8'}" font-size="10" text-anchor="middle">${doraStep === 4 ? '192.168.50.101' : 'No IP Yet'}</text>
+          <text x="375" y="118" fill="#cbd5e1" font-size="10" text-anchor="middle">35 Devices Lab</text>
+
+          <rect x="454" y="42" width="122" height="96" fill="#0f172a" stroke="${pool === 'good' ? '#10b981' : '#ef4444'}" stroke-width="3"/>
+          <text x="515" y="70" fill="#facc15" font-size="11" font-weight="bold" text-anchor="middle">DHCP SERVER</text>
+          <text x="515" y="94" fill="${pool === 'good' ? '#4ade80' : '#fca5a5'}" font-size="10" text-anchor="middle">${pool === 'good' ? '.100 - .200 ✔' : '.1 - .10 (ชน GW!)'}</text>
+          <text x="515" y="118" fill="#94a3b8" font-size="10" text-anchor="middle">GW: .50.1</text>
+        </svg>
       `;
     },
 
@@ -1677,6 +1794,7 @@
       steps.forEach((st, idx) => {
         setTimeout(() => {
           soundFX.playTesterBeep(idx + 2);
+          this.renderLab5SVG(idx + 1);
           log.innerHTML += `<div style="border:2px solid ${st.c}; padding:8px; color:#fff;"><b style="color:${st.c}">${st.k}</b><br/>${st.m}</div>`;
           if (idx === steps.length - 1) {
             this.completeUnitLab(5, 'ผ่าน Lab 5 Wi-Fi & DHCP DORA');
@@ -1689,10 +1807,13 @@
     initLab6(el) {
       el.innerHTML = `
         <div class="pixel-box lab-panel">
-          <h3 style="color:var(--crimson); margin-bottom:8px;">🔬 Lab 6: ป้อมปราการ Pixel Firewall Defender</h3>
+          <h3 style="color:var(--crimson); margin-bottom:8px;">🔬 Lab 9: ป้อมปราการ Windows Defender Firewall</h3>
           <p style="color:var(--text-muted); margin-bottom:12px;">
             ตั้งกฎ Firewall (ALLOW / DENY) สำหรับพอร์ตบริการของวิทยาลัยให้ปลอดภัย ก่อนคลื่นแพ็กเก็ตโจมตีจะบุกเข้ามา!
           </p>
+          <div class="topo-board" style="margin-bottom:14px;">
+            <div id="lab9-svg-wrap"></div>
+          </div>
           <div class="lab-grid-2">
             <div>
               <table class="pixel-table">
@@ -1703,27 +1824,27 @@
                   <tr>
                     <td><b>Port 443 (HTTPS)</b></td>
                     <td>เว็บระบบทะเบียนนักศึกษาแบบเข้ารหัส</td>
-                    <td><select id="fw-443" class="px-select"><option value="ALLOW">ALLOW (อนุญาต)</option><option value="DENY" selected>DENY (บล็อก)</option></select></td>
+                    <td><select id="fw-443" class="px-select" onchange="App.renderLab9SVG()"><option value="ALLOW">ALLOW (อนุญาต)</option><option value="DENY" selected>DENY (บล็อก)</option></select></td>
                   </tr>
                   <tr>
                     <td><b>Port 23 (Telnet)</b></td>
                     <td>รีโมตแบบ Plain-text ไม่เข้ารหัส</td>
-                    <td><select id="fw-23" class="px-select"><option value="ALLOW" selected>ALLOW (อนุญาต)</option><option value="DENY">DENY (บล็อก)</option></select></td>
+                    <td><select id="fw-23" class="px-select" onchange="App.renderLab9SVG()"><option value="ALLOW" selected>ALLOW (อนุญาต)</option><option value="DENY">DENY (บล็อก)</option></select></td>
                   </tr>
                   <tr>
                     <td><b>Port 22 (SSH)</b></td>
                     <td>รีโมตแอดมินแบบเข้ารหัสปลอดภัย</td>
-                    <td><select id="fw-22" class="px-select"><option value="ALLOW">ALLOW (อนุญาต)</option><option value="DENY" selected>DENY (บล็อก)</option></select></td>
+                    <td><select id="fw-22" class="px-select" onchange="App.renderLab9SVG()"><option value="ALLOW">ALLOW (อนุญาต)</option><option value="DENY" selected>DENY (บล็อก)</option></select></td>
                   </tr>
                   <tr>
                     <td><b>Port 445 (SMB WAN)</b></td>
                     <td>ช่องโหว่ยอดนิยมแพร่กระจาย Ransomware</td>
-                    <td><select id="fw-445" class="px-select"><option value="ALLOW" selected>ALLOW (อนุญาต)</option><option value="DENY">DENY (บล็อก)</option></select></td>
+                    <td><select id="fw-445" class="px-select" onchange="App.renderLab9SVG()"><option value="ALLOW" selected>ALLOW (อนุญาต)</option><option value="DENY">DENY (บล็อก)</option></select></td>
                   </tr>
                   <tr>
                     <td><b>Port 53 (DNS)</b></td>
                     <td>แปลงชื่อโดเมนเว็บไซต์ให้เครือข่าย</td>
-                    <td><select id="fw-53" class="px-select"><option value="ALLOW">ALLOW (อนุญาต)</option><option value="DENY" selected>DENY (บล็อก)</option></select></td>
+                    <td><select id="fw-53" class="px-select" onchange="App.renderLab9SVG()"><option value="ALLOW">ALLOW (อนุญาต)</option><option value="DENY" selected>DENY (บล็อก)</option></select></td>
                   </tr>
                 </tbody>
               </table>
@@ -1738,6 +1859,44 @@
             </div>
           </div>
         </div>
+      `;
+      this.renderLab9SVG();
+    },
+
+    renderLab9SVG() {
+      const wrap = document.getElementById('lab9-svg-wrap');
+      if (!wrap) return;
+      const ports = [
+        { id: 'fw-443', label: 'HTTPS :443', safe: 'ALLOW', y: 24 },
+        { id: 'fw-23', label: 'Telnet :23', safe: 'DENY', y: 58 },
+        { id: 'fw-22', label: 'SSH :22', safe: 'ALLOW', y: 92 },
+        { id: 'fw-445', label: 'SMB :445', safe: 'DENY', y: 126 },
+        { id: 'fw-53', label: 'DNS :53', safe: 'ALLOW', y: 160 }
+      ];
+      const rows = ports.map((p) => {
+        const val = document.getElementById(p.id)?.value || 'DENY';
+        const allow = val === 'ALLOW';
+        const lineColor = allow ? '#22c55e' : '#ef4444';
+        return `
+          <rect x="24" y="${p.y}" width="112" height="24" fill="#1e293b" stroke="${p.safe === 'DENY' ? '#f59e0b' : '#38bdf8'}"/>
+          <text x="80" y="${p.y + 16}" fill="#fff" font-size="10" text-anchor="middle">${p.label}</text>
+          <line x1="138" y1="${p.y + 12}" x2="254" y2="${p.y + 12}" stroke="${lineColor}" stroke-width="3"/>
+          ${allow
+            ? `<line x1="344" y1="${p.y + 12}" x2="454" y2="${p.y + 12}" stroke="#22c55e" stroke-width="3"/><text x="400" y="${p.y + 8}" fill="#4ade80" font-size="9" text-anchor="middle">ALLOW ➜</text>`
+            : `<text x="398" y="${p.y + 16}" fill="#ef4444" font-size="10" font-weight="bold" text-anchor="middle">🛡️ BLOCKED</text>`}
+        `;
+      }).join('');
+      wrap.innerHTML = `
+        <svg viewBox="0 0 600 202" class="pixel-infographic-svg" shape-rendering="crispEdges">
+          <rect width="600" height="202" fill="#070d1d"/>
+          ${rows}
+          <rect x="256" y="18" width="86" height="170" fill="#7f1d1d" stroke="#ef4444" stroke-width="3"/>
+          <text x="299" y="96" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">FIREWALL</text>
+          <text x="299" y="114" fill="#fde047" font-size="10" text-anchor="middle">WINDOWS</text>
+          <rect x="458" y="42" width="118" height="120" fill="#0f172a" stroke="#38bdf8" stroke-width="3"/>
+          <text x="517" y="98" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">🏫 CAMPUS</text>
+          <text x="517" y="118" fill="#cbd5e1" font-size="10" text-anchor="middle">INTERNAL LAN</text>
+        </svg>
       `;
     },
 
@@ -1790,18 +1949,21 @@
               <p style="font-size:0.86rem; color:var(--text-muted);">วิเคราะห์โจทย์งานติดตั้งจริง 4 สถานการณ์ แล้วเลือกอุปกรณ์ สื่อกลาง และหัวต่อสัญญาณให้เหมาะสมครบทุกข้อ</p>
             </div>
           </div>
+          <div class="topo-board" style="margin-top:10px;">
+            <div id="lab-media-svg-wrap"></div>
+          </div>
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px; margin-top:12px;">
             <div class="pixel-box" style="padding:12px;">
               <div style="font-weight:700; color:var(--cyan); margin-bottom:6px;">ภารกิจ 1: เดินสายเชื่อมตึกเรียนห่างกัน 500 ม. ใกล้หม้อแปลงไฟฟ้า</div>
               <label style="font-size:0.8rem; color:var(--text-muted);">เลือกสื่อนำสัญญาณ:</label>
-              <select id="lm-m1" class="px-input" style="margin:4px 0 8px;">
+              <select id="lm-m1" class="px-input" style="margin:4px 0 8px;" onchange="App.renderLabMediaSVG()">
                 <option value="">-- เลือกสื่อกลาง --</option>
                 <option value="utp">สาย UTP Cat5e (ระยะไม่เกิน 100 ม.)</option>
                 <option value="fiber">สาย Fiber Optic (ใยแก้วนำแสง)</option>
                 <option value="ir">อินฟราเรด (Infrared)</option>
               </select>
               <label style="font-size:0.8rem; color:var(--text-muted);">เลือกหัวต่อมาตรฐาน:</label>
-              <select id="lm-c1" class="px-input" style="margin-top:4px;">
+              <select id="lm-c1" class="px-input" style="margin-top:4px;" onchange="App.renderLabMediaSVG()">
                 <option value="">-- เลือกหัวต่อ --</option>
                 <option value="rj11">RJ-11 (สายโทรศัพท์)</option>
                 <option value="bnc">BNC (สาย Coaxial)</option>
@@ -1812,14 +1974,14 @@
             <div class="pixel-box" style="padding:12px;">
               <div style="font-weight:700; color:var(--emerald); margin-bottom:6px;">ภารกิจ 2: เชื่อมคอมพิวเตอร์ 30 เครื่องในห้องแล็บแบบ Full-Duplex</div>
               <label style="font-size:0.8rem; color:var(--text-muted);">เลือกอุปกรณ์ศูนย์กลาง:</label>
-              <select id="lm-d2" class="px-input" style="margin:4px 0 8px;">
+              <select id="lm-d2" class="px-input" style="margin:4px 0 8px;" onchange="App.renderLabMediaSVG()">
                 <option value="">-- เลือกอุปกรณ์ --</option>
                 <option value="hub">Hub (Layer 1 กระจายทุกพอร์ต)</option>
                 <option value="switch">Switch (Layer 2 จดจำ MAC Address)</option>
                 <option value="repeater">Repeater (ทวนสัญญาณอย่างเดียว)</option>
               </select>
               <label style="font-size:0.8rem; color:var(--text-muted);">เลือกสาย + หัวต่อในห้องแล็บ:</label>
-              <select id="lm-c2" class="px-input" style="margin-top:4px;">
+              <select id="lm-c2" class="px-input" style="margin-top:4px;" onchange="App.renderLabMediaSVG()">
                 <option value="">-- เลือกสายและหัวต่อ --</option>
                 <option value="utp_rj45">สาย UTP Cat6 + หัวต่อ RJ-45</option>
                 <option value="coax_bnc">สาย Coaxial + หัวต่อ BNC</option>
@@ -1830,7 +1992,7 @@
             <div class="pixel-box" style="padding:12px;">
               <div style="font-weight:700; color:var(--violet); margin-bottom:6px;">ภารกิจ 3: เชื่อมเครือข่าย LAN ของวิทยาลัยออกสู่อินเทอร์เน็ต</div>
               <label style="font-size:0.8rem; color:var(--text-muted);">เลือกอุปกรณ์หาเส้นทาง (Layer 3):</label>
-              <select id="lm-d3" class="px-input" style="margin:4px 0 8px;">
+              <select id="lm-d3" class="px-input" style="margin:4px 0 8px;" onchange="App.renderLabMediaSVG()">
                 <option value="">-- เลือกอุปกรณ์ --</option>
                 <option value="router">Router (เชื่อมต่างเครือข่ายด้วย IP)</option>
                 <option value="nic">NIC (การ์ดแลนประจำเครื่อง)</option>
@@ -1841,7 +2003,7 @@
             <div class="pixel-box" style="padding:12px;">
               <div style="font-weight:700; color:var(--amber); margin-bottom:6px;">ภารกิจ 4: เชื่อมสัญญาณไร้สายข้ามถนนระหว่างอาคาร (แนวสายตา LOS)</div>
               <label style="font-size:0.8rem; color:var(--text-muted);">เลือกสื่อกลางไร้สายที่เหมาะสม:</label>
-              <select id="lm-w4" class="px-input" style="margin:4px 0 8px;">
+              <select id="lm-w4" class="px-input" style="margin:4px 0 8px;" onchange="App.renderLabMediaSVG()">
                 <option value="">-- เลือกสื่อไร้สาย --</option>
                 <option value="bluetooth">Bluetooth (ระยะ 10 ม.)</option>
                 <option value="microwave">คลื่นไมโครเวฟ (Point-to-Point Microwave)</option>
@@ -1855,6 +2017,43 @@
             <button class="px-btn px-btn-emerald" onclick="App.checkLabMedia()">✔ ตรวจสเปกอุปกรณ์และสื่อนำสัญญาณ</button>
           </div>
         </div>
+      `;
+      this.renderLabMediaSVG();
+    },
+
+    renderLabMediaSVG() {
+      const wrap = document.getElementById('lab-media-svg-wrap');
+      if (!wrap) return;
+      const m1 = document.getElementById('lm-m1')?.value || '';
+      const c1 = document.getElementById('lm-c1')?.value || '';
+      const d2 = document.getElementById('lm-d2')?.value || '';
+      const c2 = document.getElementById('lm-c2')?.value || '';
+      const d3 = document.getElementById('lm-d3')?.value || '';
+      const w4 = document.getElementById('lm-w4')?.value || '';
+      const ok1 = m1 === 'fiber' && c1 === 'sc_lc';
+      const ok2 = d2 === 'switch' && c2 === 'utp_rj45';
+      const ok3 = d3 === 'router';
+      const ok4 = w4 === 'microwave';
+      wrap.innerHTML = `
+        <svg viewBox="0 0 600 185" class="pixel-infographic-svg" shape-rendering="crispEdges">
+          <rect width="600" height="185" fill="#070d1d"/>
+          <rect x="14" y="14" width="278" height="72" fill="#0f172a" stroke="${ok1 ? '#22c55e' : '#38bdf8'}" stroke-width="2"/>
+          <text x="153" y="34" fill="${ok1 ? '#4ade80' : '#38bdf8'}" font-size="11" font-weight="bold" text-anchor="middle">1) ตึก A ⟷ ตึก B (500m + EMI)</text>
+          <line x1="66" y1="60" x2="240" y2="60" stroke="${ok1 ? '#22c55e' : '#f59e0b'}" stroke-width="4" stroke-dasharray="${ok1 ? '' : '6,4'}"/>
+          <text x="153" y="54" fill="#fff" font-size="10" text-anchor="middle">${m1 ? m1.toUpperCase() : '?'} / ${c1 ? c1.toUpperCase() : '?'}</text>
+
+          <rect x="308" y="14" width="278" height="72" fill="#0f172a" stroke="${ok2 ? '#22c55e' : '#10b981'}" stroke-width="2"/>
+          <text x="447" y="34" fill="${ok2 ? '#4ade80' : '#6ee7b7'}" font-size="11" font-weight="bold" text-anchor="middle">2) ห้องแล็บ 30 PC (Full-Duplex)</text>
+          <text x="447" y="64" fill="#fff" font-size="11" text-anchor="middle">💻 ⟷ [ ${d2 ? d2.toUpperCase() : 'DEVICE ?'} ] ⟷ ${c2 ? c2.toUpperCase() : 'CABLE ?'}</text>
+
+          <rect x="14" y="98" width="278" height="72" fill="#0f172a" stroke="${ok3 ? '#22c55e' : '#a855f7'}" stroke-width="2"/>
+          <text x="153" y="118" fill="${ok3 ? '#4ade80' : '#c084fc'}" font-size="11" font-weight="bold" text-anchor="middle">3) LAN วิทยาลัย ⟷ 🌐 อินเทอร์เน็ต</text>
+          <text x="153" y="148" fill="#fff" font-size="11" text-anchor="middle">LAN ⟷ [ ${d3 ? d3.toUpperCase() : 'LAYER 3 ?'} ] ⟷ WAN</text>
+
+          <rect x="308" y="98" width="278" height="72" fill="#0f172a" stroke="${ok4 ? '#22c55e' : '#f59e0b'}" stroke-width="2"/>
+          <text x="447" y="118" fill="${ok4 ? '#4ade80' : '#facc15'}" font-size="11" font-weight="bold" text-anchor="middle">4) ไร้สายข้ามถนนระหว่างอาคาร (LOS)</text>
+          <text x="447" y="148" fill="#fff" font-size="11" text-anchor="middle">🏢 📡 ~~~ ${w4 ? w4.toUpperCase() : 'WIRELESS ?'} ~~~ 📡 🏢</text>
+        </svg>
       `;
     },
 
@@ -1893,41 +2092,44 @@
               <p style="font-size:0.86rem; color:var(--text-muted);">ตั้งค่าเครื่อง <b>LAB-PC01</b> ให้อยู่ใน Workgroup <code>ROOM301</code>, ตั้ง Static IPv4 วง <code>192.168.10.x/24</code> (Gateway <code>192.168.10.1</code>, DNS <code>8.8.8.8</code>), เปิดแชร์โฟลเดอร์ & เครื่องพิมพ์ แล้วทดสอบเข้าถึงด้วย UNC Path</p>
             </div>
           </div>
+          <div class="topo-board" style="margin-top:10px;">
+            <div id="lab-win-svg-wrap"></div>
+          </div>
 
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-top:12px;">
             <div class="pixel-box" style="padding:12px;">
               <div style="font-weight:700; color:var(--cyan); margin-bottom:8px;">1) System Properties (ชื่อเครื่อง &amp; เครือข่าย)</div>
               <label style="font-size:0.8rem;">Computer Name:</label>
-              <input id="lw-name" class="px-input" value="LAB-PC01" style="margin:4px 0 8px;" />
+              <input id="lw-name" class="px-input" value="LAB-PC01" oninput="App.renderLabWinSVG()" style="margin:4px 0 8px;" />
               <label style="font-size:0.8rem;">Workgroup Name (กำหนดเป็น ROOM301):</label>
-              <input id="lw-wg" class="px-input" value="WORKGROUP" style="margin-top:4px;" />
+              <input id="lw-wg" class="px-input" value="WORKGROUP" oninput="App.renderLabWinSVG()" style="margin-top:4px;" />
             </div>
 
             <div class="pixel-box" style="padding:12px;">
               <div style="font-weight:700; color:var(--emerald); margin-bottom:8px;">2) TCP/IPv4 Properties (ncpa.cpl)</div>
               <label style="font-size:0.8rem;">IPv4 Address (เช่น 192.168.10.20):</label>
-              <input id="lw-ip" class="px-input" value="192.168.10.20" style="margin:4px 0 6px;" />
+              <input id="lw-ip" class="px-input" value="192.168.10.20" oninput="App.renderLabWinSVG()" style="margin:4px 0 6px;" />
               <label style="font-size:0.8rem;">Subnet Mask:</label>
-              <input id="lw-mask" class="px-input" value="255.255.255.0" style="margin:4px 0 6px;" />
+              <input id="lw-mask" class="px-input" value="255.255.255.0" oninput="App.renderLabWinSVG()" style="margin:4px 0 6px;" />
               <label style="font-size:0.8rem;">Default Gateway:</label>
-              <input id="lw-gw" class="px-input" value="192.168.1.1" style="margin:4px 0 6px;" />
+              <input id="lw-gw" class="px-input" value="192.168.1.1" oninput="App.renderLabWinSVG()" style="margin:4px 0 6px;" />
               <label style="font-size:0.8rem;">Preferred DNS Server:</label>
-              <input id="lw-dns" class="px-input" value="" placeholder="เช่น 8.8.8.8" style="margin-top:4px;" />
+              <input id="lw-dns" class="px-input" value="" placeholder="เช่น 8.8.8.8" oninput="App.renderLabWinSVG()" style="margin-top:4px;" />
             </div>
 
             <div class="pixel-box" style="padding:12px;">
               <div style="font-weight:700; color:var(--amber); margin-bottom:8px;">3) File &amp; Printer Sharing + Run (Win+R)</div>
               <label style="display:flex; gap:8px; align-items:center; font-size:0.84rem; margin-bottom:6px; cursor:pointer;">
-                <input type="checkbox" id="lw-disc" /> เปิด Network Discovery &amp; File Sharing
+                <input type="checkbox" id="lw-disc" onchange="App.renderLabWinSVG()" /> เปิด Network Discovery &amp; File Sharing
               </label>
               <label style="display:flex; gap:8px; align-items:center; font-size:0.84rem; margin-bottom:6px; cursor:pointer;">
-                <input type="checkbox" id="lw-folder" /> แชร์โฟลเดอร์ชื่อ <code>Homework</code> (สิทธิ์ Read/Change)
+                <input type="checkbox" id="lw-folder" onchange="App.renderLabWinSVG()" /> แชร์โฟลเดอร์ชื่อ <code>Homework</code> (สิทธิ์ Read/Change)
               </label>
               <label style="display:flex; gap:8px; align-items:center; font-size:0.84rem; margin-bottom:10px; cursor:pointer;">
-                <input type="checkbox" id="lw-printer" /> แชร์เครื่องพิมพ์ <code>LAB-LaserJet</code>
+                <input type="checkbox" id="lw-printer" onchange="App.renderLabWinSVG()" /> แชร์เครื่องพิมพ์ <code>LAB-LaserJet</code>
               </label>
               <label style="font-size:0.8rem;">ทดสอบพิมพ์ UNC Path เข้าถึงโฟลเดอร์ที่แชร์:</label>
-              <input id="lw-unc" class="px-input" placeholder="เช่น \\\\LAB-PC01\\Homework" style="margin-top:4px;" />
+              <input id="lw-unc" class="px-input" placeholder="เช่น \\\\LAB-PC01\\Homework" oninput="App.renderLabWinSVG()" style="margin-top:4px;" />
             </div>
           </div>
 
@@ -1936,6 +2138,43 @@
             <button class="px-btn px-btn-emerald" onclick="App.checkLabWindowsNet()">✔ ทดสอบเชื่อมต่อเครือข่าย Windows</button>
           </div>
         </div>
+      `;
+      this.renderLabWinSVG();
+    },
+
+    renderLabWinSVG() {
+      const wrap = document.getElementById('lab-win-svg-wrap');
+      if (!wrap) return;
+      const name = document.getElementById('lw-name')?.value.trim() || 'LAB-PC01';
+      const wg = document.getElementById('lw-wg')?.value.trim().toUpperCase() || 'WORKGROUP';
+      const ip = document.getElementById('lw-ip')?.value.trim() || '-';
+      const gw = document.getElementById('lw-gw')?.value.trim() || '-';
+      const disc = document.getElementById('lw-disc')?.checked;
+      const folder = document.getElementById('lw-folder')?.checked;
+      const printer = document.getElementById('lw-printer')?.checked;
+      const unc = document.getElementById('lw-unc')?.value.trim() || '\\\\...';
+      const gwOk = gw === '192.168.10.1';
+      const wgOk = wg === 'ROOM301';
+      wrap.innerHTML = `
+        <svg viewBox="0 0 600 185" class="pixel-infographic-svg" shape-rendering="crispEdges">
+          <rect width="600" height="185" fill="#070d1d"/>
+          <rect x="20" y="20" width="212" height="145" fill="#0f172a" stroke="${wgOk && gwOk ? '#22c55e' : '#3b82f6'}" stroke-width="3"/>
+          <text x="126" y="42" fill="#60a5fa" font-size="12" font-weight="bold" text-anchor="middle">🪟 ${name}</text>
+          <text x="126" y="62" fill="${wgOk ? '#4ade80' : '#facc15'}" font-size="10" text-anchor="middle">Workgroup: ${wg}</text>
+          <text x="126" y="82" fill="#e2e8f0" font-size="10" text-anchor="middle">IP: ${ip}</text>
+          <text x="126" y="98" fill="${gwOk ? '#4ade80' : '#fca5a5'}" font-size="10" text-anchor="middle">GW: ${gw}</text>
+          <rect x="34" y="112" width="88" height="38" fill="#1e293b" stroke="${folder ? '#22c55e' : '#475569'}"/><text x="78" y="135" fill="${folder ? '#4ade80' : '#94a3b8'}" font-size="10" text-anchor="middle">📁 ${folder ? 'Shared' : 'Closed'}</text>
+          <rect x="130" y="112" width="88" height="38" fill="#1e293b" stroke="${printer ? '#22c55e' : '#475569'}"/><text x="174" y="135" fill="${printer ? '#4ade80' : '#94a3b8'}" font-size="10" text-anchor="middle">🖨️ ${printer ? 'Shared' : 'Closed'}</text>
+
+          <line x1="234" y1="92" x2="394" y2="92" stroke="${disc && folder ? '#22c55e' : '#64748b'}" stroke-width="4" stroke-dasharray="8,5"/>
+          <rect x="246" y="66" width="136" height="22" fill="#1e293b" stroke="#a855f7"/>
+          <text x="314" y="81" fill="#e9d5ff" font-size="9" text-anchor="middle">${unc.slice(0, 22)}</text>
+
+          <rect x="396" y="38" width="184" height="108" fill="#0f172a" stroke="${disc ? '#38bdf8' : '#64748b'}" stroke-width="3"/>
+          <text x="488" y="68" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">💻 CLIENT PC</text>
+          <text x="488" y="92" fill="#cbd5e1" font-size="10" text-anchor="middle">Workgroup: ROOM301</text>
+          <text x="488" y="114" fill="${disc ? '#4ade80' : '#94a3b8'}" font-size="10" text-anchor="middle">Discovery: ${disc ? 'ON ✔' : 'OFF'}</text>
+        </svg>
       `;
     },
 
@@ -1986,18 +2225,21 @@
               <p style="font-size:0.86rem; color:var(--text-muted);">ตั้งค่า Virtual Machine สำหรับติดตั้ง <b>Network OS</b> ให้ผ่านสเปกขั้นต่ำ (vCPU ≥ 2, RAM ≥ 2048 MB, Disk ≥ 30 GB), ตั้งการ์ดแลน VM ให้รับ IP วง LAN จริง และ Mount ไฟล์ติดตั้ง .ISO</p>
             </div>
           </div>
+          <div class="topo-board" style="margin-top:10px;">
+            <div id="lab-nos-svg-wrap"></div>
+          </div>
 
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:12px; margin-top:12px;">
             <div class="pixel-box" style="padding:12px;">
               <div style="font-weight:700; color:var(--cyan); margin-bottom:8px;">1) เลือก Hypervisor &amp; ระบบปฏิบัติการเครือข่าย</div>
               <label style="font-size:0.8rem;">ซอฟต์แวร์จำลองเครื่อง (Hypervisor):</label>
-              <select id="l7-hv" class="px-input" style="margin:4px 0 8px;">
+              <select id="l7-hv" class="px-input" style="margin:4px 0 8px;" onchange="App.renderLabNosSVG()">
                 <option value="">-- เลือก Hypervisor --</option>
                 <option value="vbox">Oracle VirtualBox / VMware Workstation</option>
                 <option value="paint">Microsoft Paint</option>
               </select>
               <label style="font-size:0.8rem;">ระบบปฏิบัติการเครือข่าย (NOS):</label>
-              <select id="l7-nos" class="px-input" style="margin-top:4px;">
+              <select id="l7-nos" class="px-input" style="margin-top:4px;" onchange="App.renderLabNosSVG()">
                 <option value="">-- เลือก NOS --</option>
                 <option value="winserver">Windows Server 2022 (Active Directory)</option>
                 <option value="ubuntu">Ubuntu Server 24.04 LTS (Open-Source)</option>
@@ -2008,19 +2250,19 @@
             <div class="pixel-box" style="padding:12px;">
               <div style="font-weight:700; color:var(--emerald); margin-bottom:8px;">2) จัดสรรทรัพยากรฮาร์ดแวร์เสมือน</div>
               <label style="font-size:0.8rem;">จำนวน vCPU (ขั้นต่ำ 2 Cores):</label>
-              <select id="l7-cpu" class="px-input" style="margin:4px 0 6px;">
+              <select id="l7-cpu" class="px-input" style="margin:4px 0 6px;" onchange="App.renderLabNosSVG()">
                 <option value="1">1 vCPU</option>
                 <option value="2">2 vCPU</option>
                 <option value="4">4 vCPU</option>
               </select>
               <label style="font-size:0.8rem;">หน่วยความจำ RAM (ขั้นต่ำ 2048 MB):</label>
-              <select id="l7-ram" class="px-input" style="margin:4px 0 6px;">
+              <select id="l7-ram" class="px-input" style="margin:4px 0 6px;" onchange="App.renderLabNosSVG()">
                 <option value="512">512 MB</option>
                 <option value="2048">2048 MB (2 GB)</option>
                 <option value="4096">4096 MB (4 GB)</option>
               </select>
               <label style="font-size:0.8rem;">Virtual Hard Disk (ขั้นต่ำ 30 GB):</label>
-              <select id="l7-disk" class="px-input" style="margin-top:4px;">
+              <select id="l7-disk" class="px-input" style="margin-top:4px;" onchange="App.renderLabNosSVG()">
                 <option value="10">10 GB</option>
                 <option value="40">40 GB (Dynamically Allocated)</option>
                 <option value="80">80 GB</option>
@@ -2030,13 +2272,13 @@
             <div class="pixel-box" style="padding:12px;">
               <div style="font-weight:700; color:var(--amber); margin-bottom:8px;">3) Virtual Network &amp; Optical Drive (.ISO)</div>
               <label style="font-size:0.8rem;">โหมดการ์ดแลน VM (ให้เครื่องอื่นใน LAN เข้าถึงได้):</label>
-              <select id="l7-net" class="px-input" style="margin:4px 0 8px;">
+              <select id="l7-net" class="px-input" style="margin:4px 0 8px;" onchange="App.renderLabNosSVG()">
                 <option value="nat">NAT (ซ่อนหลัง Host)</option>
                 <option value="bridged">Bridged Adapter (รับ IP วง LAN จริง)</option>
                 <option value="hostonly">Host-Only (คุยเฉพาะเครื่องแม่)</option>
               </select>
               <label style="font-size:0.8rem;">ไฟล์แผ่นติดตั้งระบบปฏิบัติการ:</label>
-              <select id="l7-iso" class="px-input" style="margin-top:4px;">
+              <select id="l7-iso" class="px-input" style="margin-top:4px;" onchange="App.renderLabNosSVG()">
                 <option value="">-- ยังไม่ใส่แผ่น --</option>
                 <option value="iso">NOS_Server_Installer.iso</option>
                 <option value="txt">readme.txt</option>
@@ -2049,6 +2291,43 @@
             <button class="px-btn px-btn-emerald" onclick="App.deployLabNosVm()">🚀 Power On VM &amp; ติดตั้ง NOS</button>
           </div>
         </div>
+      `;
+      this.renderLabNosSVG();
+    },
+
+    renderLabNosSVG() {
+      const wrap = document.getElementById('lab-nos-svg-wrap');
+      if (!wrap) return;
+      const hv = document.getElementById('l7-hv')?.value || '';
+      const nos = document.getElementById('l7-nos')?.value || '';
+      const cpu = Number(document.getElementById('l7-cpu')?.value || 1);
+      const ram = Number(document.getElementById('l7-ram')?.value || 512);
+      const disk = Number(document.getElementById('l7-disk')?.value || 10);
+      const net = document.getElementById('l7-net')?.value || 'nat';
+      const iso = document.getElementById('l7-iso')?.value || '';
+      const specOk = cpu >= 2 && ram >= 2048 && disk >= 30;
+      const netOk = net === 'bridged';
+      const nosLabel = nos === 'winserver' ? 'Windows Server 2022' : nos === 'ubuntu' ? 'Ubuntu Server 24.04' : 'ยังไม่เลือก NOS';
+      wrap.innerHTML = `
+        <svg viewBox="0 0 600 190" class="pixel-infographic-svg" shape-rendering="crispEdges">
+          <rect width="600" height="190" fill="#070d1d"/>
+          <rect x="24" y="16" width="340" height="82" fill="#1e1b4b" stroke="${specOk && iso === 'iso' ? '#22c55e' : '#6366f1'}" stroke-width="3"/>
+          <text x="194" y="38" fill="#a5b4fc" font-size="12" font-weight="bold" text-anchor="middle">🖥️ VM: ${nosLabel}</text>
+          <text x="194" y="60" fill="${specOk ? '#4ade80' : '#fca5a5'}" font-size="11" text-anchor="middle">vCPU: ${cpu} | RAM: ${ram} MB | Disk: ${disk} GB</text>
+          <text x="194" y="82" fill="${iso === 'iso' ? '#38bdf8' : '#94a3b8'}" font-size="10" text-anchor="middle">💿 Optical: ${iso === 'iso' ? 'NOS_Server_Installer.iso ✔' : 'Empty / Invalid'}</text>
+
+          <rect x="24" y="106" width="340" height="30" fill="#312e81" stroke="${hv === 'vbox' ? '#22c55e' : '#a855f7'}" stroke-width="2"/>
+          <text x="194" y="125" fill="#e9d5ff" font-size="11" font-weight="bold" text-anchor="middle">Hypervisor: ${hv === 'vbox' ? 'VirtualBox / VMware ✔' : 'ยังไม่เลือก'}</text>
+
+          <rect x="24" y="144" width="340" height="30" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+          <text x="194" y="163" fill="#cbd5e1" font-size="10" text-anchor="middle">Host Hardware (VT-x / AMD-V Physical NIC)</text>
+
+          <line x1="366" y1="60" x2="432" y2="95" stroke="${netOk ? '#22c55e' : '#f59e0b'}" stroke-width="4" stroke-dasharray="${netOk ? '' : '6,4'}"/>
+          <rect x="434" y="48" width="144" height="96" fill="#0f172a" stroke="${netOk ? '#22c55e' : '#f59e0b'}" stroke-width="3"/>
+          <text x="506" y="76" fill="${netOk ? '#4ade80' : '#facc15'}" font-size="11" font-weight="bold" text-anchor="middle">VIRTUAL NIC</text>
+          <text x="506" y="100" fill="#fff" font-size="11" text-anchor="middle">${net.toUpperCase()}</text>
+          <text x="506" y="124" fill="${netOk ? '#4ade80' : '#fca5a5'}" font-size="9" text-anchor="middle">${netOk ? 'LAN IP 192.168.10.5 ✔' : 'เครื่องอื่นเข้าไม่ได้'}</text>
+        </svg>
       `;
     },
 
@@ -2105,12 +2384,15 @@
               <p style="font-size:0.86rem; color:var(--text-muted);">สร้างบัญชีครู (<code>teacher01</code>) และนักศึกษา (<code>student01</code>), จัดเข้ากลุ่มให้ถูกต้อง และกำหนดสิทธิ์โฟลเดอร์ <code>Exam_Bank</code> ตามหลัก <b>Least Privilege</b> (ครูแก้ไขได้เต็มที่ แต่นักศึกษาอ่านได้อย่างเดียว ห้ามแก้ไข/ลบ)</p>
             </div>
           </div>
+          <div class="topo-board" style="margin-top:10px;">
+            <div id="lab-u10-svg-wrap"></div>
+          </div>
 
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-top:12px;">
             <div class="pixel-box" style="padding:12px;">
               <div style="font-weight:700; color:var(--cyan); margin-bottom:8px;">1) สร้างบัญชีผู้ใช้ &amp; ระดับบัญชี</div>
               <div style="font-size:0.82rem; margin-bottom:4px;">บัญชี <code>teacher01</code> — กลุ่มที่สังกัด:</div>
-              <select id="l10-tgroup" class="px-input" style="margin-bottom:10px;">
+              <select id="l10-tgroup" class="px-input" style="margin-bottom:10px;" onchange="App.renderLabU10SVG()">
                 <option value="">-- เลือกกลุ่มผู้ใช้ --</option>
                 <option value="Teachers">Teachers (กลุ่มครูผู้สอน)</option>
                 <option value="Students">Students (กลุ่มนักศึกษา)</option>
@@ -2118,14 +2400,14 @@
               </select>
 
               <div style="font-size:0.82rem; margin-bottom:4px;">บัญชี <code>student01</code> — ระดับบัญชี (Account Type):</div>
-              <select id="l10-stype" class="px-input" style="margin-bottom:8px;">
+              <select id="l10-stype" class="px-input" style="margin-bottom:8px;" onchange="App.renderLabU10SVG()">
                 <option value="">-- เลือกระดับบัญชี --</option>
                 <option value="admin">Administrator (คุมเครื่องทั้งหมด)</option>
                 <option value="standard">Standard User (ใช้งานทั่วไป ปลอดภัย)</option>
               </select>
 
               <div style="font-size:0.82rem; margin-bottom:4px;">บัญชี <code>student01</code> — กลุ่มที่สังกัด:</div>
-              <select id="l10-sgroup" class="px-input">
+              <select id="l10-sgroup" class="px-input" onchange="App.renderLabU10SVG()">
                 <option value="">-- เลือกกลุ่มผู้ใช้ --</option>
                 <option value="Teachers">Teachers</option>
                 <option value="Students">Students</option>
@@ -2135,7 +2417,7 @@
             <div class="pixel-box" style="padding:12px;">
               <div style="font-weight:700; color:var(--amber); margin-bottom:8px;">2) NTFS Permissions โฟลเดอร์ <code>\\LAB-SRV\Exam_Bank</code></div>
               <div style="font-size:0.82rem; margin-bottom:4px;">สิทธิ์ของกลุ่ม <b>Teachers</b>:</div>
-              <select id="l10-tperm" class="px-input" style="margin-bottom:10px;">
+              <select id="l10-tperm" class="px-input" style="margin-bottom:10px;" onchange="App.renderLabU10SVG()">
                 <option value="">-- กำหนดสิทธิ์ NTFS --</option>
                 <option value="full">Full Control / Modify (สร้าง/แก้ไข/ลบได้)</option>
                 <option value="read">Read Only (อ่านอย่างเดียว)</option>
@@ -2143,14 +2425,14 @@
               </select>
 
               <div style="font-size:0.82rem; margin-bottom:4px;">สิทธิ์ของกลุ่ม <b>Students</b>:</div>
-              <select id="l10-sperm" class="px-input" style="margin-bottom:10px;">
+              <select id="l10-sperm" class="px-input" style="margin-bottom:10px;" onchange="App.renderLabU10SVG()">
                 <option value="">-- กำหนดสิทธิ์ NTFS --</option>
                 <option value="full">Full Control (แก้/ลบข้อสอบได้)</option>
                 <option value="read">Read &amp; Execute (อ่านได้อย่างเดียว ห้ามแก้ไข)</option>
               </select>
 
               <div style="font-size:0.82rem; margin-bottom:4px;">กฎความปลอดภัย: หากบัญชีถูกตั้งทั้ง <b>Allow Read</b> และ <b>Deny Read</b> ผลคือ:</div>
-              <select id="l10-rule" class="px-input">
+              <select id="l10-rule" class="px-input" onchange="App.renderLabU10SVG()">
                 <option value="">-- เลือกผลลัพธ์ --</option>
                 <option value="allow">Allow ชนะ (เปิดอ่านได้)</option>
                 <option value="deny">Explicit Deny ชนะ Allow เสมอ (ถูกปฏิเสธ)</option>
@@ -2163,6 +2445,44 @@
             <button class="px-btn px-btn-emerald" onclick="App.checkLabUserPerm()">🔐 ทดสอบ Sign-in และตรวจสิทธิ์การเข้าถึง</button>
           </div>
         </div>
+      `;
+      this.renderLabU10SVG();
+    },
+
+    renderLabU10SVG() {
+      const wrap = document.getElementById('lab-u10-svg-wrap');
+      if (!wrap) return;
+      const tg = document.getElementById('l10-tgroup')?.value || '?';
+      const st = document.getElementById('l10-stype')?.value || '?';
+      const sg = document.getElementById('l10-sgroup')?.value || '?';
+      const tp = document.getElementById('l10-tperm')?.value || '?';
+      const sp = document.getElementById('l10-sperm')?.value || '?';
+      const tOk = tg === 'Teachers' && tp === 'full';
+      const sOk = st === 'standard' && sg === 'Students' && sp === 'read';
+      wrap.innerHTML = `
+        <svg viewBox="0 0 600 185" class="pixel-infographic-svg" shape-rendering="crispEdges">
+          <rect width="600" height="185" fill="#070d1d"/>
+          <rect x="18" y="22" width="136" height="60" fill="#0f172a" stroke="${tOk ? '#22c55e' : '#facc15'}" stroke-width="2"/>
+          <text x="86" y="46" fill="#facc15" font-size="11" font-weight="bold" text-anchor="middle">👑 teacher01</text>
+          <text x="86" y="66" fill="#cbd5e1" font-size="10" text-anchor="middle">Group: ${tg}</text>
+
+          <rect x="18" y="104" width="136" height="60" fill="#0f172a" stroke="${sOk ? '#22c55e' : '#38bdf8'}" stroke-width="2"/>
+          <text x="86" y="128" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle">👤 student01</text>
+          <text x="86" y="148" fill="#cbd5e1" font-size="9" text-anchor="middle">${st} / ${sg}</text>
+
+          <line x1="156" y1="52" x2="394" y2="76" stroke="${tOk ? '#22c55e' : '#f59e0b'}" stroke-width="3" stroke-dasharray="${tOk ? '' : '6,4'}"/>
+          <rect x="206" y="34" width="134" height="22" fill="#1e293b" stroke="${tOk ? '#22c55e' : '#f59e0b'}"/>
+          <text x="273" y="49" fill="#fff" font-size="9" text-anchor="middle">NTFS: ${tp.toUpperCase()}</text>
+
+          <line x1="156" y1="134" x2="394" y2="110" stroke="${sOk ? '#22c55e' : '#ef4444'}" stroke-width="3" stroke-dasharray="${sOk ? '' : '6,4'}"/>
+          <rect x="206" y="128" width="134" height="22" fill="#1e293b" stroke="${sOk ? '#22c55e' : '#ef4444'}"/>
+          <text x="273" y="143" fill="#fff" font-size="9" text-anchor="middle">NTFS: ${sp.toUpperCase()}</text>
+
+          <rect x="396" y="38" width="184" height="108" fill="#0f172a" stroke="${tOk && sOk ? '#22c55e' : '#eab308'}" stroke-width="3"/>
+          <text x="488" y="70" fill="#facc15" font-size="12" font-weight="bold" text-anchor="middle">🔐 EXAM_BANK</text>
+          <text x="488" y="92" fill="#cbd5e1" font-size="10" text-anchor="middle">\\\\LAB-SRV\\Exam_Bank</text>
+          <text x="488" y="118" fill="${tOk && sOk ? '#4ade80' : '#94a3b8'}" font-size="10" text-anchor="middle">${tOk && sOk ? 'Least Privilege ✔' : 'รอตั้งค่าสิทธิ์'}</text>
+        </svg>
       `;
     },
 
