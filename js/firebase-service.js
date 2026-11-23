@@ -647,6 +647,174 @@
         } catch (e) { /* ignore */ }
       }
       return { ok: false, error: 'ไม่สามารถลบข้อสอบได้' };
+    },
+
+    /* ---------------- TEACHER STUDENT MANAGEMENT (RESET EXP / DELETE) ---------------- */
+    async fetchAllStudentsForTeacher() {
+      if (this.isCloud()) {
+        try {
+          const snap = await this.db.collection('students')
+            .orderBy('xp', 'desc')
+            .limit(200)
+            .get();
+          const list = [];
+          snap.forEach((doc) => {
+            const d = doc.data();
+            if (d) {
+              list.push({
+                uid: doc.id,
+                studentId: d.studentId || doc.id,
+                name: d.name || d.studentId || '-',
+                classRoom: d.classRoom || 'ปวช.',
+                heroClass: d.heroClass || 'paladin',
+                level: d.level || 1,
+                xp: d.xp || 0,
+                unitsCleared: d.unitsCleared || 0,
+                badgeCount: d.badgeCount || 0,
+                arcadeHighScore: d.arcadeHighScore || 0,
+                updatedAt: d.updatedAt || '',
+                state: d.state || null
+              });
+            }
+          });
+          return list;
+        } catch (err) {
+          console.warn('fetchAllStudentsForTeacher error:', err);
+          return [];
+        }
+      }
+
+      const accounts = this.getLocalAccounts();
+      return Object.values(accounts)
+        .filter((acc) => acc && acc.summary)
+        .map((acc) => ({
+          uid: acc.uid,
+          ...acc.summary,
+          state: acc.state || null
+        }))
+        .sort((a, b) => (b.xp || 0) - (a.xp || 0));
+    },
+
+    async resetStudentProgress(targetDoc, mode, freshDefaultState) {
+      if (!targetDoc || !targetDoc.uid) {
+        return { ok: false, error: 'ไม่พบข้อมูลบัญชีนักศึกษา' };
+      }
+
+      const uid = targetDoc.uid;
+      const oldState = (targetDoc.state && typeof targetDoc.state === 'object') ? targetDoc.state : {};
+      const oldProf = (oldState.profile && typeof oldState.profile === 'object') ? oldState.profile : {};
+
+      const preservedProfile = {
+        name: String(oldProf.name || targetDoc.name || targetDoc.studentId || 'ผู้เรียน'),
+        studentId: String(oldProf.studentId || targetDoc.studentId || ''),
+        classRoom: String(oldProf.classRoom || targetDoc.classRoom || 'ปวช.'),
+        heroClass: String(oldProf.heroClass || targetDoc.heroClass || 'paladin'),
+        created: true
+      };
+
+      const base = {
+        ...freshDefaultState,
+        profile: preservedProfile,
+        inventory: { ...freshDefaultState.inventory, ...(oldState.inventory || {}) },
+        unitProgress: { ...freshDefaultState.unitProgress, ...(oldState.unitProgress || {}) },
+        daily: { ...freshDefaultState.daily, ...(oldState.daily || {}) }
+      };
+
+      let updatedState;
+      let updatedSummary;
+
+      if (mode === 'full') {
+        updatedState = {
+          ...freshDefaultState,
+          profile: preservedProfile,
+          badges: ['first_login']
+        };
+        updatedSummary = {
+          studentId: preservedProfile.studentId,
+          name: preservedProfile.name,
+          classRoom: preservedProfile.classRoom,
+          heroClass: preservedProfile.heroClass,
+          level: 1,
+          xp: 0,
+          unitsCleared: 0,
+          badgeCount: 1,
+          arcadeHighScore: 0,
+          updatedAt: new Date().toISOString().slice(0, 10)
+        };
+      } else {
+        // mode === 'exp' -> Reset only EXP & Level while keeping profile, units, coins, badges intact
+        updatedState = {
+          ...base,
+          coins: typeof oldState.coins === 'number' ? oldState.coins : freshDefaultState.coins,
+          hp: typeof oldState.hp === 'number' ? oldState.hp : freshDefaultState.hp,
+          equipment: Array.isArray(oldState.equipment) ? [...oldState.equipment] : [],
+          badges: Array.isArray(oldState.badges) ? [...oldState.badges] : ['first_login'],
+          arcadeHighScore: typeof oldState.arcadeHighScore === 'number' ? oldState.arcadeHighScore : 0,
+          crt: Boolean(oldState.crt),
+          xp: 0
+        };
+        updatedSummary = {
+          studentId: preservedProfile.studentId,
+          name: preservedProfile.name,
+          classRoom: preservedProfile.classRoom,
+          heroClass: preservedProfile.heroClass,
+          level: 1,
+          xp: 0,
+          unitsCleared: Number(targetDoc.unitsCleared || 0),
+          badgeCount: Array.isArray(updatedState.badges) ? updatedState.badges.length : Number(targetDoc.badgeCount || 0),
+          arcadeHighScore: updatedState.arcadeHighScore,
+          updatedAt: new Date().toISOString().slice(0, 10)
+        };
+      }
+
+      if (this.isCloud()) {
+        try {
+          await this.db.collection('students').doc(uid).set({
+            uid,
+            ...updatedSummary,
+            state: updatedState,
+            updatedAtServer: global.firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          localStorage.setItem(LOCAL_BACKUP_PREFIX + uid, JSON.stringify(updatedState));
+          return { ok: true, updatedDoc: { uid, ...updatedSummary, state: updatedState } };
+        } catch (err) {
+          return { ok: false, error: translateFirebaseError(err) };
+        }
+      }
+
+      // Local Mode
+      const key = sanitizeStudentId(preservedProfile.studentId || uid.replace(/^local_/, '')).toLowerCase();
+      const accounts = this.getLocalAccounts();
+      if (!accounts[key]) {
+        return { ok: false, error: 'ไม่พบบัญชีนักศึกษาในเครื่องนี้' };
+      }
+      accounts[key].summary = updatedSummary;
+      accounts[key].state = updatedState;
+      this.saveLocalAccounts(accounts);
+      localStorage.setItem(LOCAL_BACKUP_PREFIX + uid, JSON.stringify(updatedState));
+      return { ok: true, updatedDoc: { uid, ...updatedSummary, state: updatedState } };
+    },
+
+    async deleteStudentRecord(uid, studentId) {
+      if (!uid) return { ok: false, error: 'ไม่พบ UID นักศึกษา' };
+      if (this.isCloud()) {
+        try {
+          await this.db.collection('students').doc(uid).delete();
+          localStorage.removeItem(LOCAL_BACKUP_PREFIX + uid);
+          return { ok: true };
+        } catch (err) {
+          return { ok: false, error: translateFirebaseError(err) };
+        }
+      }
+
+      const key = sanitizeStudentId(studentId || uid.replace(/^local_/, '')).toLowerCase();
+      const accounts = this.getLocalAccounts();
+      if (accounts[key]) {
+        delete accounts[key];
+        this.saveLocalAccounts(accounts);
+        return { ok: true };
+      }
+      return { ok: false, error: 'ไม่พบบัญชีนักศึกษา' };
     }
   };
 

@@ -56,6 +56,8 @@
     currentUid: null,
     isTeacher: false,
     cloudQuestions: [],
+    teacherStudentsList: [],
+    teacherStudentFilter: '',
     currentUnitId: 1,
     currentTab: 'codex',
     selectedClassTemp: 'paladin',
@@ -2440,13 +2442,20 @@
 
     async openTeacherModal() {
       soundFX.playSelect();
-      if (global.FirebaseService && FirebaseService.isCloud() && this.currentUid) {
+      const isCloud = global.FirebaseService && FirebaseService.isCloud();
+      const canManageQuestions = !isCloud || this.isTeacher;
+      if (global.FirebaseService && isCloud && this.currentUid) {
         try {
           this.cloudQuestions = await FirebaseService.fetchCustomQuestions();
         } catch (e) { /* keep existing */ }
       }
-      const isCloud = global.FirebaseService && FirebaseService.isCloud();
-      const canManageQuestions = !isCloud || this.isTeacher;
+      if (global.FirebaseService && canManageQuestions) {
+        try {
+          this.teacherStudentsList = await FirebaseService.fetchAllStudentsForTeacher();
+        } catch (e) { this.teacherStudentsList = []; }
+      } else {
+        this.teacherStudentsList = [];
+      }
       const customList = isCloud
         ? (this.cloudQuestions || [])
         : (() => {
@@ -2465,12 +2474,30 @@
               <div>
                 บัญชี: <b>${this.state.profile.studentId || 'ยังไม่เข้าสู่ระบบ'}</b> |
                 สิทธิ์: <b style="color:${this.isTeacher ? 'var(--emerald)' : 'var(--cyan)'};">
-                  ${this.isTeacher ? '👑 ครูผู้สอน (Custom Claim: teacher=true)' : (isCloud ? '🎓 นักเรียนทั่วไป (ไม่สามารถแก้ไขข้อสอบส่วนกลาง)' : '💾 โหมดเครื่องท้องถิ่น')}
+                  ${this.isTeacher ? '👑 ครูผู้สอน (Custom Claim: teacher=true)' : (isCloud ? '🎓 นักเรียนทั่วไป (ไม่สามารถแก้ไขข้อสอบหรือรีเซ็ตคะแนน)' : '💾 โหมดเครื่องท้องถิ่น')}
                 </b>
                 ${this.currentUid ? `<div style="font-size:0.78rem; color:var(--text-muted); margin-top:3px;">UID: <code>${this.currentUid}</code></div>` : ''}
               </div>
               ${isCloud && this.currentUid ? `<button class="px-btn px-btn-sm" onclick="App.refreshTeacherClaimUI()">🔄 รีเฟรชสิทธิ์ครู</button>` : ''}
             </div>
+          </div>
+
+          <div class="pixel-box pixel-box-gold" style="padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+              <h4 style="color:var(--amber); margin:0;">👥 จัดการและรีเซ็ตข้อมูล EXP นักเรียนรายบุคคล</h4>
+              ${canManageQuestions ? `<button class="px-btn px-btn-sm" onclick="App.reloadTeacherStudentsUI()">🔄 โหลดรายชื่อใหม่</button>` : ''}
+            </div>
+            ${!canManageQuestions ? `
+              <div class="teacher-lock-box">
+                🔒 <b>ล็อกสิทธิ์สำหรับครูผู้สอนเท่านั้น</b> — เฉพาะบัญชีครูที่มี Custom Claim <code>teacher: true</code> จึงจะดูรายชื่อและรีเซ็ต EXP นักเรียนรายบุคคลได้
+              </div>
+            ` : `
+              <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:8px;">
+                กด <b>🔄 รีเซ็ต EXP</b> เพื่อล้างค่า EXP เป็น 0 (LV.1) โดยเก็บชื่อ-นามสกุล ห้อง และด่านที่ผ่านไว้ หรือกด <b>🧹 รีเซ็ตทั้งหมด</b> เพื่อเริ่มใหม่ทั้งโปรไฟล์ (ชื่อและห้องยังอยู่ครบ)
+              </p>
+              <input id="teacher-student-search" class="px-input" style="margin-bottom:10px;" value="${this.teacherStudentFilter || ''}" placeholder="🔍 ค้นหาด้วย รหัสนักศึกษา, ชื่อ หรือ ห้อง..." oninput="App.filterTeacherStudents(this.value)" />
+              <div id="teacher-students-table-wrap" style="max-height:240px; overflow:auto;"></div>
+            `}
           </div>
 
           <div class="pixel-box pixel-box-cyan" style="padding:14px;">
@@ -2547,7 +2574,114 @@
           </div>
         </div>
       `;
+      if (canManageQuestions) {
+        this.renderTeacherStudentsTable();
+      }
       document.getElementById('modal-teacher').classList.remove('hidden');
+    },
+
+    filterTeacherStudents(query) {
+      this.teacherStudentFilter = query || '';
+      this.renderTeacherStudentsTable();
+    },
+
+    renderTeacherStudentsTable() {
+      const wrap = document.getElementById('teacher-students-table-wrap');
+      if (!wrap) return;
+      const q = (this.teacherStudentFilter || '').trim().toLowerCase();
+      const filtered = (this.teacherStudentsList || []).filter((s) => {
+        if (!q) return true;
+        return String(s.studentId || '').toLowerCase().includes(q)
+          || String(s.name || '').toLowerCase().includes(q)
+          || String(s.classRoom || '').toLowerCase().includes(q);
+      });
+
+      if (filtered.length === 0) {
+        wrap.innerHTML = `<div style="padding:12px; text-align:center; color:var(--text-muted); font-size:0.85rem;">ไม่พบรายชื่อนักศึกษาที่ค้นหา</div>`;
+        return;
+      }
+
+      wrap.innerHTML = `
+        <table class="pixel-table" style="font-size:0.8rem;">
+          <thead>
+            <tr>
+              <th>รหัส</th>
+              <th>ชื่อ-นามสกุล</th>
+              <th>ห้อง</th>
+              <th>LV / XP</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filtered.map((s) => `
+              <tr>
+                <td><code>${s.studentId}</code></td>
+                <td>${s.name}</td>
+                <td>${s.classRoom}</td>
+                <td><b>LV.${s.level || 1}</b> (${s.xp || 0} XP)</td>
+                <td style="white-space:nowrap;">
+                  <button class="px-btn px-btn-amber px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'exp')" title="รีเซ็ตเฉพาะ EXP เป็น 0">🔄 รีเซ็ต EXP</button>
+                  <button class="px-btn px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'full')" title="รีเซ็ต EXP + หน่วย + เหรียญตราทั้งหมด">🧹 ทั้งหมด</button>
+                  ${s.uid !== this.currentUid ? `<button class="px-btn px-btn-crimson px-btn-sm" onclick="App.deleteStudentRecordUI('${s.uid}', '${s.studentId}')" title="ลบบัญชีนี้ออกจากตาราง">🗑️</button>` : ''}
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    },
+
+    async reloadTeacherStudentsUI() {
+      soundFX.playSelect();
+      if (global.FirebaseService) {
+        this.teacherStudentsList = await FirebaseService.fetchAllStudentsForTeacher();
+        this.renderTeacherStudentsTable();
+        this.toast('🔄 โหลดรายชื่อและ EXP นักศึกษาล่าสุดแล้ว');
+      }
+    },
+
+    async resetStudentExpUI(uid, mode = 'exp') {
+      const target = (this.teacherStudentsList || []).find((s) => s.uid === uid);
+      if (!target) return;
+      const label = mode === 'full'
+        ? `รีเซ็ตข้อมูลการเล่นทั้งหมด (EXP, ด่านที่ผ่าน, เหรียญตรา) ของ "${target.name}" (${target.studentId})?\n(ชื่อและห้องเรียนจะยังคงอยู่)`
+        : `รีเซ็ต EXP ของ "${target.name}" (${target.studentId}) จาก ${target.xp || 0} XP ให้กลับเป็น 0 XP (LV.1) หรือไม่?`;
+      if (!confirm(label)) return;
+
+      const res = await FirebaseService.resetStudentProgress(target, mode, createDefaultState());
+      if (!res.ok) {
+        soundFX.playPlayerHurt();
+        alert(res.error || 'ไม่สามารถรีเซ็ตข้อมูลนักศึกษาได้');
+        return;
+      }
+
+      const idx = this.teacherStudentsList.findIndex((s) => s.uid === uid);
+      if (idx >= 0) this.teacherStudentsList[idx] = res.updatedDoc;
+      if (uid === this.currentUid) {
+        this.applyLoadedState(res.updatedDoc.state, res.updatedDoc.studentId);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); } catch (e) { /* ignore */ }
+        this.renderHUD();
+        this.renderDashboard();
+      }
+      this.renderTeacherStudentsTable();
+      soundFX.playPowerUp();
+      this.toast(mode === 'full'
+        ? `🧹 รีเซ็ตข้อมูลทั้งหมดของ ${target.name} (${target.studentId}) เป็น 0 XP เรียบร้อย!`
+        : `🔄 รีเซ็ต EXP ของ ${target.name} (${target.studentId}) เป็น 0 XP (LV.1) เรียบร้อย!`);
+    },
+
+    async deleteStudentRecordUI(uid, studentId) {
+      if (!confirm(`ต้องการลบข้อมูลตารางอันดับของรหัส ${studentId} ออกจาก Cloud Firestore หรือไม่?`)) return;
+      const res = await FirebaseService.deleteStudentRecord(uid, studentId);
+      if (!res.ok) {
+        soundFX.playPlayerHurt();
+        alert(res.error || 'ลบข้อมูลไม่สำเร็จ');
+        return;
+      }
+      this.teacherStudentsList = (this.teacherStudentsList || []).filter((s) => s.uid !== uid);
+      this.renderTeacherStudentsTable();
+      soundFX.playSelect();
+      this.toast(`🗑️ ลบข้อมูลของ ${studentId} ออกจากฐานข้อมูลแล้ว`);
     },
 
     async refreshTeacherClaimUI() {

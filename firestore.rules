@@ -12,16 +12,17 @@ service cloud.firestore {
     //     only their own students/{request.auth.uid} document.
     //   - Teacher: authenticated user with Firebase Auth Custom Claim
     //     `teacher: true` (checked via isTeacher() using
-    //     request.auth.token.teacher == true); can delete students/{userId}
-    //     (e.g., removing test accounts) and create/update/delete
-    //     customQuestions/{docId}.
+    //     request.auth.token.teacher == true); can update (e.g., reset
+    //     EXP/progress) and delete (e.g., removing test accounts)
+    //     students/{userId} while all schema & immutability checks remain
+    //     enforced, and can create/update/delete customQuestions/{docId}.
     //
     // This security rules file assumes the following data structures:
     //
     // Collection: students
-    // Document ID: {userId} (must match request.auth.uid)
+    // Document ID: {userId} (student Firebase Auth UID)
     // Fields:
-    //   - uid: string (required, immutable, must equal userId / request.auth.uid)
+    //   - uid: string (required, immutable, must equal userId)
     //   - studentId: string (required, 4..40 chars) - student ID code
     //   - name: string (required, 1..120 chars) - student display name
     //   - classRoom: string (required, 0..40 chars) - classroom label
@@ -218,7 +219,7 @@ service cloud.firestore {
         uidUnchanged() &&
         (!('createdAtServer' in request.resource.data) ||
           request.resource.data.createdAtServer == request.time);
-      allow update: if isOwner(userId) &&
+      allow update: if (isOwner(userId) || isTeacher()) &&
         isValidStudent(request.resource.data, userId) &&
         uidNotModified() &&
         areImmutableFieldsUnchanged(['uid', 'createdAtServer']);
