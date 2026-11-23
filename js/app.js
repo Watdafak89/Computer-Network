@@ -60,6 +60,7 @@
     currentUid: null,
     isTeacher: false,
     cloudQuestions: [],
+    lockedUnits: [],
     teacherStudentsList: [],
     teacherStudentFilter: '',
     currentUnitId: 1,
@@ -99,8 +100,10 @@
           document.body.classList.toggle('crt-active', Boolean(this.state.crt));
           try {
             this.cloudQuestions = await FirebaseService.fetchCustomQuestions();
+            this.lockedUnits = await FirebaseService.fetchLockedUnits();
           } catch (e) {
             this.cloudQuestions = [];
+            this.lockedUnits = [];
           }
           this.closeModal('modal-auth');
           this.renderHUD();
@@ -721,14 +724,21 @@
       this.renderDashboard();
     },
 
+    isUnitLocked(unitId) {
+      return Array.isArray(this.lockedUnits) && this.lockedUnits.includes(Number(unitId));
+    },
+
     continueNextUnit() {
       for (let i = 1; i <= GameData.UNITS.length; i++) {
+        if (!this.isTeacher && this.isUnitLocked(i)) continue;
         if (!this.state.unitProgress[i] || !this.state.unitProgress[i].bossCleared) {
           this.openUnit(i);
           return;
         }
       }
-      this.openUnit(1);
+      const firstOpen = GameData.UNITS.find((u) => this.isTeacher || !this.isUnitLocked(u.id));
+      if (firstOpen) this.openUnit(firstOpen.id);
+      else this.toast('🔒 ขณะนี้หน่วยการเรียนรู้ทั้งหมดถูกล็อกโดยครูผู้สอน');
     },
 
     renderDashboard() {
@@ -737,12 +747,14 @@
       grid.innerHTML = GameData.UNITS.map((u) => {
         const prog = this.state.unitProgress[u.id] || { labCleared: false, bossCleared: false, bestScore: 0, stars: 0 };
         const starsStr = '★'.repeat(prog.stars) + '☆'.repeat(3 - prog.stars);
+        const locked = this.isUnitLocked(u.id);
         return `
-          <div class="unit-card ${prog.bossCleared ? 'cleared' : ''}" onclick="App.openUnit(${u.id})">
+          <div class="unit-card ${prog.bossCleared ? 'cleared' : ''} ${locked ? 'locked' : ''}" onclick="App.openUnit(${u.id})">
             <div>
               <div class="unit-card-head">
                 <div>
                   <span class="unit-code" style="color:${u.color};">${u.code}</span>
+                  ${locked ? '<span class="unit-lock-pill">🔒 ล็อกโดยครู</span>' : ''}
                   <h3 style="margin-top:8px; font-size:1.05rem;">${u.title}</h3>
                 </div>
                 <div class="unit-boss-preview">${PixelSprites.render(u.boss.sprite, 52)}</div>
@@ -756,7 +768,10 @@
               </div>
               <div style="display:flex; justify-content:space-between; align-items:center; border-top:2px dashed #334155; padding-top:8px;">
                 <span class="stars-row" style="color:var(--amber);">${starsStr}</span>
-                <span class="px-btn px-btn-cyan px-btn-sm">${prog.bossCleared ? '🔁 เล่นซ้ำ' : '⚔️ เข้าภารกิจ'}</span>
+                ${locked
+                  ? `<span class="px-btn px-btn-sm" style="border-color:var(--crimson); color:#fca5a5;">${this.isTeacher ? '🔒 ล็อก (ครูเข้าดูได้)' : '🔒 ถูกล็อก'}</span>`
+                  : `<span class="px-btn px-btn-cyan px-btn-sm">${prog.bossCleared ? '🔁 เล่นซ้ำ' : '⚔️ เข้าภารกิจ'}</span>`
+                }
               </div>
             </div>
           </div>
@@ -821,6 +836,11 @@
 
     /* ---------------- UNIT STAGE (CODEX / LAB / BOSS) ---------------- */
     openUnit(unitId) {
+      if (!this.isTeacher && this.isUnitLocked(unitId)) {
+        soundFX.playPlayerHurt();
+        this.toast(`🔒 หน่วยการเรียนรู้ที่ ${unitId} ถูกล็อกโดยครูผู้สอนชั่วคราว (รอครูปลดล็อกก่อนเข้าเรียน)`);
+        return;
+      }
       soundFX.playSelect();
       this.currentUnitId = unitId;
       this.stopBattleTimer();
@@ -3529,6 +3549,28 @@
             </div>
           </div>
 
+          <div class="pixel-box pixel-box-cyan" style="padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+              <h4 style="color:var(--cyan); margin:0;">🔒 ล็อก / ปลดล็อกหน่วยการเรียนรู้ (Unit 01 – Unit 10)</h4>
+              ${canManageQuestions ? `
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                  <button class="px-btn px-btn-emerald px-btn-sm" onclick="App.setAllUnitsLockUI(false)">🔓 ปลดล็อกทั้งหมด</button>
+                  <button class="px-btn px-btn-crimson px-btn-sm" onclick="App.setAllUnitsLockUI(true)">🔒 ล็อกทั้งหมด</button>
+                </div>
+              ` : ''}
+            </div>
+            ${!canManageQuestions ? `
+              <div class="teacher-lock-box">
+                🔒 <b>ล็อกสิทธิ์สำหรับครูผู้สอนเท่านั้น</b> — เฉพาะบัญชีครูที่มี Custom Claim <code>teacher: true</code> จึงจะล็อกหรือปลดล็อกหน่วยการเรียนรู้ได้
+              </div>
+            ` : `
+              <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:10px;">
+                กดปุ่มเพื่อเปิด/ปิดการเข้าถึงแต่ละหน่วยสำหรับนักศึกษา (ครูผู้สอนยังคงเข้าดูหน่วยที่ล็อกไว้ได้ตามปกติ)
+              </p>
+              <div id="teacher-unit-locks-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:8px;"></div>
+            `}
+          </div>
+
           <div class="pixel-box pixel-box-gold" style="padding:14px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
               <h4 style="color:var(--amber); margin:0;">👥 จัดการและรีเซ็ตข้อมูล EXP นักเรียนรายบุคคล</h4>
@@ -3622,9 +3664,62 @@
         </div>
       `;
       if (canManageQuestions) {
+        this.renderTeacherUnitLocks();
         this.renderTeacherStudentsTable();
       }
       document.getElementById('modal-teacher').classList.remove('hidden');
+    },
+
+    renderTeacherUnitLocks() {
+      const wrap = document.getElementById('teacher-unit-locks-grid');
+      if (!wrap) return;
+      wrap.innerHTML = GameData.UNITS.map((u) => {
+        const locked = this.isUnitLocked(u.id);
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 10px; background:#0b1224; border:2px solid ${locked ? 'var(--crimson)' : '#1e3a8a'};">
+            <div style="font-size:0.8rem; line-height:1.3;">
+              <b style="color:${locked ? '#fca5a5' : 'var(--cyan)'};">${u.code}</b>: ${u.title}
+              <div style="font-size:0.74rem; color:${locked ? '#f87171' : '#4ade80'};">${locked ? '🔒 ล็อกอยู่ (นักศึกษาเข้าไม่ได้)' : '🔓 เปิดให้เรียนปกติ'}</div>
+            </div>
+            <button class="px-btn ${locked ? 'px-btn-emerald' : 'px-btn-crimson'} px-btn-sm" style="white-space:nowrap;" onclick="App.toggleUnitLockUI(${u.id})">
+              ${locked ? '🔓 ปลดล็อก' : '🔒 ล็อก'}
+            </button>
+          </div>
+        `;
+      }).join('');
+    },
+
+    async toggleUnitLockUI(unitId) {
+      const next = new Set(this.lockedUnits || []);
+      const willLock = !next.has(unitId);
+      if (willLock) next.add(unitId);
+      else next.delete(unitId);
+      const res = await FirebaseService.saveLockedUnits([...next]);
+      if (!res.ok) {
+        soundFX.playPlayerHurt();
+        alert(res.error || 'ไม่สามารถบันทึกสถานะการล็อกหน่วยได้');
+        return;
+      }
+      this.lockedUnits = res.lockedUnits;
+      this.renderTeacherUnitLocks();
+      this.renderDashboard();
+      soundFX.playSelect();
+      this.toast(willLock ? `🔒 ล็อกหน่วยที่ ${unitId} เรียบร้อยแล้ว` : `🔓 ปลดล็อกหน่วยที่ ${unitId} เรียบร้อยแล้ว`);
+    },
+
+    async setAllUnitsLockUI(lockAll) {
+      const target = lockAll ? GameData.UNITS.map((u) => u.id) : [];
+      const res = await FirebaseService.saveLockedUnits(target);
+      if (!res.ok) {
+        soundFX.playPlayerHurt();
+        alert(res.error || 'ไม่สามารถอัปเดตสถานะการล็อกหน่วยได้');
+        return;
+      }
+      this.lockedUnits = res.lockedUnits;
+      this.renderTeacherUnitLocks();
+      this.renderDashboard();
+      soundFX.playPowerUp();
+      this.toast(lockAll ? '🔒 ล็อกหน่วยการเรียนรู้ทั้งหมด 10 หน่วยแล้ว' : '🔓 ปลดล็อกหน่วยการเรียนรู้ทั้งหมด 10 หน่วยแล้ว');
     },
 
     filterTeacherStudents(query) {

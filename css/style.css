@@ -1186,3 +1186,24 @@ body.crt-active::after {
   letter-spacing: 0.4px;
   color: var(--text-muted);
 }
+
+.unit-card.locked {
+  opacity: 0.62;
+  border-color: #475569;
+  filter: grayscale(0.35);
+}
+
+.unit-card.locked:hover {
+  border-color: var(--amber);
+}
+
+.unit-lock-pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid var(--crimson);
+  color: #fca5a5;
+  margin-left: 6px;
+}

@@ -816,6 +816,61 @@
         return { ok: true };
       }
       return { ok: false, error: 'ไม่พบบัญชีนักศึกษา' };
+    },
+
+    async fetchLockedUnits() {
+      const LOCAL_LOCK_KEY = 'netquest_locked_units_v1';
+      const normalize = (arr) => Array.isArray(arr)
+        ? [...new Set(arr.map((n) => Number(n)).filter((n) => Number.isInteger(n) && n >= 1 && n <= 10))].sort((a, b) => a - b)
+        : [];
+      if (this.isCloud()) {
+        try {
+          const doc = await this.db.collection('courseSettings').doc('unitLocks').get();
+          if (doc.exists) {
+            const locked = normalize(doc.data().lockedUnits);
+            try { localStorage.setItem(LOCAL_LOCK_KEY, JSON.stringify(locked)); } catch (e) { /* ignore */ }
+            return locked;
+          }
+          return [];
+        } catch (err) {
+          console.warn('[NetQuest] fetchLockedUnits fallback:', err);
+        }
+      }
+      try {
+        const raw = localStorage.getItem(LOCAL_LOCK_KEY);
+        return raw ? normalize(JSON.parse(raw)) : [];
+      } catch (e) {
+        return [];
+      }
+    },
+
+    async saveLockedUnits(lockedUnits) {
+      const LOCAL_LOCK_KEY = 'netquest_locked_units_v1';
+      const normalized = Array.isArray(lockedUnits)
+        ? [...new Set(lockedUnits.map((n) => Number(n)).filter((n) => Number.isInteger(n) && n >= 1 && n <= 10))].sort((a, b) => a - b)
+        : [];
+      if (this.isCloud()) {
+        const user = this.auth && this.auth.currentUser;
+        if (!user) {
+          return { ok: false, error: 'กรุณาเข้าสู่ระบบด้วยบัญชีครูผู้สอนก่อน' };
+        }
+        try {
+          const tokenRes = await user.getIdTokenResult();
+          if (!tokenRes || !tokenRes.claims || tokenRes.claims.teacher !== true) {
+            return { ok: false, error: 'เฉพาะบัญชีครูผู้สอนที่มีสิทธิ์ teacher: true เท่านั้นที่ล็อก/ปลดล็อกหน่วยได้' };
+          }
+          await this.db.collection('courseSettings').doc('unitLocks').set({
+            lockedUnits: normalized,
+            updatedAtServer: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          try { localStorage.setItem(LOCAL_LOCK_KEY, JSON.stringify(normalized)); } catch (e) { /* ignore */ }
+          return { ok: true, lockedUnits: normalized };
+        } catch (err) {
+          return { ok: false, error: translateFirebaseError(err) };
+        }
+      }
+      try { localStorage.setItem(LOCAL_LOCK_KEY, JSON.stringify(normalized)); } catch (e) { /* ignore */ }
+      return { ok: true, lockedUnits: normalized };
     }
   };
 

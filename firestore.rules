@@ -8,14 +8,16 @@ service cloud.firestore {
     //
     // Roles:
     //   - Student (default): authenticated user (request.auth != null) without
-    //     teacher claim; can read students/customQuestions and create/update
-    //     only their own students/{request.auth.uid} document.
+    //     teacher claim; can read students, customQuestions, and
+    //     courseSettings/unitLocks, and create/update only their own
+    //     students/{request.auth.uid} document.
     //   - Teacher: authenticated user with Firebase Auth Custom Claim
     //     `teacher: true` (checked via isTeacher() using
     //     request.auth.token.teacher == true); can update (e.g., reset
     //     EXP/progress) and delete (e.g., removing test accounts)
     //     students/{userId} while all schema & immutability checks remain
-    //     enforced, and can create/update/delete customQuestions/{docId}.
+    //     enforced, can create/update/delete customQuestions/{docId}, and can
+    //     create/update/delete courseSettings/unitLocks to lock/unlock units.
     //
     // This security rules file assumes the following data structures:
     //
@@ -48,6 +50,13 @@ service cloud.firestore {
     //   - exp: string (required, 0..500 chars) - explanation text
     //   - createdAtServer: timestamp (required, immutable on update; must equal
     //     request.time on create)
+    //
+    // Collection: courseSettings
+    // Document ID: unitLocks (singleton settings document)
+    // Fields:
+    //   - lockedUnits: list of int (required, max 10 items, values in 1..10) -
+    //     learning unit IDs currently locked by the teacher
+    //   - updatedAtServer: timestamp (required, must equal request.time)
     //
     // ===============================================================
 
@@ -202,6 +211,16 @@ service cloud.firestore {
         data.createdAtServer is timestamp;
     }
 
+    function isValidUnitLocks(data) {
+      return hasRequiredFields(['lockedUnits', 'updatedAtServer']) &&
+        hasOnlyAllowedFields(['lockedUnits', 'updatedAtServer']) &&
+        data.lockedUnits is list &&
+        data.lockedUnits.size() <= 10 &&
+        data.lockedUnits.hasOnly([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) &&
+        data.updatedAtServer is timestamp &&
+        data.updatedAtServer == request.time;
+    }
+
     // ===============================================================
     // Collection Rules
     // ===============================================================
@@ -235,6 +254,13 @@ service cloud.firestore {
       allow update: if isTeacher() &&
         isValidCustomQuestion(request.resource.data) &&
         areImmutableFieldsUnchanged(['createdAtServer']);
+      allow delete: if isTeacher();
+    }
+
+    // Course-wide unit lock settings managed by teachers (`teacher: true`) and read by authenticated users
+    match /courseSettings/unitLocks {
+      allow read: if isAuthenticated();
+      allow create, update: if isTeacher() && isValidUnitLocks(request.resource.data);
       allow delete: if isTeacher();
     }
   }
