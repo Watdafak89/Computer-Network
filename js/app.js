@@ -3862,10 +3862,7 @@
                 <input id="teacher-skill-search" class="px-input" value="${this.teacherSkillSearch || ''}" placeholder="🔍 ค้นหา รหัส / ชื่อ / ห้อง..." oninput="App.filterTeacherSkills()" />
                 <select id="teacher-skill-unit" class="px-select" onchange="App.filterTeacherSkills()">
                   <option value="all" ${this.teacherSkillFilterUnit === 'all' ? 'selected' : ''}>ทุกบทเรียน</option>
-                  <option value="1" ${this.teacherSkillFilterUnit === '1' ? 'selected' : ''}>บทที่ 1</option>
-                  <option value="2" ${this.teacherSkillFilterUnit === '2' ? 'selected' : ''}>บทที่ 2</option>
-                  <option value="3" ${this.teacherSkillFilterUnit === '3' ? 'selected' : ''}>บทที่ 3</option>
-                  <option value="4" ${this.teacherSkillFilterUnit === '4' ? 'selected' : ''}>บทที่ 4</option>
+                  ${GameData.UNITS.map((u) => `<option value="${u.id}" ${String(this.teacherSkillFilterUnit) === String(u.id) ? 'selected' : ''}>บทที่ ${u.id}</option>`).join('')}
                 </select>
                 <select id="teacher-skill-status" class="px-select" onchange="App.filterTeacherSkills()">
                   <option value="all" ${this.teacherSkillFilterStatus === 'all' ? 'selected' : ''}>ทุกสถานะ</option>

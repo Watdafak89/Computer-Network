@@ -1646,6 +1646,383 @@
           ]
         }
       ]
+    },
+    5: {
+      title: 'แบบฝึกทักษะบทเรียนที่ 5: เครือข่าย LAN แบบไร้สาย',
+      instruction: 'คำชี้แจง: ให้นักเรียนตอบคำถามต่อไปนี้ให้ครบถ้วน (รองรับระบบส่งงาน Cloud, Auto-Check และพิมพ์ PDF)',
+      writtenSections: [
+        {
+          no: 1,
+          prompt: 'จงบอกข้อดีของเครือข่ายแบบไร้สาย',
+          items: [
+            { id: 'u5_q1_1', label: '1)', keywords: ['สะดวก', 'เคลื่อนย้าย', 'พกพา', 'ไม่จำกัด', 'อิสระ'], placeholder: 'เช่น เคลื่อนย้ายอุปกรณ์ได้สะดวกไม่ต้องต่อสาย...', model: 'สะดวกในการใช้งานและเคลื่อนย้ายอุปกรณ์ได้อิสระโดยไม่ต้องต่อสายสัญญาณ' },
+            { id: 'u5_q1_2', label: '2)', keywords: ['ติดตั้ง', 'ง่าย', 'รวดเร็ว', 'ขยาย', 'สาย'], placeholder: 'เช่น ติดตั้งง่ายและขยายเครือข่ายได้รวดเร็ว...', model: 'ติดตั้งง่าย รวดเร็ว ไม่ต้องเดินสายสัญญาณให้ยุ่งยาก และขยายเครือข่ายได้ง่าย' },
+            { id: 'u5_q1_3', label: '3)', keywords: ['พื้นที่', 'ประหยัด', 'หลายเครื่อง', 'รองรับ', 'ต้นทุน'], placeholder: 'เช่น รองรับอุปกรณ์พกพาหลากหลายและลดค่าเดินสาย...', model: 'รองรับอุปกรณ์พกพาหลายชนิด (สมาร์ตโฟน/โน้ตบุ๊ก/แท็บเล็ต) และลดต้นทุนการเดินสาย' }
+          ]
+        },
+        {
+          no: 2,
+          prompt: 'มาตรฐานเครือข่ายไร้สายต่อไปนี้ ส่งข้อมูลที่ความเร็วสูงสุดเท่าใด และเทียบกับ Wi-Fi ใดบ้าง',
+          items: [
+            { id: 'u5_q2_1', label: '1) IEEE 802.11n (ความเร็วสูงสุด / เทียบได้กับ Wi-Fi):', keywords: ['600', '4', 'wi-fi 4', 'wifi 4'], placeholder: 'เช่น 600 Mbps / Wi-Fi 4', model: 'ส่งข้อมูลความเร็วสูงสุด 600 Mbps เทียบได้กับ Wi-Fi 4' },
+            { id: 'u5_q2_2', label: '2) IEEE 802.11ac (ความเร็วสูงสุด / เทียบได้กับ Wi-Fi):', keywords: ['6.9', '6933', '1.3', '3.5', '5', 'wi-fi 5', 'wifi 5'], placeholder: 'เช่น 6.9 Gbps (หรือ 1.3–6.9 Gbps) / Wi-Fi 5', model: 'ส่งข้อมูลความเร็วสูงสุดประมาณ 6.9 Gbps เทียบได้กับ Wi-Fi 5' },
+            { id: 'u5_q2_3', label: '3) IEEE 802.11ax (ความเร็วสูงสุด / เทียบได้กับ Wi-Fi):', keywords: ['9.6', '6', 'wi-fi 6', 'wifi 6'], placeholder: 'เช่น 9.6 Gbps / Wi-Fi 6', model: 'ส่งข้อมูลความเร็วสูงสุด 9.6 Gbps เทียบได้กับ Wi-Fi 6' }
+          ]
+        },
+        {
+          no: 3,
+          prompt: 'จงบอกลักษณะและความแตกต่างของเทคนิคการส่งข้อมูลไร้สายต่อไปนี้',
+          items: [
+            { id: 'u5_q3_1', label: '1) SU-MIMO:', keywords: ['ทีละ', 'เครื่องเดียว', 'single', '1', 'หนึ่ง'], placeholder: 'อธิบายการทำงานของ SU-MIMO...', model: 'Single-User MIMO ส่งข้อมูลด้วยหลายเสาอากาศให้ลูกข่ายได้ทีละ 1 เครื่องต่อครั้ง' },
+            { id: 'u5_q3_2', label: '2) MU-MIMO:', keywords: ['หลาย', 'พร้อมกัน', 'multi', 'มากกว่า'], placeholder: 'อธิบายการทำงานของ MU-MIMO...', model: 'Multi-User MIMO ส่งข้อมูลให้ลูกข่ายหลายเครื่องพร้อมกันในเวลาเดียวกัน ลดความหน่วง' }
+          ]
+        },
+        {
+          no: 4,
+          prompt: 'จงบอกหน้าที่ของอุปกรณ์เครือข่ายไร้สายต่อไปนี้',
+          items: [
+            { id: 'u5_q4_1', label: '1) Access Point ทำหน้าที่:', keywords: ['กระจาย', 'เชื่อม', 'lan', 'สัญญาณ', 'จุด'], placeholder: 'อธิบายหน้าที่ของ Access Point...', model: 'เป็นจุดกระจายสัญญาณไร้สายเพื่อเชื่อมต่ออุปกรณ์ไร้สายเข้ากับเครือข่าย LAN แบบใช้สาย' },
+            { id: 'u5_q4_2', label: '2) Range Extender ทำหน้าที่:', keywords: ['ขยาย', 'ทวน', 'ไกล', 'พื้นที่', 'สัญญาณ'], placeholder: 'อธิบายหน้าที่ของ Range Extender...', model: 'รับสัญญาณ Wi-Fi เดิมแล้วขยาย/ทวนสัญญาณให้ครอบคลุมพื้นที่ใช้งานได้ไกลขึ้น' },
+            { id: 'u5_q4_3', label: '3) Wireless Bridge ทำหน้าที่:', keywords: ['เชื่อม', 'วง', 'อาคาร', '2', 'สอง', 'สะพาน'], placeholder: 'อธิบายหน้าที่ของ Wireless Bridge...', model: 'เชื่อมต่อเครือข่าย LAN สองวงหรือสองอาคารเข้าด้วยกันแบบไร้สายโดยไม่ต้องเดินสาย' }
+          ]
+        },
+        {
+          no: 5,
+          prompt: 'จงบอกรูปแบบการเชื่อมต่อระบบเครือข่ายไร้สายว่ามีแบบใดบ้าง',
+          items: [
+            { id: 'u5_q5_1', label: '1)', keywords: ['ad-hoc', 'adhoc', 'peer', 'ibss', 'ตรง'], placeholder: 'เช่น Ad-Hoc Mode (Peer-to-Peer)...', model: 'แบบ Ad-Hoc (IBSS / Peer-to-Peer) เชื่อมต่อตรงระหว่างอุปกรณ์โดยไม่ผ่าน AP' },
+            { id: 'u5_q5_2', label: '2)', keywords: ['infrastructure', 'bss', 'ap', 'access point'], placeholder: 'เช่น Infrastructure Mode (ผ่าน AP)...', model: 'แบบ Infrastructure (BSS) เชื่อมต่อลูกข่ายผ่าน Access Point เป็นศูนย์กลาง' },
+            { id: 'u5_q5_3', label: '3)', keywords: ['ess', 'bridge', 'mesh', 'point', 'หลาย'], placeholder: 'เช่น ESS (หลาย AP) / Point-to-Point / Mesh...', model: 'แบบ Extended Service Set (ESS) ใช้ AP หลายตัวเชื่อมกัน หรือแบบ Point-to-Point / Mesh' }
+          ]
+        },
+        {
+          no: 6,
+          prompt: 'จงบอกวิธีการรักษาความปลอดภัยของเครือข่ายไร้สายว่ามีวิธีใดบ้าง',
+          items: [
+            { id: 'u5_q6_1', label: '1)', keywords: ['wpa', 'wpa2', 'wpa3', 'เข้ารหัส', 'รหัสผ่าน'], placeholder: 'เช่น เปิดการเข้ารหัส WPA2-AES / WPA3...', model: 'กำหนดการเข้ารหัสความปลอดภัยด้วย WPA2-PSK (AES) หรือ WPA3 และตั้งรหัสผ่านให้คาดเดายาก' },
+            { id: 'u5_q6_2', label: '2)', keywords: ['mac', 'filter', 'กรอง'], placeholder: 'เช่น เปิดใช้งาน MAC Address Filtering...', model: 'กำหนดสิทธิ์การเชื่อมต่อด้วย MAC Address Filtering' },
+            { id: 'u5_q6_3', label: '3)', keywords: ['ssid', 'ซ่อน', 'admin', 'wps', 'firmware', 'guest'], placeholder: 'เช่น ซ่อน SSID / เปลี่ยนรหัส Admin / ปิด WPS...', model: 'ซ่อนชื่อ SSID, เปลี่ยนรหัสผ่านผู้ดูแล Router, ปิด WPS และอัปเดต Firmware สม่ำเสมอ' }
+          ]
+        }
+      ],
+      connectorPart: null
+    },
+    6: {
+      title: 'แบบฝึกทักษะบทเรียนที่ 6: การใช้งานเครือข่ายในระบบปฏิบัติการวินโดวส์',
+      instruction: 'คำชี้แจง: ให้นักเรียนอธิบายขั้นตอนการตั้งค่าเครือข่ายใน Windows 10/11 โดยสังเขปทั้ง 5 ข้อ',
+      writtenSections: [
+        {
+          no: 1,
+          prompt: 'จงบอกขั้นตอนการตรวจสอบชื่อและเปลี่ยนชื่อเครื่องคอมพิวเตอร์โดยสังเขป',
+          items: [
+            { id: 'u6_q1_1', label: '1)', keywords: ['this pc', 'settings', 'system', 'sysdm', 'คลิกขวา', 'properties'], placeholder: 'ขั้นที่ 1 เช่น คลิกขวา This PC → Properties หรือ Settings → System...', model: 'เปิด Settings → System → About (หรือคลิกขวา This PC → Properties / รัน sysdm.cpl)' },
+            { id: 'u6_q1_2', label: '2)', keywords: ['rename', 'change', 'computer name', 'เปลี่ยน'], placeholder: 'ขั้นที่ 2 เช่น กดปุ่ม Rename this PC หรือ Change...', model: 'คลิกปุ่ม Rename this PC (หรือแท็บ Computer Name → Change)' },
+            { id: 'u6_q1_3', label: '3)', keywords: ['พิมพ์', 'ชื่อ', 'กรอก', 'ใหม่', 'ok', 'next'], placeholder: 'ขั้นที่ 3 เช่น พิมพ์ชื่อเครื่องใหม่ที่ไม่ซ้ำในวง LAN...', model: 'พิมพ์ชื่อเครื่องคอมพิวเตอร์ใหม่ที่ไม่ซ้ำกับเครื่องอื่น แล้วคลิก Next / OK' },
+            { id: 'u6_q1_4', label: '4)', keywords: ['restart', 'รีสตาร์ต', 'เริ่มใหม่'], placeholder: 'ขั้นที่ 4 เช่น รีสตาร์ตเครื่องเพื่อให้มีผล...', model: 'รีสตาร์ตเครื่องคอมพิวเตอร์ (Restart now) เพื่อให้การเปลี่ยนชื่อมีผล' }
+          ]
+        },
+        {
+          no: 2,
+          prompt: 'จงบอกขั้นตอนการตรวจสอบและเปลี่ยนชื่อเครือข่าย (Workgroup) โดยสังเขป',
+          items: [
+            { id: 'u6_q2_1', label: '1)', keywords: ['this pc', 'properties', 'sysdm', 'advanced', 'system'], placeholder: 'ขั้นที่ 1 เช่น เปิด System Properties (sysdm.cpl)...', model: 'เปิดหน้าต่าง System Properties (รัน sysdm.cpl หรือ Advanced system settings)' },
+            { id: 'u6_q2_2', label: '2)', keywords: ['computer name', 'change', 'แท็บ'], placeholder: 'ขั้นที่ 2 เช่น เลือกแท็บ Computer Name แล้วคลิก Change...', model: 'เลือกแท็บ Computer Name แล้วคลิกปุ่ม Change' },
+            { id: 'u6_q2_3', label: '3)', keywords: ['workgroup', 'ชื่อ', 'พิมพ์', 'กรอก'], placeholder: 'ขั้นที่ 3 เช่น พิมพ์ชื่อ Workgroup ใหม่ให้ตรงกับทุกเครื่อง...', model: 'ในช่อง Member of เลือก Workgroup แล้วพิมพ์ชื่อกลุ่มเครือข่ายที่ต้องการ จากนั้นกด OK' },
+            { id: 'u6_q2_4', label: '4)', keywords: ['restart', 'รีสตาร์ต', 'เริ่มใหม่'], placeholder: 'ขั้นที่ 4 เช่น รีสตาร์ตเครื่อง...', model: 'รีสตาร์ตเครื่องคอมพิวเตอร์เพื่อให้เข้าสู่ Workgroup ใหม่สมบูรณ์' }
+          ]
+        },
+        {
+          no: 3,
+          prompt: 'จงบอกขั้นตอนการเปลี่ยนหมายเลขไอพีของเครื่องโดยสังเขป',
+          items: [
+            { id: 'u6_q3_1', label: '1)', keywords: ['control panel', 'network', 'ncpa', 'adapter', 'settings'], placeholder: 'ขั้นที่ 1 เช่น เปิด Network Connections (ncpa.cpl)...', model: 'เปิด Control Panel → Network and Sharing Center → Change adapter settings (หรือรัน ncpa.cpl)' },
+            { id: 'u6_q3_2', label: '2)', keywords: ['ethernet', 'wi-fi', 'คลิกขวา', 'properties'], placeholder: 'ขั้นที่ 2 เช่น คลิกขวา Ethernet/Wi-Fi → Properties...', model: 'คลิกขวาที่การ์ดเครือข่าย (Ethernet หรือ Wi-Fi) แล้วเลือก Properties' },
+            { id: 'u6_q3_3', label: '3)', keywords: ['ipv4', 'tcp/ip', 'internet protocol'], placeholder: 'ขั้นที่ 3 เช่น ดับเบิลคลิก Internet Protocol Version 4 (TCP/IPv4)...', model: 'เลือก Internet Protocol Version 4 (TCP/IPv4) แล้วคลิก Properties' },
+            { id: 'u6_q3_4', label: '4)', keywords: ['ip', 'subnet', 'gateway', 'dns', 'ok', 'static'], placeholder: 'ขั้นที่ 4 เช่น กรอก IP, Subnet Mask, Gateway, DNS แล้วกด OK...', model: 'เลือก Use the following IP address กรอก IP Address, Subnet Mask, Default Gateway และ DNS แล้วกด OK' }
+          ]
+        },
+        {
+          no: 4,
+          prompt: 'จงบอกขั้นตอนการแชร์โฟลเดอร์ในวินโดวส์ 10 โดยสังเขป',
+          items: [
+            { id: 'u6_q4_1', label: '1)', keywords: ['คลิกขวา', 'โฟลเดอร์', 'properties', 'sharing'], placeholder: 'ขั้นที่ 1 เช่น คลิกขวาโฟลเดอร์ที่ต้องการ → Properties...', model: 'คลิกขวาโฟลเดอร์ที่ต้องการแชร์ → เลือก Properties → ไปที่แท็บ Sharing' },
+            { id: 'u6_q4_2', label: '2)', keywords: ['advanced sharing', 'share', 'ติ๊ก'], placeholder: 'ขั้นที่ 2 เช่น คลิก Advanced Sharing แล้วติ๊ก Share this folder...', model: 'คลิก Advanced Sharing แล้วติ๊กเลือก Share this folder พร้อมตั้งชื่อแชร์' },
+            { id: 'u6_q4_3', label: '3)', keywords: ['permissions', 'สิทธิ์', 'everyone', 'read', 'change', 'full'], placeholder: 'ขั้นที่ 3 เช่น คลิก Permissions กำหนดสิทธิ์ Read/Change/Full Control...', model: 'คลิก Permissions เพื่อกำหนดสิทธิ์ผู้ใช้ (เช่น Everyone = Read หรือ Change) แล้วกด Apply / OK' },
+            { id: 'u6_q4_4', label: '4)', keywords: ['discovery', '\\\\', 'ทดสอบ', 'unc', 'security', 'ok'], placeholder: 'ขั้นที่ 4 เช่น เปิด Network Discovery และทดสอบเข้าผ่าน \\\\IP...', model: 'ตรวจสอบให้เปิด Network Discovery & File Sharing แล้วทดสอบเข้าถึงจากเครื่องอื่นผ่าน \\\\ชื่อเครื่อง\\ชื่อแชร์' }
+          ]
+        },
+        {
+          no: 5,
+          prompt: 'จงบอกขั้นตอนการแชร์เครื่องพิมพ์ในวินโดวส์ 10 โดยสังเขป',
+          items: [
+            { id: 'u6_q5_1', label: '1)', keywords: ['control panel', 'devices', 'printers', 'settings', 'เครื่องพิมพ์'], placeholder: 'ขั้นที่ 1 เช่น เปิด Control Panel → Devices and Printers...', model: 'เปิด Control Panel → Devices and Printers (หรือ Settings → Printers & scanners)' },
+            { id: 'u6_q5_2', label: '2)', keywords: ['คลิกขวา', 'printer properties', 'manage', 'properties'], placeholder: 'ขั้นที่ 2 เช่น คลิกขวาเครื่องพิมพ์ → Printer properties...', model: 'คลิกขวาที่เครื่องพิมพ์ที่ต้องการแชร์ แล้วเลือก Printer properties' },
+            { id: 'u6_q5_3', label: '3)', keywords: ['sharing', 'share this printer', 'ติ๊ก', 'ชื่อ'], placeholder: 'ขั้นที่ 3 เช่น ไปที่แท็บ Sharing ติ๊ก Share this printer...', model: 'เลือกแท็บ Sharing ติ๊กเลือก Share this printer และกำหนดชื่อแชร์เครื่องพิมพ์ แล้วกด OK' },
+            { id: 'u6_q5_4', label: '4)', keywords: ['connect', 'เชื่อมต่อ', 'add', '\\\\', 'ทดสอบ', 'พิมพ์'], placeholder: 'ขั้นที่ 4 เช่น เครื่องอื่นเชื่อมต่อเครื่องพิมพ์ที่แชร์และทดสอบพิมพ์...', model: 'เครื่องลูกข่ายในวง LAN เข้าไปเชื่อมต่อเครื่องพิมพ์ผ่าน Network หรือ \\\\ชื่อเครื่อง แล้วทดสอบสั่งพิมพ์' }
+          ]
+        }
+      ],
+      connectorPart: null
+    },
+    7: {
+      title: 'แบบฝึกทักษะบทเรียนที่ 7: ระบบปฏิบัติการเครือข่าย',
+      instruction: 'คำชี้แจง: ให้นักเรียนตอบคำถามเกี่ยวกับระบบปฏิบัติการเครือข่าย (NOS) และเครื่องจำลอง (VM) ให้ครบทั้ง 5 ข้อ',
+      writtenSections: [
+        {
+          no: 1,
+          prompt: 'จงบอกชื่อบริการที่มีในระบบปฏิบัติการเครือข่าย (5 บริการ)',
+          items: [
+            { id: 'u7_q1_1', label: '1)', keywords: ['file', 'ไฟล์', 'print', 'พิมพ์', 'dhcp', 'dns', 'web', 'mail', 'ad', 'active directory', 'ftp'], placeholder: 'เช่น File & Print Server...', model: 'บริการแชร์ไฟล์และเครื่องพิมพ์ (File & Print Services)' },
+            { id: 'u7_q1_2', label: '2)', keywords: ['dhcp', 'dns', 'web', 'mail', 'ad', 'active directory', 'file', 'ftp', 'vpn'], placeholder: 'เช่น DHCP Server (แจก IP อัตโนมัติ)...', model: 'บริการแจกหมายเลข IP อัตโนมัติ (DHCP Service)' },
+            { id: 'u7_q1_3', label: '3)', keywords: ['dns', 'dhcp', 'web', 'mail', 'ad', 'active directory', 'file', 'ftp', 'vpn'], placeholder: 'เช่น DNS Server (แปลงชื่อโดเมน)...', model: 'บริการแปลงชื่อโดเมนเป็น IP (DNS Service)' },
+            { id: 'u7_q1_4', label: '4)', keywords: ['web', 'http', 'iis', 'apache', 'mail', 'ad', 'active directory', 'file', 'dhcp', 'dns'], placeholder: 'เช่น Web Server (IIS/Apache)...', model: 'บริการเว็บเซิร์ฟเวอร์ (Web Service / HTTP-HTTPS)' },
+            { id: 'u7_q1_5', label: '5)', keywords: ['ad', 'active directory', 'user', 'บัญชี', 'mail', 'ftp', 'backup', 'vpn', 'security'], placeholder: 'เช่น Active Directory (จัดการบัญชีผู้ใช้)...', model: 'บริการจัดการบัญชีผู้ใช้และสิทธิ์แบบรวมศูนย์ (Active Directory / Directory Service)' }
+          ]
+        },
+        {
+          no: 2,
+          prompt: 'จงบอกชื่อระบบปฏิบัติการเครือข่าย (5 ชื่อ)',
+          items: [
+            { id: 'u7_q2_1', label: '1)', keywords: ['windows server', 'windows', 'linux', 'ubuntu', 'unix', 'netware', 'freebsd', 'macos'], placeholder: 'เช่น Windows Server...', model: 'Windows Server (เช่น 2019 / 2022)' },
+            { id: 'u7_q2_2', label: '2)', keywords: ['linux', 'ubuntu', 'debian', 'centos', 'red hat', 'unix', 'freebsd', 'netware'], placeholder: 'เช่น Linux Server (Ubuntu / Debian)...', model: 'Linux Server (Ubuntu Server / Red Hat)' },
+            { id: 'u7_q2_3', label: '3)', keywords: ['unix', 'freebsd', 'solaris', 'netware', 'novell', 'macos', 'linux', 'centos'], placeholder: 'เช่น UNIX / FreeBSD...', model: 'UNIX / FreeBSD' },
+            { id: 'u7_q2_4', label: '4)', keywords: ['netware', 'novell', 'macos', 'freebsd', 'solaris', 'ubuntu', 'debian', 'rocky'], placeholder: 'เช่น Novell NetWare...', model: 'Novell NetWare' },
+            { id: 'u7_q2_5', label: '5)', keywords: ['macos', 'solaris', 'freebsd', 'debian', 'centos', 'red hat', 'fedora', 'suse'], placeholder: 'เช่น macOS Server / Solaris...', model: 'macOS Server / Oracle Solaris' }
+          ]
+        },
+        {
+          no: 3,
+          prompt: 'จงบอกชื่อระบบปฏิบัติการ Linux ที่นิยมใช้เป็นระบบปฏิบัติการเครือข่าย (3 ชื่อ)',
+          items: [
+            { id: 'u7_q3_1', label: '1)', keywords: ['ubuntu', 'debian', 'red hat', 'rhel', 'centos', 'rocky', 'fedora', 'suse', 'alma'], placeholder: 'เช่น Ubuntu Server...', model: 'Ubuntu Server' },
+            { id: 'u7_q3_2', label: '2)', keywords: ['ubuntu', 'debian', 'red hat', 'rhel', 'centos', 'rocky', 'fedora', 'suse', 'alma'], placeholder: 'เช่น Debian / CentOS / Rocky Linux...', model: 'Debian (หรือ CentOS / Rocky Linux)' },
+            { id: 'u7_q3_3', label: '3)', keywords: ['ubuntu', 'debian', 'red hat', 'rhel', 'centos', 'rocky', 'fedora', 'suse', 'alma'], placeholder: 'เช่น Red Hat Enterprise Linux (RHEL) / SUSE...', model: 'Red Hat Enterprise Linux (RHEL) หรือ openSUSE' }
+          ]
+        },
+        {
+          no: 4,
+          prompt: 'จงบอกชื่อซอฟต์แวร์จำลองเครื่องคอมพิวเตอร์ (Virtual Machine) ที่นิยมใช้งาน (2 ชื่อ)',
+          items: [
+            { id: 'u7_q4_1', label: '1)', keywords: ['virtualbox', 'vmware', 'hyper-v', 'proxmox', 'kvm', 'qemu', 'parallels'], placeholder: 'เช่น Oracle VirtualBox...', model: 'Oracle VM VirtualBox' },
+            { id: 'u7_q4_2', label: '2)', keywords: ['vmware', 'virtualbox', 'hyper-v', 'proxmox', 'kvm', 'qemu', 'parallels'], placeholder: 'เช่น VMware Workstation / Microsoft Hyper-V...', model: 'VMware Workstation (หรือ Microsoft Hyper-V)' }
+          ]
+        },
+        {
+          no: 5,
+          prompt: 'จงบอกขั้นตอนในการติดตั้งระบบปฏิบัติการบนเครื่องจำลอง VirtualBox (3 ขั้นตอนหลัก)',
+          items: [
+            { id: 'u7_q5_1', label: '1)', keywords: ['สร้าง', 'new', 'vm', 'ram', 'disk', 'hard', 'จัดสรร'], placeholder: 'ขั้นที่ 1 เช่น กด New สร้าง VM และจัดสรร RAM / Virtual Hard Disk...', model: 'คลิก New เพื่อสร้างเครื่องจำลอง (VM) ตั้งชื่อ เลือกชนิด OS และจัดสรร RAM / Virtual Hard Disk' },
+            { id: 'u7_q5_2', label: '2)', keywords: ['iso', 'mount', 'storage', 'network', 'bridged', 'ตั้งค่า'], placeholder: 'ขั้นที่ 2 เช่น ใส่ไฟล์ .ISO ใน Storage และตั้งค่า Virtual Network...', model: 'เข้าไปที่ Settings → Storage เพื่อ Mount ไฟล์ติดตั้ง .ISO และตั้งโหมด Network (NAT/Bridged)' },
+            { id: 'u7_q5_3', label: '3)', keywords: ['start', 'boot', 'ติดตั้ง', 'install', 'เปิด'], placeholder: 'ขั้นที่ 3 เช่น กด Start บูตจาก .ISO แล้วดำเนินการติดตั้ง OS จนเสร็จ...', model: 'กดปุ่ม Start เพื่อบูตเครื่องจำลองจากไฟล์ .ISO และดำเนินการติดตั้งระบบปฏิบัติการตามขั้นตอนจนเสร็จ' }
+          ]
+        }
+      ],
+      connectorPart: null
+    },
+    8: {
+      title: 'แบบฝึกทักษะบทเรียนที่ 8: การออกแบบ ติดตั้ง ตรวจสอบ และแก้ปัญหาเครือข่าย',
+      instruction: 'คำชี้แจง: ให้นักเรียนตอบคำถามครบทั้ง 7 ข้อ (รวมซอฟต์แวร์ช่วยงาน Utility ในข้อ 7)',
+      writtenSections: [
+        {
+          no: 1,
+          prompt: 'จงบอกรายละเอียดการแบ่งชั้นเครือข่ายเป็น 3 ชั้น ตามแนวทางการออกแบบของ Cisco',
+          items: [
+            { id: 'u8_q1_1', label: '1) ชั้นแกนหลัก (Core Layer) คือ', keywords: ['เร็ว', 'แกน', 'หลัก', 'ส่งผ่าน', 'backbone', 'ความเร็วสูง'], placeholder: 'อธิบายหน้าที่ของ Core Layer...', model: 'ชั้นแกนหลักความเร็วสูง ทำหน้าที่ส่งผ่านข้อมูลระหว่างพื้นที่ต่าง ๆ อย่างรวดเร็วและเสถียรสูงสุด' },
+            { id: 'u8_q1_2', label: '2) ชั้นกระจายสัญญาณ (Distribution Layer) คือ', keywords: ['กระจาย', 'เชื่อม', 'นโยบาย', 'routing', 'vlan', 'กรอง', 'ควบคุม'], placeholder: 'อธิบายหน้าที่ของ Distribution Layer...', model: 'ชั้นกลางเชื่อมระหว่าง Core กับ Access ทำหน้าที่จัดเส้นทาง (Routing), แบ่ง VLAN และควบคุมสิทธิ์/นโยบาย' },
+            { id: 'u8_q1_3', label: '3) ชั้นการเชื่อมต่อ (Access Layer) คือ', keywords: ['ผู้ใช้', 'ปลายทาง', 'เครื่อง', 'switch', 'ap', 'เชื่อมต่อ'], placeholder: 'อธิบายหน้าที่ของ Access Layer...', model: 'ชั้นล่างสุดที่เชื่อมต่ออุปกรณ์ของผู้ใช้ปลายทาง (PC, Printer, Access Point) เข้าสู่เครือข่าย' }
+          ]
+        },
+        {
+          no: 2,
+          prompt: 'จงบอกชื่อเครื่องมือที่ใช้ในการเขียนแผนผังเครือข่าย',
+          items: [
+            { id: 'u8_q2', label: 'คำตอบ:', keywords: ['visio', 'draw.io', 'packet tracer', 'lucidchart', 'dia', 'smartdraw', 'canva'], placeholder: 'เช่น Microsoft Visio, Cisco Packet Tracer, draw.io, Lucidchart...', model: 'Microsoft Visio, Cisco Packet Tracer, diagrams.net (draw.io), SmartDraw, Lucidchart' }
+          ]
+        },
+        {
+          no: 3,
+          prompt: 'จงตอบคำถามเกี่ยวกับการเดินสายและติดตั้งต่อไปนี้',
+          items: [
+            { id: 'u8_q3_1', label: '1) อุปกรณ์ตู้ Rack แบ่งตามลักษณะการติดตั้งได้เป็น', keywords: ['ตั้งพื้น', 'ติดผนัง', 'open', 'wall', 'close', 'floor'], placeholder: 'เช่น ตู้แบบตั้งพื้น (Close/Floor Rack), ตู้ติดผนัง (Wall Rack), แบบเปิด (Open Rack)...', model: 'แบบตั้งพื้น (Floor/Close Rack), แบบติดผนัง (Wall Rack) และแบบโครงเปิด (Open Rack)' },
+            { id: 'u8_q3_2', label: '2) อุปกรณ์ตู้ Rack แบ่งตามขนาดและการใส่อุปกรณ์ได้เป็น', keywords: ['u', 'นิ้ว', '19', '6u', '9u', '15u', '27u', '42u', 'ความสูง', 'ความลึก'], placeholder: 'เช่น ขนาดมาตรฐานหน้ากว้าง 19 นิ้ว แบ่งความสูงเป็นหน่วย U (6U, 9U, 15U, 27U, 42U)...', model: 'มาตรฐานกว้าง 19 นิ้ว แบ่งตามความสูงเป็นหน่วย U (เช่น 6U, 9U, 15U, 27U, 42U) และความลึก (60/80/100 ซม.)' },
+            { id: 'u8_q3_3', label: '3) การเดินสาย LAN สามารถใช้วิธี', keywords: ['ราง', 'ท่อ', 'ฝ้า', 'พื้น', 'ลอย', 'ฝัง'], placeholder: 'เช่น เดินในรางสายไฟ/ท่อร้อยสาย, เดินบนฝ้าเพดาน, เดินใต้พื้นยก...', model: 'เดินในรางเก็บสาย (Wireway), เดินในท่อร้อยสาย (PVC/EMT), เดินบนฝ้าเพดาน หรือเดินใต้พื้นยก (Raised Floor)' }
+          ]
+        },
+        {
+          no: 4,
+          prompt: 'จงบอกชื่อคำสั่งในการดำเนินการต่อไปนี้',
+          items: [
+            { id: 'u8_q4_1', label: '1) ตรวจสอบการเชื่อมต่อ ใช้คำสั่ง', keywords: ['ping'], placeholder: 'เช่น ping', model: 'ping' },
+            { id: 'u8_q4_2', label: '2) ค้นหาจุดบกพร่องและแสดงสถิติการทำงานของเครือข่าย ใช้คำสั่ง', keywords: ['netstat', 'pathping'], placeholder: 'เช่น netstat', model: 'netstat (หรือ pathping)' },
+            { id: 'u8_q4_3', label: '3) แสดงชื่อเครื่องและหมายเลข IP ของเครื่อง ใช้คำสั่ง', keywords: ['ipconfig', 'hostname'], placeholder: 'เช่น ipconfig /all', model: 'ipconfig (หรือ ipconfig /all)' },
+            { id: 'u8_q4_4', label: '4) ตรวจสอบเส้นทางการเดินทางว่าผ่านเส้นทางใดบ้าง ใช้คำสั่ง', keywords: ['tracert', 'traceroute'], placeholder: 'เช่น tracert', model: 'tracert (Windows) / traceroute (Linux)' },
+            { id: 'u8_q4_5', label: '5) ตรวจสอบระบบ Domain Name ใช้คำสั่ง', keywords: ['nslookup', 'dig'], placeholder: 'เช่น nslookup', model: 'nslookup' }
+          ]
+        },
+        {
+          no: 5,
+          prompt: 'จงบอกปัญหาที่เกิดจากสาย UTP (3 ข้อ)',
+          items: [
+            { id: 'u8_q5_1', label: '1)', keywords: ['ขาด', 'หัก', 'ชำรุด', 'หลวม', 'เข้าหัว', 'สลับ', 'เกิน 100', 'รบกวน'], placeholder: 'เช่น สายขาดใน/หักงอ...', model: 'สายสัญญาณขาดใน หักงอ หรือฉนวนชำรุด' },
+            { id: 'u8_q5_2', label: '2)', keywords: ['หัว', 'rj-45', 'rj45', 'หลวม', 'สลับ', 'สี', 'ย้ำ', 'ขาด'], placeholder: 'เช่น เข้าหัว RJ-45 หลวมหรือเรียงสีผิด...', model: 'เข้าหัวต่อ RJ-45 ไม่แน่น ย้ำไม่สนิท หรือเรียงสีสายผิดมาตรฐาน' },
+            { id: 'u8_q5_3', label: '3)', keywords: ['100', 'ยาว', 'ระยะ', 'รบกวน', 'emi', 'ไฟฟ้า'], placeholder: 'เช่น เดินสายยาวเกิน 100 เมตร หรือใกล้สายไฟแรงสูง...', model: 'เดินสายยาวเกินระยะมาตรฐาน 100 เมตร หรือวางใกล้แหล่งคลื่นแม่เหล็กไฟฟ้ารบกวน' }
+          ]
+        },
+        {
+          no: 6,
+          prompt: 'จงบอกสาเหตุปัญหาที่เกิดของอุปกรณ์ Switch Hub (3 ข้อ)',
+          items: [
+            { id: 'u8_q6_1', label: '1)', keywords: ['พอร์ต', 'port', 'เสีย', 'ไฟ', 'ดับ', 'หลวม'], placeholder: 'เช่น พอร์ตเสียหรือสายหลวม...', model: 'พอร์ตเชื่อมต่อ (Port) ชำรุดหรือเสีย ไฟสถานะไม่ติด' },
+            { id: 'u8_q6_2', label: '2)', keywords: ['ไฟ', 'ปลั๊ก', 'adapter', 'ร้อน', 'แฮงก์', 'ค้าง', 'power'], placeholder: 'เช่น แหล่งจ่ายไฟ/อะแดปเตอร์มีปัญหา หรือเครื่องร้อนค้าง...', model: 'แหล่งจ่ายไฟ/อะแดปเตอร์ชำรุด หรืออุปกรณ์ทำงานหนักจนร้อนและค้าง (Hang)' },
+            { id: 'u8_q6_3', label: '3)', keywords: ['loop', 'วน', 'broadcast', 'ชน', 'bandwidth', 'สาย'], placeholder: 'เช่น เกิด Network Loop เสียบสายวนเข้าหากัน...', model: 'เกิด Network Loop (เสียบสายแลนวนเข้าพอร์ตเดียวกัน/Switch เดียวกัน) จนเกิด Broadcast Storm' }
+          ]
+        },
+        {
+          no: 7,
+          prompt: 'จงยกตัวอย่างซอฟต์แวร์ช่วยงาน (Utility) ต่อไปนี้',
+          items: [
+            { id: 'u8_q7_1', label: '1) ตรวจสอบการทำงานของเครือข่าย ได้แก่', keywords: ['wireshark', 'ip scanner', 'nmap', 'ping', 'prtg', 'netscan', 'solarwinds'], placeholder: 'เช่น Wireshark, Advanced IP Scanner, Nmap...', model: 'Wireshark, Advanced IP Scanner, Nmap, PRTG Network Monitor' },
+            { id: 'u8_q7_2', label: '2) โอนย้ายไฟล์ข้อมูลในเครือข่าย ได้แก่', keywords: ['filezilla', 'winscp', 'ftp', 'scp', 'cuteftp'], placeholder: 'เช่น FileZilla, WinSCP...', model: 'FileZilla, WinSCP, CuteFTP' },
+            { id: 'u8_q7_3', label: '3) ควบคุมเครือข่ายในระยะไกล ได้แก่', keywords: ['anydesk', 'teamviewer', 'rdp', 'remote', 'vnc', 'putty', 'ssh'], placeholder: 'เช่น TeamViewer, AnyDesk, Remote Desktop (RDP), PuTTY...', model: 'TeamViewer, AnyDesk, Windows Remote Desktop (RDP), VNC, PuTTY' },
+            { id: 'u8_q7_4', label: '4) ดูแลความปลอดภัยของเครือข่าย ได้แก่', keywords: ['firewall', 'defender', 'antivirus', 'kaspersky', 'eset', 'norton', 'snort', 'bitdefender'], placeholder: 'เช่น Windows Defender, Firewall, ESET, Kaspersky, Snort...', model: 'Windows Defender Firewall, ESET, Kaspersky, Bitdefender, Snort (IDS/IPS)' }
+          ]
+        }
+      ],
+      connectorPart: null
+    },
+    9: {
+      title: 'แบบฝึกทักษะบทเรียนที่ 9: ความปลอดภัยในระบบเครือข่าย',
+      instruction: 'คำชี้แจง: ให้นักเรียนตอบคำถามเกี่ยวกับภัยคุกคาม มัลแวร์ Antivirus และ Firewall ให้ครบทั้ง 7 ข้อ',
+      writtenSections: [
+        {
+          no: 1,
+          prompt: 'ภัยคุกคามที่สร้างปัญหาให้กับระบบเครือข่ายคอมพิวเตอร์ อาจแบ่งได้เป็น 3 ลักษณะ ได้แก่',
+          items: [
+            { id: 'u9_q1_1', label: '1)', keywords: ['มนุษย์', 'บุคคล', 'แฮกเกอร์', 'เจาะ', 'ขโมย', 'ไวรัส', 'มัลแวร์', 'ฮาร์ดแวร์'], placeholder: 'เช่น ภัยจากมนุษย์/ผู้ไม่หวังดี (แฮกเกอร์/การโจรกรรม)...', model: 'ภัยคุกคามจากมนุษย์/ผู้บุกรุก (การแฮก, Phishing, ความประมาทของผู้ใช้)' },
+            { id: 'u9_q1_2', label: '2)', keywords: ['มัลแวร์', 'ไวรัส', 'ซอฟต์แวร์', 'โปรแกรม', 'โจมตี', 'ddos'], placeholder: 'เช่น ภัยจากโปรแกรมไม่พึงประสงค์ (มัลแวร์/ไวรัส/แรนซัมแวร์)...', model: 'ภัยคุกคามจากซอฟต์แวร์และมัลแวร์ (Virus, Worm, Trojan, Ransomware, DDoS)' },
+            { id: 'u9_q1_3', label: '3)', keywords: ['ธรรมชาติ', 'ไฟ', 'น้ำ', 'ฮาร์ดแวร์', 'อุปกรณ์', 'กายภาพ'], placeholder: 'เช่น ภัยจากธรรมชาติและฮาร์ดแวร์ชำรุด (ไฟดับ/น้ำท่วม/ไฟไหม้)...', model: 'ภัยคุกคามทางกายภาพและธรรมชาติ (ไฟฟ้าดับ/ไฟกระชาก, อุทกภัย, อัคคีภัย, อุปกรณ์ชำรุด)' }
+          ]
+        },
+        {
+          no: 2,
+          prompt: 'จงบอกลักษณะมัลแวร์ต่อไปนี้โดยสังเขป',
+          items: [
+            { id: 'u9_q2_1', label: '1) ไวรัสคอมพิวเตอร์:', keywords: ['แพร่', 'ทำลาย', 'แฝง', 'ไฟล์', 'สำเนา', 'เสียหาย'], placeholder: 'อธิบายลักษณะของไวรัสคอมพิวเตอร์...', model: 'โปรแกรมที่แฝงตัวเข้ากับไฟล์อื่น สามารถคัดลอกตัวเองแพร่กระจายเมื่อเปิดไฟล์ และทำลายข้อมูลหรือระบบให้เสียหาย' },
+            { id: 'u9_q2_2', label: '2) โทรจัน (Trojan):', keywords: ['หลอก', 'แฝง', 'โปรแกรม', 'ประตูหลัง', 'backdoor', 'ควบคุม', 'ขโมย'], placeholder: 'อธิบายลักษณะของม้าโทรจัน...', model: 'มัลแวร์ที่ปลอมตัวเป็นโปรแกรมปกติหลอกให้ผู้ใช้ติดตั้ง เมื่อรันจะเปิดช่องทางลับ (Backdoor) ให้แฮกเกอร์ควบคุมหรือขโมยข้อมูล' },
+            { id: 'u9_q2_3', label: '3) สปายแวร์ (Spyware):', keywords: ['แอบ', 'ดัก', 'ขโมย', 'ติดตาม', 'รหัสผ่าน', 'พฤติกรรม'], placeholder: 'อธิบายลักษณะของสปายแวร์...', model: 'โปรแกรมที่แอบติดตั้งเพื่อติดตามพฤติกรรม ดักจับการพิมพ์ (Keylogger) และขโมยรหัสผ่านหรือข้อมูลส่วนตัวส่งให้ผู้โจมตี' }
+          ]
+        },
+        {
+          no: 3,
+          prompt: 'จงบอกวิธีการป้องกันและรักษาความปลอดภัยด้านซอฟต์แวร์และข้อมูลมา 3 ข้อ',
+          items: [
+            { id: 'u9_q3_1', label: '1)', keywords: ['antivirus', 'ไวรัส', 'firewall', 'อัปเดต', 'patch', 'backup', 'สำรอง', 'รหัสผ่าน'], placeholder: 'เช่น ติดตั้งและอัปเดต Antivirus / OS Patch สม่ำเสมอ...', model: 'ติดตั้งโปรแกรม Antivirus และอัปเดตระบบปฏิบัติการ (Patch Update) ให้เป็นปัจจุบันเสมอ' },
+            { id: 'u9_q3_2', label: '2)', keywords: ['backup', 'สำรอง', 'รหัสผ่าน', '2fa', 'firewall', 'เข้ารหัส'], placeholder: 'เช่น สำรองข้อมูล (Backup) อย่างสม่ำเสมอ...', model: 'สำรองข้อมูลสำคัญ (Offline/Cloud Backup) อย่างสม่ำเสมอตามกฎ 3-2-1' },
+            { id: 'u9_q3_3', label: '3)', keywords: ['รหัสผ่าน', '2fa', 'สิทธิ์', 'เข้ารหัส', 'firewall', 'ไม่คลิก', 'ลิขสิทธิ์'], placeholder: 'เช่น ตั้งรหัสผ่านแข็งแรง + เปิด 2FA และใช้ซอฟต์แวร์ถูกลิขสิทธิ์...', model: 'ตั้งรหัสผ่านที่แข็งแรง เปิดยืนยันตัวตน 2 ชั้น (2FA) และไม่ดาวน์โหลดซอฟต์แวร์เถื่อนหรือคลิกลิงก์แปลกปลอม' }
+          ]
+        },
+        {
+          no: 4,
+          prompt: 'จงบอกลักษณะหน้าที่ของโปรแกรมป้องกันและกำจัดไวรัสต่อไปนี้',
+          items: [
+            { id: 'u9_q4_1', label: '1) Anti-Virus:', keywords: ['ตรวจจับ', 'สแกน', 'กำจัด', 'กักกัน', 'ป้องกัน', 'ไวรัส'], placeholder: 'อธิบายหน้าที่ของ Anti-Virus...', model: 'สแกน ตรวจจับ กักกัน (Quarantine) และกำจัดไวรัสหรือมัลแวร์ออกจากเครื่องคอมพิวเตอร์' },
+            { id: 'u9_q4_2', label: '2) Firewall:', keywords: ['กรอง', 'บล็อก', 'อนุญาต', 'พอร์ต', 'เข้าออก', 'ทราฟฟิก', 'กั้น'], placeholder: 'อธิบายหน้าที่ของ Firewall...', model: 'คัดกรองและควบคุมทราฟฟิกข้อมูลขาเข้า-ขาออกตามกฎ IP และ Port เพื่อป้องกันผู้บุกรุกจากภายนอก' },
+            { id: 'u9_q4_3', label: '3) Anti-Spyware:', keywords: ['สปายแวร์', 'ดัก', 'แอบ', 'ตรวจจับ', 'ลบ', 'ขโมย'], placeholder: 'อธิบายหน้าที่ของ Anti-Spyware...', model: 'ตรวจจับและลบสปายแวร์/แอดแวร์ที่แอบดักจับข้อมูลส่วนตัวหรือรหัสผ่านออกจากระบบ' }
+          ]
+        },
+        {
+          no: 5,
+          prompt: 'จงบอกชื่อซอฟต์แวร์ป้องกันไวรัสที่นิยมใช้มา 3 ชื่อ',
+          items: [
+            { id: 'u9_q5_1', label: '1)', keywords: ['defender', 'windows', 'kaspersky', 'eset', 'nod32', 'norton', 'bitdefender', 'avast', 'avg', 'mcafee', 'malwarebytes'], placeholder: 'เช่น Windows Defender (Microsoft Security)...', model: 'Microsoft Windows Defender' },
+            { id: 'u9_q5_2', label: '2)', keywords: ['defender', 'kaspersky', 'eset', 'nod32', 'norton', 'bitdefender', 'avast', 'avg', 'mcafee', 'malwarebytes'], placeholder: 'เช่น ESET NOD32 / Kaspersky...', model: 'ESET NOD32 Antivirus หรือ Kaspersky' },
+            { id: 'u9_q5_3', label: '3)', keywords: ['defender', 'kaspersky', 'eset', 'nod32', 'norton', 'bitdefender', 'avast', 'avg', 'mcafee', 'malwarebytes'], placeholder: 'เช่น Bitdefender / Norton / Avast...', model: 'Bitdefender หรือ Norton / Avast' }
+          ]
+        },
+        {
+          no: 6,
+          prompt: 'จงบอกประเภทของ Firewall ตามลักษณะการทำงาน',
+          items: [
+            { id: 'u9_q6_1', label: '1) ตรวจสอบและกลั่นกรองแพ็กเกต:', keywords: ['packet', 'filter', 'แพ็กเกต'], placeholder: 'เช่น Packet Filtering Firewall...', model: 'Packet Filtering Firewall' },
+            { id: 'u9_q6_2', label: '2) ควบคุมการเข้าถึงแอปพลิเคชันที่จะติดต่อกับภายนอก:', keywords: ['application', 'proxy', 'gateway', 'แอป'], placeholder: 'เช่น Application Gateway (Proxy Firewall)...', model: 'Application-Level Gateway (Proxy Firewall)' },
+            { id: 'u9_q6_3', label: '3) มีการบันทึกข้อมูลรายละเอียดการเข้าออก:', keywords: ['stateful', 'inspection', 'สถานะ', 'circuit'], placeholder: 'เช่น Stateful Inspection Firewall...', model: 'Stateful Inspection Firewall' }
+          ]
+        },
+        {
+          no: 7,
+          prompt: 'จงบอกความแตกต่างของ Firewall ต่อไปนี้ รวมถึงการติดตั้งใช้งาน',
+          items: [
+            { id: 'u9_q7_1', label: '1) Network Firewall (คือ / ติดตั้งไว้ที่):', keywords: ['เครือข่าย', 'องค์กร', 'gateway', 'router', 'กั้น', 'ฮาร์ดแวร์', 'ขอบ'], placeholder: 'เช่น ป้องกันทั้งวงเครือข่าย / ติดตั้งไว้ที่จุดเชื่อมต่อระหว่าง LAN กับอินเทอร์เน็ต (Gateway/Router)...', model: 'ไฟร์วอลล์ป้องกันทั้งเครือข่าย (มักเป็นอุปกรณ์เฉพาะ/Router) | ติดตั้งไว้ที่จุดเชื่อมต่อขอบเครือข่าย (Gateway) ระหว่าง LAN กับอินเทอร์เน็ต' },
+            { id: 'u9_q7_2', label: '2) Personal Firewall (คือ / ติดตั้งไว้ที่):', keywords: ['เครื่อง', 'ส่วนบุคคล', 'ซอฟต์แวร์', 'pc', 'คอมพิวเตอร์', 'windows'], placeholder: 'เช่น ซอฟต์แวร์ป้องกันเฉพาะเครื่อง / ติดตั้งไว้ที่เครื่องคอมพิวเตอร์ผู้ใช้แต่ละเครื่อง...', model: 'ไฟร์วอลล์แบบซอฟต์แวร์ป้องกันเฉพาะเครื่อง (เช่น Windows Defender Firewall) | ติดตั้งไว้บนเครื่องคอมพิวเตอร์ของผู้ใช้แต่ละเครื่อง' }
+          ]
+        }
+      ],
+      connectorPart: null
+    },
+    10: {
+      title: 'แบบฝึกทักษะบทเรียนที่ 10: การสร้างบัญชีผู้ใช้และการใช้งาน',
+      instruction: 'คำชี้แจง: ให้นักเรียนตอบคำถามครบทั้ง 6 ข้อ (รวมรายละเอียดการกำหนดสิทธิ์ NTFS 6 ระดับในข้อ 6)',
+      writtenSections: [
+        {
+          no: 1,
+          prompt: 'จงบอกประโยชน์ของการสร้างบัญชีผู้ใช้ (3 ข้อ)',
+          items: [
+            { id: 'u10_q1_1', label: '1)', keywords: ['ยืนยัน', 'ตัวตน', 'ปลอดภัย', 'ป้องกัน', 'รหัสผ่าน', 'สิทธิ์'], placeholder: 'เช่น ยืนยันตัวตนและป้องกันผู้ไม่มีสิทธิ์เข้าถึงระบบ...', model: 'ยืนยันตัวตน (Authentication) ป้องกันไม่ให้ผู้ไม่ได้รับอนุญาตเข้าใช้งานเครื่องหรือเครือข่าย' },
+            { id: 'u10_q1_2', label: '2)', keywords: ['แยก', 'ไฟล์', 'ส่วนตัว', 'โปรไฟล์', 'พื้นที่', 'ตั้งค่า'], placeholder: 'เช่น แยกพื้นที่จัดเก็บไฟล์และการตั้งค่าส่วนตัวของแต่ละคน...', model: 'แยกพื้นที่จัดเก็บไฟล์และสภาพแวดล้อมการทำงานส่วนตัว (User Profile) ของผู้ใช้แต่ละคน' },
+            { id: 'u10_q1_3', label: '3)', keywords: ['สิทธิ์', 'ควบคุม', 'ตรวจสอบ', 'ย้อนหลัง', 'ขอบเขต'], placeholder: 'เช่น กำหนดขอบเขตสิทธิ์และตรวจสอบการใช้งานย้อนหลังได้...', model: 'กำหนดขอบเขตสิทธิ์การใช้งาน (Authorization) และตรวจสอบประวัติการใช้งานย้อนหลังได้' }
+          ]
+        },
+        {
+          no: 2,
+          prompt: 'การสร้างกลุ่มผู้ใช้มีข้อดีอย่างไร',
+          items: [
+            { id: 'u10_q2', label: 'คำตอบ:', multiline: true, keywords: ['สะดวก', 'พร้อมกัน', 'หลายคน', 'สิทธิ์', 'จัดระเบียบ', 'ลด', 'ง่าย'], placeholder: 'อธิบายข้อดีของการจัดกลุ่มผู้ใช้ (User Groups)...', model: 'ช่วยให้ผู้ดูแลระบบกำหนดหรือปรับเปลี่ยนสิทธิ์การเข้าถึงทรัพยากรให้กับผู้ใช้จำนวนมากพร้อมกันได้ในครั้งเดียว สะดวก เป็นระเบียบ และลดความผิดพลาด' }
+          ]
+        },
+        {
+          no: 3,
+          prompt: 'จงบอกรายละเอียดในการสร้างบัญชีผู้ใช้',
+          items: [
+            { id: 'u10_q3_1', label: '1) User name คือ', keywords: ['ชื่อ', 'ล็อกอิน', 'เข้าสู่ระบบ', 'บัญชี', 'login'], placeholder: 'อธิบายความหมายของ User name...', model: 'ชื่อบัญชีสำหรับใช้พิมพ์เข้าสู่ระบบ (Logon Name) ต้องไม่ซ้ำกันในเครื่องหรือโดเมน' },
+            { id: 'u10_q3_2', label: '2) Full Name คือ', keywords: ['เต็ม', 'นามสกุล', 'ชื่อจริง', 'แสดง'], placeholder: 'อธิบายความหมายของ Full Name...', model: 'ชื่อ-นามสกุลจริงของผู้ใช้งานที่แสดงบนหน้าจอและข้อมูลบัญชี' },
+            { id: 'u10_q3_3', label: '3) Description คือ', keywords: ['อธิบาย', 'รายละเอียด', 'ตำแหน่ง', 'แผนก', 'หมายเหตุ'], placeholder: 'อธิบายความหมายของ Description...', model: 'คำอธิบายเพิ่มเติมเกี่ยวกับผู้ใช้ เช่น ตำแหน่ง แผนก หรือห้องเรียน' },
+            { id: 'u10_q3_4', label: '4) Password คือ', keywords: ['รหัสผ่าน', 'ยืนยัน', 'ตัวตน', 'เข้าสู่ระบบ'], placeholder: 'อธิบายความหมายของ Password...', model: 'รหัสผ่านส่วนตัวสำหรับยืนยันตัวตนในการเข้าสู่ระบบให้ปลอดภัย' }
+          ]
+        },
+        {
+          no: 4,
+          prompt: 'จงอธิบายความหมายของตัวเลือกต่าง ๆ ต่อไปนี้ ในการสร้างบัญชีผู้ใช้',
+          items: [
+            { id: 'u10_q4_1', label: '1) User must change password at next logon คือ', keywords: ['เปลี่ยน', 'รหัสผ่าน', 'ครั้งถัดไป', 'ครั้งแรก', 'บังคับ'], placeholder: 'อธิบายความหมาย...', model: 'บังคับให้ผู้ใช้ต้องเปลี่ยนรหัสผ่านใหม่ทันทีเมื่อล็อกอินเข้าใช้งานในครั้งถัดไป' },
+            { id: 'u10_q4_2', label: '2) User cannot change password หมายถึง', keywords: ['ไม่', 'ห้าม', 'เปลี่ยน', 'รหัสผ่าน'], placeholder: 'อธิบายความหมาย...', model: 'ไม่อนุญาตให้ผู้ใช้เปลี่ยนรหัสผ่านเองได้ (เฉพาะผู้ดูแลระบบเท่านั้นที่เปลี่ยนให้ได้)' },
+            { id: 'u10_q4_3', label: '3) Password never expires หมายถึง', keywords: ['ไม่หมดอายุ', 'หมดอายุ', 'ตลอด', 'ไม่มี'], placeholder: 'อธิบายความหมาย...', model: 'รหัสผ่านของบัญชีนี้จะไม่มีวันหมดอายุ ใช้งานได้ต่อเนื่องโดยระบบไม่บังคับเปลี่ยนตามรอบเวลา' },
+            { id: 'u10_q4_4', label: '4) Account is disabled หมายถึง', keywords: ['ปิด', 'ระงับ', 'ชั่วคราว', 'ไม่สามารถ', 'เข้าใช้งาน'], placeholder: 'อธิบายความหมาย...', model: 'ระงับหรือปิดการใช้งานบัญชีนี้ชั่วคราว ไม่สามารถล็อกอินได้แต่ข้อมูลบัญชียังไม่ถูกลบ' }
+          ]
+        },
+        {
+          no: 5,
+          prompt: 'จงบอกขั้นตอนในการแชร์โฟลเดอร์ในเครือข่ายโดยสังเขป (4 ขั้นตอน)',
+          items: [
+            { id: 'u10_q5_1', label: '1)', keywords: ['คลิกขวา', 'properties', 'โฟลเดอร์', 'sharing'], placeholder: 'ขั้นที่ 1 เช่น คลิกขวาโฟลเดอร์ → Properties → แท็บ Sharing...', model: 'คลิกขวาโฟลเดอร์ที่ต้องการแชร์ → เลือก Properties → คลิกแท็บ Sharing' },
+            { id: 'u10_q5_2', label: '2)', keywords: ['advanced sharing', 'share', 'ติ๊ก'], placeholder: 'ขั้นที่ 2 เช่น คลิก Advanced Sharing ติ๊ก Share this folder...', model: 'คลิกปุ่ม Advanced Sharing แล้วติ๊กเลือก Share this folder' },
+            { id: 'u10_q5_3', label: '3)', keywords: ['permissions', 'สิทธิ์', 'add', 'ผู้ใช้', 'กลุ่ม'], placeholder: 'ขั้นที่ 3 เช่น กด Permissions เพิ่มผู้ใช้/กลุ่มและกำหนดสิทธิ์...', model: 'คลิก Permissions เพิ่มบัญชีผู้ใช้หรือกลุ่มผู้ใช้ และกำหนดสิทธิ์ที่อนุญาต (Read/Change/Full Control)' },
+            { id: 'u10_q5_4', label: '4)', keywords: ['security', 'ntfs', 'ok', 'apply', 'ทดสอบ'], placeholder: 'ขั้นที่ 4 เช่น กำหนดสิทธิ์แท็บ Security (NTFS) แล้วกด OK และทดสอบ...', model: 'ตรวจสอบ/กำหนดสิทธิ์ในแท็บ Security (NTFS) ให้สอดคล้องกัน กด Apply/OK แล้วทดสอบเข้าใช้งาน' }
+          ]
+        },
+        {
+          no: 6,
+          prompt: 'จงบอกรายละเอียดของการกำหนดสิทธิ (NTFS Permissions) ต่อไปนี้',
+          items: [
+            { id: 'u10_q6_1', label: '1) Full Control หมายถึง', keywords: ['ทั้งหมด', 'เต็ม', 'ลบ', 'แก้', 'สิทธิ์', 'เจ้าของ', 'ควบคุม'], placeholder: 'อธิบายสิทธิ์ Full Control...', model: 'สิทธิ์ควบคุมสูงสุด อ่าน เขียน แก้ไข ลบ รันโปรแกรม รวมถึงเปลี่ยนสิทธิ์ (Permissions) และความเป็นเจ้าของไฟล์ได้' },
+            { id: 'u10_q6_2', label: '2) Modify หมายถึง', keywords: ['แก้ไข', 'ลบ', 'เขียน', 'อ่าน', 'เปลี่ยนแปลง'], placeholder: 'อธิบายสิทธิ์ Modify...', model: 'สิทธิ์อ่าน เขียน แก้ไข สร้าง และลบไฟล์หรือโฟลเดอร์ย่อยได้ (แต่เปลี่ยนสิทธิ์ Permissions ไม่ได้)' },
+            { id: 'u10_q6_3', label: '3) Read & Execute หมายถึง', keywords: ['อ่าน', 'รัน', 'ประมวลผล', 'เปิด', 'โปรแกรม'], placeholder: 'อธิบายสิทธิ์ Read & Execute...', model: 'สิทธิ์เปิดดูข้อมูลในไฟล์และสั่งรันไฟล์โปรแกรม (.exe/.bat) ได้ แต่แก้ไขหรือลบไม่ได้' },
+            { id: 'u10_q6_4', label: '4) List Folder Contents หมายถึง', keywords: ['รายชื่อ', 'ดู', 'โฟลเดอร์', 'แสดง', 'รายการ'], placeholder: 'อธิบายสิทธิ์ List Folder Contents...', model: 'สิทธิ์มองเห็นรายชื่อไฟล์และโฟลเดอร์ย่อยที่อยู่ภายในโฟลเดอร์ได้' },
+            { id: 'u10_q6_5', label: '5) Read หมายถึง', keywords: ['อ่าน', 'ดู', 'คัดลอก', 'เปิด'], placeholder: 'อธิบายสิทธิ์ Read...', model: 'สิทธิ์เปิดอ่าน ดูคุณสมบัติ และคัดลอกไฟล์ออกไปได้เท่านั้น ไม่สามารถแก้ไขหรือลบได้' },
+            { id: 'u10_q6_6', label: '6) Write หมายถึง', keywords: ['เขียน', 'สร้าง', 'เพิ่ม', 'บันทึก'], placeholder: 'อธิบายสิทธิ์ Write...', model: 'สิทธิ์สร้างไฟล์หรือโฟลเดอร์ใหม่และเขียนข้อมูลเพิ่มเติมลงไปได้' }
+          ]
+        }
+      ],
+      connectorPart: null
     }
   };
 
