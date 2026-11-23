@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=5" />
+  <link rel="stylesheet" href="css/style.css?v=7" />
 </head>
 <body>
   <div class="pixel-bg-grid"></div>
@@ -54,10 +54,11 @@
       <button class="px-btn px-btn-sm" onclick="App.openEncyclopedia()">📖 คัมภีร์</button>
       <button class="px-btn px-btn-sm" onclick="App.openLeaderboard()">🏆 อันดับ</button>
       <button class="px-btn px-btn-emerald px-btn-sm" onclick="App.openCertificate()">📜 เกียรติบัตร</button>
-      <button class="px-btn px-btn-sm" onclick="App.openTeacherModal()">👨‍🏫 ครู</button>
+      <button id="btn-teacher-menu" class="px-btn px-btn-sm hidden" onclick="App.openTeacherModal()">👨‍🏫 ครู</button>
       <button id="btn-sfx" class="px-btn px-btn-sm" onclick="App.toggleSFX()" title="เปิด/ปิดเสียงเอฟเฟกต์">🔊 SFX</button>
       <button id="btn-bgm" class="px-btn px-btn-sm" onclick="App.toggleBGM()" title="เปิด/ปิดดนตรี 8-Bit">🎵 BGM</button>
       <button id="btn-crt" class="px-btn px-btn-sm" onclick="App.toggleCRT()" title="เปิด/ปิดฟิลเตอร์จอเรโทร CRT">📺 CRT</button>
+      <button id="btn-theme" class="px-btn px-btn-sm" onclick="App.toggleTheme()" title="สลับโหมดมืด / โหมดสว่าง">☀️ สว่าง</button>
       <button id="btn-logout" class="px-btn px-btn-crimson px-btn-sm" onclick="App.logoutStudent()" title="ออกจากระบบ / สลับนักศึกษา">🚪 ออก</button>
     </nav>
   </header>
@@ -371,6 +372,6 @@
   <script src="js/data.js?v=12"></script>
   <script src="js/firebase-config.js?v=2"></script>
   <script src="js/firebase-service.js?v=9"></script>
-  <script src="js/app.js?v=16"></script>
+  <script src="js/app.js?v=17"></script>
 </body>
 </html>

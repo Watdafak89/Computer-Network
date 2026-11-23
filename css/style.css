@@ -1231,3 +1231,118 @@ body.crt-active::after {
   -ms-user-select: none;
   -webkit-touch-callout: none;
 }
+
+/* Light Mode Theme */
+body.light-mode {
+  --bg-deep: #f1f5f9;
+  --bg-panel: #ffffff;
+  --bg-card: #f8fafc;
+  --bg-card-hover: #e0f2fe;
+  --border-pixel: #0284c7;
+  --border-dim: #cbd5e1;
+  --cyan: #0284c7;
+  --emerald: #059669;
+  --violet: #7c3aed;
+  --amber: #d97706;
+  --crimson: #dc2626;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+}
+
+body.light-mode .pixel-bg-grid {
+  background-image:
+    linear-gradient(rgba(2, 132, 199, 0.08) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(2, 132, 199, 0.08) 2px, transparent 2px);
+}
+
+body.light-mode .top-hud {
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom-color: #cbd5e1;
+}
+
+body.light-mode .pixel-box {
+  box-shadow:
+    0 -2px 0 0 #cbd5e1,
+    0 3px 0 0 #94a3b8,
+    -2px 0 0 0 #cbd5e1,
+    2px 0 0 0 #cbd5e1;
+}
+
+body.light-mode .px-btn {
+  background: #e2e8f0;
+  color: #0f172a;
+  border-color: #94a3b8;
+  box-shadow: 0 3px 0 #94a3b8;
+}
+
+body.light-mode .px-btn-cyan { background: #0284c7; color: #fff; border-color: #0369a1; }
+body.light-mode .px-btn-emerald { background: #059669; color: #fff; border-color: #047857; }
+body.light-mode .px-btn-amber { background: #d97706; color: #fff; border-color: #b45309; }
+body.light-mode .px-btn-violet { background: #7c3aed; color: #fff; border-color: #6d28d9; }
+body.light-mode .px-btn-crimson { background: #dc2626; color: #fff; border-color: #b91c1c; }
+
+body.light-mode .px-input,
+body.light-mode .px-select,
+body.light-mode .px-textarea,
+body.light-mode .osi-select,
+body.light-mode .pc-input {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #94a3b8;
+}
+
+body.light-mode .res-pill,
+body.light-mode .stage-tab,
+body.light-mode .badge-slot,
+body.light-mode .quiz-option-btn {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+body.light-mode .stage-tab.active {
+  background: #e0f2fe;
+  border-color: #0284c7;
+  color: #0369a1;
+}
+
+body.light-mode .modal-box {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+body.light-mode .pixel-table th {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+body.light-mode .pixel-table td {
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+body.light-mode .hero-banner-card,
+body.light-mode .stage-header,
+body.light-mode .panel-section,
+body.light-mode .unit-card,
+body.light-mode .codex-card,
+body.light-mode .quest-item {
+  background: #ffffff !important;
+  color: #0f172a;
+}
+
+body.light-mode .quest-item {
+  background: #f8fafc !important;
+  border-color: #cbd5e1;
+}
+
+body.light-mode .hero-banner-card h1,
+body.light-mode .codex-card h3,
+body.light-mode .unit-card h3 {
+  color: #0f172a !important;
+}
+
+body.light-mode .skill-model-ans {
+  background: #ecfdf5 !important;
+  color: #065f46 !important;
+}

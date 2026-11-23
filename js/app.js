@@ -64,6 +64,7 @@
     teacherStudentsList: [],
     teacherSkillSubmissions: [],
     teacherSkillFilterUnit: 'all',
+    teacherSkillFilterRoom: 'all',
     teacherSkillFilterStatus: 'all',
     teacherSkillSearch: '',
     activeGradingDocId: null,
@@ -77,6 +78,7 @@
     labState: {},
 
     init() {
+      this.initTheme();
       if (global.FirebaseService) {
         FirebaseService.init();
       }
@@ -375,6 +377,24 @@
     },
 
     /* ---------------- HUD & PROFILE ---------------- */
+    initTheme() {
+      let saved = 'dark';
+      try { saved = localStorage.getItem('netquest_theme_v1') || 'dark'; } catch (e) { /* ignore */ }
+      const isLight = saved === 'light';
+      document.body.classList.toggle('light-mode', isLight);
+      const btn = document.getElementById('btn-theme');
+      if (btn) btn.textContent = isLight ? '🌙 มืด' : '☀️ สว่าง';
+    },
+
+    toggleTheme() {
+      soundFX.playSelect();
+      const isLight = document.body.classList.toggle('light-mode');
+      try { localStorage.setItem('netquest_theme_v1', isLight ? 'light' : 'dark'); } catch (e) { /* ignore */ }
+      const btn = document.getElementById('btn-theme');
+      if (btn) btn.textContent = isLight ? '🌙 มืด' : '☀️ สว่าง';
+      this.toast(isLight ? '☀️ เปลี่ยนเป็นโหมดสว่าง (Light Mode) แล้ว' : '🌙 เปลี่ยนเป็นโหมดมืด (Dark Mode) แล้ว');
+    },
+
     renderHUD() {
       const cls = this.getClassObj();
       const stats = this.getPlayerStats();
@@ -387,6 +407,9 @@
       document.getElementById('hud-level').textContent = `LV.${current.level}`;
       const teacherBadge = document.getElementById('hud-teacher-badge');
       if (teacherBadge) teacherBadge.classList.toggle('hidden', !this.isTeacher);
+      const teacherMenuBtn = document.getElementById('btn-teacher-menu');
+      const isCloud = global.FirebaseService && FirebaseService.isCloud();
+      if (teacherMenuBtn) teacherMenuBtn.classList.toggle('hidden', isCloud ? !this.isTeacher : false);
       document.getElementById('hud-class').textContent = `[${cls.thName}]`;
       document.getElementById('hud-rank').textContent = `${current.title} (${this.state.profile.classRoom || 'ปวช.'})`;
 
@@ -3913,6 +3936,11 @@
       soundFX.playSelect();
       const isCloud = global.FirebaseService && FirebaseService.isCloud();
       const canManageQuestions = !isCloud || this.isTeacher;
+      if (isCloud && !this.isTeacher) {
+        soundFX.playPlayerHurt();
+        this.toast('🔒 เมนูนี้สำหรับครูผู้สอนเท่านั้น');
+        return;
+      }
       if (global.FirebaseService && isCloud && this.currentUid) {
         try {
           this.cloudQuestions = await FirebaseService.fetchCustomQuestions();
@@ -3971,8 +3999,15 @@
                 🔒 <b>ล็อกสิทธิ์สำหรับครูผู้สอนเท่านั้น</b> — เฉพาะบัญชีครูที่มี Custom Claim <code>teacher: true</code> จึงจะตรวจและให้คะแนนแบบฝึกทักษะนักศึกษาได้
               </div>
             ` : `
-              <div style="display:grid; grid-template-columns:1fr 140px 140px; gap:8px; margin-bottom:10px;">
+              <div style="display:grid; grid-template-columns:1fr 125px 125px 125px; gap:8px; margin-bottom:10px;">
                 <input id="teacher-skill-search" class="px-input" value="${this.teacherSkillSearch || ''}" placeholder="🔍 ค้นหา รหัส / ชื่อ / ห้อง..." oninput="App.filterTeacherSkills()" />
+                <select id="teacher-skill-room" class="px-select" onchange="App.filterTeacherSkills()">
+                  <option value="all" ${this.teacherSkillFilterRoom === 'all' ? 'selected' : ''}>ทุกห้อง</option>
+                  ${[...new Set([
+                    ...(this.teacherSkillSubmissions || []).map((s) => s.classRoom),
+                    ...(this.teacherStudentsList || []).map((s) => s.classRoom)
+                  ].filter(Boolean))].sort().map((rm) => `<option value="${rm}" ${this.teacherSkillFilterRoom === rm ? 'selected' : ''}>${rm}</option>`).join('')}
+                </select>
                 <select id="teacher-skill-unit" class="px-select" onchange="App.filterTeacherSkills()">
                   <option value="all" ${this.teacherSkillFilterUnit === 'all' ? 'selected' : ''}>ทุกบทเรียน</option>
                   ${GameData.UNITS.map((u) => `<option value="${u.id}" ${String(this.teacherSkillFilterUnit) === String(u.id) ? 'selected' : ''}>บทที่ ${u.id}</option>`).join('')}
@@ -4112,9 +4147,28 @@
 
     filterTeacherSkills() {
       this.teacherSkillSearch = document.getElementById('teacher-skill-search')?.value || '';
+      this.teacherSkillFilterRoom = document.getElementById('teacher-skill-room')?.value || 'all';
       this.teacherSkillFilterUnit = document.getElementById('teacher-skill-unit')?.value || 'all';
       this.teacherSkillFilterStatus = document.getElementById('teacher-skill-status')?.value || 'all';
       this.renderTeacherSkillsTable();
+    },
+
+    getFilteredTeacherSkills() {
+      const q = (this.teacherSkillSearch || '').trim().toLowerCase();
+      const rFilter = this.teacherSkillFilterRoom || 'all';
+      const uFilter = this.teacherSkillFilterUnit || 'all';
+      const sFilter = this.teacherSkillFilterStatus || 'all';
+      return (this.teacherSkillSubmissions || []).filter((s) => {
+        if (rFilter !== 'all' && String(s.classRoom || '') !== String(rFilter)) return false;
+        if (uFilter !== 'all' && String(s.unitId) !== String(uFilter)) return false;
+        if (sFilter !== 'all' && s.status !== sFilter) return false;
+        if (q) {
+          return String(s.studentId || '').toLowerCase().includes(q)
+            || String(s.name || '').toLowerCase().includes(q)
+            || String(s.classRoom || '').toLowerCase().includes(q);
+        }
+        return true;
+      });
     },
 
     async reloadTeacherSkillsUI() {
@@ -4129,19 +4183,7 @@
     renderTeacherSkillsTable() {
       const wrap = document.getElementById('teacher-skills-table-wrap');
       if (!wrap) return;
-      const q = (this.teacherSkillSearch || '').trim().toLowerCase();
-      const uFilter = this.teacherSkillFilterUnit || 'all';
-      const sFilter = this.teacherSkillFilterStatus || 'all';
-      const filtered = (this.teacherSkillSubmissions || []).filter((s) => {
-        if (uFilter !== 'all' && String(s.unitId) !== String(uFilter)) return false;
-        if (sFilter !== 'all' && s.status !== sFilter) return false;
-        if (q) {
-          return String(s.studentId || '').toLowerCase().includes(q)
-            || String(s.name || '').toLowerCase().includes(q)
-            || String(s.classRoom || '').toLowerCase().includes(q);
-        }
-        return true;
-      });
+      const filtered = this.getFilteredTeacherSkills();
 
       if (filtered.length === 0) {
         wrap.innerHTML = `<div style="padding:12px; text-align:center; color:var(--text-muted); font-size:0.84rem;">ยังไม่มีใบงานแบบฝึกทักษะที่ส่งเข้ามาตามเงื่อนไขนี้</div>`;
@@ -4285,9 +4327,12 @@
     },
 
     exportSkillScoresCSV() {
-      const list = this.teacherSkillSubmissions || [];
+      const list = this.getFilteredTeacherSkills();
+      const roomLabel = this.teacherSkillFilterRoom && this.teacherSkillFilterRoom !== 'all'
+        ? this.teacherSkillFilterRoom
+        : 'ทุกห้อง';
       if (list.length === 0) {
-        alert('ยังไม่มีข้อมูลใบงานแบบฝึกทักษะสำหรับส่งออก');
+        alert(`ยังไม่มีข้อมูลใบงานแบบฝึกทักษะสำหรับส่งออก (${roomLabel})`);
         return;
       }
       const header = ['StudentID', 'Name', 'ClassRoom', 'Unit', 'AutoScorePct', 'Part2Score', 'TeacherScore', 'Status', 'TeacherComment', 'SubmittedAt'];
@@ -4302,10 +4347,11 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `NetQuest_SkillExercises_${todayKey()}.csv`;
+      const safeRoom = roomLabel.replace(/[\\/:*?"<>|\s]+/g, '-');
+      a.download = `NetQuest_SkillExercises_${safeRoom}_${todayKey()}.csv`;
       a.click();
       URL.revokeObjectURL(url);
-      this.toast('📥 ดาวน์โหลดคะแนนแบบฝึกทักษะ (.CSV) เรียบร้อย!');
+      this.toast(`📥 ส่งออกคะแนนแบบฝึกทักษะ (${roomLabel}: ${list.length} รายการ) เรียบร้อย!`);
     },
 
     renderTeacherUnitLocks() {
