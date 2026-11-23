@@ -20,7 +20,7 @@
         created: false
       },
       xp: 0,
-      coins: 120,
+      coins: 50,
       hp: 130,
       inventory: {
         potion: 2,
@@ -297,7 +297,8 @@
       const newLevel = this.getRankInfo(this.state.xp).current.level;
 
       if (reason) {
-        this.toast(`✨ ${reason}: +${gainedXp} XP, +${gainedCoins} 🪙`);
+        const coinText = gainedCoins > 0 ? `, +${gainedCoins} 🪙` : ' (ฝึกซ้ำไม่เพิ่มเหรียญ)';
+        this.toast(`✨ ${reason}: +${gainedXp} XP${coinText}`);
       }
       if (newLevel > oldLevel) {
         soundFX.playLevelUp();
@@ -904,7 +905,7 @@
       prog.labCleared = true;
       this.state.daily.labsCompletedToday += 1;
       this.refreshStageBadges();
-      this.addRewards(firstTime ? 150 : 40, firstTime ? 90 : 25, msg || `ผ่านปฏิบัติการ Lab หน่วยที่ ${unitId}`);
+      this.addRewards(firstTime ? 130 : 15, firstTime ? 45 : 0, msg || `ผ่านปฏิบัติการ Lab หน่วยที่ ${unitId}`);
     },
 
     /* === LAB 1: Topology Architect & Fault Simulator === */
@@ -2819,12 +2820,15 @@
       if (won) {
         soundFX.playVictoryFanfare();
         const prog = this.state.unitProgress[b.unit.id];
+        const firstBossClear = !prog.bossCleared;
         prog.bossCleared = true;
         if (pct > prog.bestScore) prog.bestScore = pct;
         if (stars > prog.stars) prog.stars = stars;
         this.state.daily.bossesDefeatedToday += 1;
         this.refreshStageBadges();
-        this.addRewards(220 + b.correctCount * 25, 130 + b.maxCombo * 15, `ปราบบอส ${b.unit.boss.thName}`);
+        const bossXp = firstBossClear ? (200 + b.correctCount * 20) : 40;
+        const bossCoins = firstBossClear ? (60 + b.maxCombo * 5) : 10;
+        this.addRewards(bossXp, bossCoins, `ปราบบอส ${b.unit.boss.thName}`);
       } else {
         soundFX.playPlayerHurt();
         const stats = this.getPlayerStats();
@@ -2933,8 +2937,9 @@
       if (a.hearts <= 0 || a.idx >= a.pool.length) {
         const isRecord = a.score > this.state.arcadeHighScore;
         if (isRecord) this.state.arcadeHighScore = a.score;
-        const rewardXp = Math.min(250, Math.round(a.score / 4));
-        const rewardCoins = Math.min(180, Math.round(a.score / 6));
+        const rewardXp = Math.min(200, Math.round(a.score / 5));
+        const withinDailyCoinCap = (this.state.daily.arcadeRunsToday || 0) <= 3;
+        const rewardCoins = withinDailyCoinCap ? Math.min(50, Math.round(a.score / 15)) : 0;
         if (rewardXp > 0) this.addRewards(rewardXp, rewardCoins, `จบเกม Endless Arcade (${a.score} แต้ม)`);
         body.innerHTML = `
           <div style="text-align:center; padding:24px;">

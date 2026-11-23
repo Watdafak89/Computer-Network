@@ -84,7 +84,7 @@
       type: 'consumable',
       name: 'Ping Potion (ฟื้น HP)',
       desc: 'ฟื้นฟู HP +45 หน่วย ระหว่างต่อสู้กับบอส',
-      price: 60,
+      price: 50,
       sprite: 'potion',
       effect: 'heal'
     },
@@ -93,7 +93,7 @@
       type: 'consumable',
       name: 'Packet Sniffer (50/50)',
       desc: 'ตัดตัวเลือกที่ผิดออก 2 ข้อ ในศึกบอส',
-      price: 85,
+      price: 75,
       sprite: 'analyzer',
       effect: 'fifty'
     },
@@ -102,7 +102,7 @@
       type: 'consumable',
       name: 'Overclock Crystal (+15s)',
       desc: 'เพิ่มเวลาตอบข้อปัจจุบันอีก 15 วินาที',
-      price: 70,
+      price: 60,
       sprite: 'clock',
       effect: 'time'
     },
@@ -111,7 +111,7 @@
       type: 'consumable',
       name: 'Firewall Shield (กันดาเมจ)',
       desc: 'ป้องกันดาเมจจากการตอบผิดได้ 1 ครั้ง',
-      price: 95,
+      price: 85,
       sprite: 'shield',
       effect: 'shield'
     },
@@ -120,7 +120,7 @@
       type: 'equipment',
       name: 'คีมย้ำสายทองคำ (Equip)',
       desc: 'เพิ่มพลังโจมตีถาวร +12 ต่อบอสทุกตัว',
-      price: 260,
+      price: 380,
       sprite: 'golden_crimper',
       stat: { atk: 12 }
     },
@@ -129,7 +129,7 @@
       type: 'equipment',
       name: 'รองเท้าไฟเบอร์ (Equip)',
       desc: 'เพิ่มเวลาตอบคำถามถาวร +6 วินาทีทุกข้อ',
-      price: 240,
+      price: 320,
       sprite: 'fiber_boots',
       stat: { time: 6 }
     },
@@ -138,7 +138,7 @@
       type: 'equipment',
       name: 'แว่นสแกนแพ็กเก็ต (Equip)',
       desc: 'เพิ่มโอกาส Critical Hit +18% และ XP +15%',
-      price: 300,
+      price: 450,
       sprite: 'packet_goggles',
       stat: { crit: 0.18, xp: 0.15 }
     },
@@ -147,7 +147,7 @@
       type: 'equipment',
       name: 'เกราะไฟร์วอลล์ (Equip)',
       desc: 'เพิ่ม Max HP ถาวร +35 และลดดาเมจบอส 25%',
-      price: 320,
+      price: 520,
       sprite: 'firewall_armor',
       stat: { hp: 35, def: 0.25 }
     }
@@ -173,10 +173,10 @@
   ];
 
   const DAILY_QUESTS = [
-    { id: 'dq_lab', title: 'ทำห้อง Lab จำลองสำเร็จ 1 หน่วย', rewardXp: 120, rewardCoins: 80, target: 1, metric: 'labsCompletedToday' },
-    { id: 'dq_boss', title: 'พิชิตบอสประจำหน่วย 1 ตัว', rewardXp: 150, rewardCoins: 100, target: 1, metric: 'bossesDefeatedToday' },
-    { id: 'dq_combo', title: 'ทำคอมโบตอบถูกต่อเนื่อง 3 ข้อ', rewardXp: 100, rewardCoins: 75, target: 3, metric: 'bestComboToday' },
-    { id: 'dq_arcade', title: 'เข้าเล่นโหมด Endless Arcade 1 รอบ', rewardXp: 90, rewardCoins: 60, target: 1, metric: 'arcadeRunsToday' }
+    { id: 'dq_lab', title: 'ทำห้อง Lab จำลองสำเร็จ 1 หน่วย', rewardXp: 100, rewardCoins: 30, target: 1, metric: 'labsCompletedToday' },
+    { id: 'dq_boss', title: 'พิชิตบอสประจำหน่วย 1 ตัว', rewardXp: 120, rewardCoins: 40, target: 1, metric: 'bossesDefeatedToday' },
+    { id: 'dq_combo', title: 'ทำคอมโบตอบถูกต่อเนื่อง 3 ข้อ', rewardXp: 80, rewardCoins: 25, target: 3, metric: 'bestComboToday' },
+    { id: 'dq_arcade', title: 'เข้าเล่นโหมด Endless Arcade 1 รอบ', rewardXp: 70, rewardCoins: 20, target: 1, metric: 'arcadeRunsToday' }
   ];
 
   const T568B = [
