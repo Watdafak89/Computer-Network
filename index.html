@@ -142,11 +142,13 @@
       <div class="stage-tabs">
         <button id="tab-codex" class="stage-tab active" onclick="App.switchStageTab('codex')">1. 📖 คัมภีร์ความรู้และภาพอินโฟกราฟิก</button>
         <button id="tab-lab" class="stage-tab" onclick="App.switchStageTab('lab')">2. 🔬 ห้องปฏิบัติการจำลอง (Pixel Lab)</button>
-        <button id="tab-boss" class="stage-tab" onclick="App.switchStageTab('boss')">3. ⚔️ ศึกดวลบอส 16-Bit (Quiz Battle)</button>
+        <button id="tab-skill" class="stage-tab hidden" onclick="App.switchStageTab('skill')">3. 📝 แบบฝึกทักษะ</button>
+        <button id="tab-boss" class="stage-tab" onclick="App.switchStageTab('boss')">⚔️ ศึกดวลบอส 16-Bit (Quiz Battle)</button>
       </div>
 
       <div id="stage-body-codex"></div>
       <div id="stage-body-lab" class="hidden"></div>
+      <div id="stage-body-skill" class="hidden"></div>
       <div id="stage-body-boss" class="hidden"></div>
     </section>
 
@@ -365,9 +367,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script src="js/pixel-sprites.js?v=2"></script>
   <script src="js/sound.js?v=2"></script>
-  <script src="js/data.js?v=5"></script>
+  <script src="js/data.js?v=6"></script>
   <script src="js/firebase-config.js?v=2"></script>
   <script src="js/firebase-service.js?v=3"></script>
-  <script src="js/app.js?v=5"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>

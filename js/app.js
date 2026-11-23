@@ -838,6 +838,12 @@
       this.refreshStageBadges();
       this.renderCodex(unit);
       this.renderLab(unit);
+      const hasSkill = Boolean(GameData.SKILL_EXERCISES && GameData.SKILL_EXERCISES[unit.id]);
+      const tabSkill = document.getElementById('tab-skill');
+      const tabBoss = document.getElementById('tab-boss');
+      if (tabSkill) tabSkill.classList.toggle('hidden', !hasSkill);
+      if (tabBoss) tabBoss.textContent = hasSkill ? '4. ⚔️ ศึกดวลบอส 16-Bit (Quiz Battle)' : '3. ⚔️ ศึกดวลบอส 16-Bit (Quiz Battle)';
+      this.renderSkillExercise(unit);
       this.renderBossLobby(unit);
       this.switchStageTab('codex');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -856,11 +862,217 @@
     switchStageTab(tab) {
       soundFX.playSelect();
       this.currentTab = tab;
-      ['codex', 'lab', 'boss'].forEach((t) => {
-        document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
-        document.getElementById(`stage-body-${t}`).classList.toggle('hidden', t !== tab);
+      ['codex', 'lab', 'skill', 'boss'].forEach((t) => {
+        const tabEl = document.getElementById(`tab-${t}`);
+        const bodyEl = document.getElementById(`stage-body-${t}`);
+        if (tabEl) tabEl.classList.toggle('active', t === tab);
+        if (bodyEl) bodyEl.classList.toggle('hidden', t !== tab);
       });
       if (tab !== 'boss') this.stopBattleTimer();
+    },
+
+    /* ---------------- SKILL EXERCISES (UNITS 1 & 2) ---------------- */
+    getSkillStorageKey(unitId) {
+      const sid = this.state.profile.studentId || 'guest';
+      return `netquest_skill_v1_${sid}_u${unitId}`;
+    },
+
+    loadSkillAnswers(unitId) {
+      try {
+        const raw = localStorage.getItem(this.getSkillStorageKey(unitId));
+        return raw ? JSON.parse(raw) : { answers: {}, completed: false };
+      } catch (e) {
+        return { answers: {}, completed: false };
+      }
+    },
+
+    saveSkillField(unitId, fieldId, value) {
+      const data = this.loadSkillAnswers(unitId);
+      data.answers[fieldId] = value;
+      try { localStorage.setItem(this.getSkillStorageKey(unitId), JSON.stringify(data)); } catch (e) { /* ignore */ }
+    },
+
+    renderSkillExercise(unit) {
+      const el = document.getElementById('stage-body-skill');
+      if (!el) return;
+      const ex = GameData.SKILL_EXERCISES && GameData.SKILL_EXERCISES[unit.id];
+      if (!ex) {
+        el.innerHTML = '';
+        return;
+      }
+      const saved = this.loadSkillAnswers(unit.id);
+      const ans = saved.answers || {};
+      const esc = (v) => String(v || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+      el.innerHTML = `
+        <div class="pixel-box lab-panel">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+            <div>
+              <h3 style="color:var(--cyan);">📝 ${ex.title}</h3>
+              <p style="font-size:0.86rem; color:var(--text-muted); margin-top:4px;">${ex.instruction}</p>
+            </div>
+            <span id="skill-status-pill" class="res-pill" style="color:${saved.completed ? 'var(--emerald)' : 'var(--amber)'};">
+              ${saved.completed ? '✔ บันทึกและตรวจแล้ว' : '✏️ รอทำแบบฝึกทักษะ'}
+            </span>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:14px; margin-top:14px;">
+            ${ex.connectorPart ? '<h4 style="color:var(--amber); border-bottom:2px solid var(--border-dim); padding-bottom:6px;">ตอนที่ 1 ให้นักเรียนตอบคำถามต่อไปนี้</h4>' : ''}
+            ${ex.writtenSections.map((sec) => `
+              <div class="pixel-box" style="padding:14px;">
+                <div style="font-weight:700; color:#f8fafc; margin-bottom:10px;">${sec.no}. ${sec.prompt}</div>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                  ${sec.items.map((it) => `
+                    <div>
+                      <label style="font-size:0.84rem; color:var(--cyan); display:block; margin-bottom:4px;">${it.label}</label>
+                      ${it.multiline
+                        ? `<textarea id="sk-${it.id}" class="px-textarea" rows="3" placeholder="${esc(it.placeholder)}" oninput="App.saveSkillField(${unit.id}, '${it.id}', this.value)">${esc(ans[it.id])}</textarea>`
+                        : `<input id="sk-${it.id}" class="px-input" value="${esc(ans[it.id])}" placeholder="${esc(it.placeholder)}" oninput="App.saveSkillField(${unit.id}, '${it.id}', this.value)" />`
+                      }
+                      <div class="skill-model-ans hidden" style="margin-top:6px; padding:8px 10px; background:rgba(16,185,129,0.12); border-left:3px solid var(--emerald); font-size:0.82rem; color:#a7f3d0;">
+                        💡 <b>แนวคำตอบ:</b> ${it.model}
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
+
+            ${ex.connectorPart ? `
+              <div class="pixel-box" style="padding:14px;">
+                <h4 style="color:var(--amber); margin-bottom:10px;">${ex.connectorPart.title}</h4>
+                <div style="overflow-x:auto;">
+                  <table class="pixel-table">
+                    <thead>
+                      <tr>
+                        <th style="width:60px;">ข้อที่</th>
+                        <th style="width:180px;">รูปภาพ</th>
+                        <th>ชื่อหัวต่อ</th>
+                        <th>สายที่ใช้</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${ex.connectorPart.rows.map((row) => {
+                        const nKey = `u2_p2_n_${row.no}`;
+                        const cKey = `u2_p2_c_${row.no}`;
+                        return `
+                          <tr id="sk-conn-row-${row.no}">
+                            <td><b>${row.no}</b></td>
+                            <td><div style="display:inline-block; border:2px solid var(--border-dim);">${row.svg}</div></td>
+                            <td>
+                              <select id="sk-${nKey}" class="px-select" onchange="App.saveSkillField(${unit.id}, '${nKey}', this.value)">
+                                <option value="">-- เลือกชื่อหัวต่อ --</option>
+                                ${ex.connectorPart.nameOptions.map((opt) => `<option value="${opt}" ${ans[nKey] === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                              </select>
+                              <div class="skill-model-ans hidden" style="margin-top:4px; font-size:0.78rem; color:#6ee7b7;">เฉลย: ${row.ansName}</div>
+                            </td>
+                            <td>
+                              <select id="sk-${cKey}" class="px-select" onchange="App.saveSkillField(${unit.id}, '${cKey}', this.value)">
+                                <option value="">-- เลือกสายที่ใช้ --</option>
+                                ${ex.connectorPart.cableOptions.map((opt) => `<option value="${opt}" ${ans[cKey] === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+                              </select>
+                              <div class="skill-model-ans hidden" style="margin-top:4px; font-size:0.78rem; color:#6ee7b7;">เฉลย: ${row.ansCable}</div>
+                            </td>
+                          </tr>
+                        `;
+                      }).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+
+          <div id="skill-feedback-box" style="margin-top:14px; font-size:0.88rem; color:var(--text-muted);"></div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+            <button class="px-btn px-btn-emerald" onclick="App.submitSkillExercise(${unit.id})">✔ ตรวจคำตอบและบันทึก</button>
+            <button class="px-btn px-btn-amber" onclick="App.toggleSkillModelAnswers()">💡 เปิด/ซ่อนแนวคำตอบ (เฉลย)</button>
+            <button class="px-btn px-btn-sm" onclick="App.clearSkillAnswers(${unit.id})">🧹 ล้างคำตอบ</button>
+          </div>
+        </div>
+      `;
+    },
+
+    toggleSkillModelAnswers() {
+      soundFX.playSelect();
+      document.querySelectorAll('#stage-body-skill .skill-model-ans').forEach((el) => {
+        el.classList.toggle('hidden');
+      });
+    },
+
+    clearSkillAnswers(unitId) {
+      if (!confirm(`ต้องการล้างคำตอบแบบฝึกทักษะบทที่ ${unitId} ทั้งหมดหรือไม่?`)) return;
+      const saved = this.loadSkillAnswers(unitId);
+      saved.answers = {};
+      try { localStorage.setItem(this.getSkillStorageKey(unitId), JSON.stringify(saved)); } catch (e) { /* ignore */ }
+      const unit = GameData.UNITS.find((u) => u.id === unitId);
+      if (unit) this.renderSkillExercise(unit);
+      this.toast('🧹 ล้างคำตอบเรียบร้อยแล้ว');
+    },
+
+    submitSkillExercise(unitId) {
+      const ex = GameData.SKILL_EXERCISES && GameData.SKILL_EXERCISES[unitId];
+      if (!ex) return;
+      const saved = this.loadSkillAnswers(unitId);
+      const fb = document.getElementById('skill-feedback-box');
+
+      let missingWritten = 0;
+      ex.writtenSections.forEach((sec) => {
+        sec.items.forEach((it) => {
+          const val = (document.getElementById(`sk-${it.id}`)?.value || '').trim();
+          saved.answers[it.id] = val;
+          if (!val) missingWritten++;
+        });
+      });
+
+      let connCorrect = 0;
+      let connTotal = 0;
+      if (ex.connectorPart) {
+        connTotal = ex.connectorPart.rows.length;
+        ex.connectorPart.rows.forEach((row) => {
+          const nKey = `u2_p2_n_${row.no}`;
+          const cKey = `u2_p2_c_${row.no}`;
+          const nVal = document.getElementById(`sk-${nKey}`)?.value || '';
+          const cVal = document.getElementById(`sk-${cKey}`)?.value || '';
+          saved.answers[nKey] = nVal;
+          saved.answers[cKey] = cVal;
+          const ok = nVal === row.ansName && cVal === row.ansCable;
+          if (ok) connCorrect++;
+          const tr = document.getElementById(`sk-conn-row-${row.no}`);
+          if (tr) tr.style.background = ok ? 'rgba(16,185,129,0.18)' : 'rgba(239,68,68,0.16)';
+        });
+      }
+
+      if (missingWritten > 0) {
+        soundFX.playPlayerHurt();
+        try { localStorage.setItem(this.getSkillStorageKey(unitId), JSON.stringify(saved)); } catch (e) { /* ignore */ }
+        fb.innerHTML = `<div style="color:#fda4af;">⚠️ ยังตอบคำถามตอนที่ 1 ไม่ครบ (เหลืออีก ${missingWritten} ช่อง) กรุณากรอกให้ครบก่อนส่งตรวจนะครับ</div>`;
+        return;
+      }
+
+      if (ex.connectorPart && connCorrect < connTotal) {
+        soundFX.playPlayerHurt();
+        try { localStorage.setItem(this.getSkillStorageKey(unitId), JSON.stringify(saved)); } catch (e) { /* ignore */ }
+        fb.innerHTML = `<div style="color:#facc15;">🔎 ตอนที่ 2 (รูปภาพหัวต่อ) ถูก <b>${connCorrect}/${connTotal} ข้อ</b> — แถวสีแดงยังมีจุดผิด ลองปรับคำตอบแล้วกดตรวจอีกครั้งนะ!</div>`;
+        return;
+      }
+
+      const firstComplete = !saved.completed;
+      saved.completed = true;
+      try { localStorage.setItem(this.getSkillStorageKey(unitId), JSON.stringify(saved)); } catch (e) { /* ignore */ }
+      const pill = document.getElementById('skill-status-pill');
+      if (pill) {
+        pill.textContent = '✔ บันทึกและตรวจแล้ว';
+        pill.style.color = 'var(--emerald)';
+      }
+
+      soundFX.playPowerUp();
+      fb.innerHTML = `<div style="color:#4ade80;">✅ บันทึกแบบฝึกทักษะบทเรียนที่ ${unitId} ครบถ้วนสมบูรณ์! ${ex.connectorPart ? `(ตอนที่ 2 ได้เต็ม ${connCorrect}/${connTotal} คะแนน)` : ''} สามารถกดปุ่ม "เปิด/ซ่อนแนวคำตอบ" เพื่อทบทวนเพิ่มเติมได้</div>`;
+      if (firstComplete) {
+        this.addRewards(60, 20, `ทำแบบฝึกทักษะบทที่ ${unitId} สำเร็จ`);
+      } else {
+        this.toast(`💾 บันทึกคำตอบแบบฝึกทักษะบทที่ ${unitId} เรียบร้อยแล้ว`);
+      }
     },
 
     renderCodex(unit) {

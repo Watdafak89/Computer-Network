@@ -1313,6 +1313,153 @@
     { port: '3389', proto: 'RDP', desc: 'Remote Desktop ควบคุมหน้าจอ Windows ระยะไกล' }
   ];
 
+  const SKILL_EXERCISES = {
+    1: {
+      title: 'แบบฝึกทักษะบทเรียนที่ 1: ความรู้เกี่ยวกับระบบเครือข่ายคอมพิวเตอร์',
+      instruction: 'คำชี้แจง: ให้นักเรียนตอบคำถามต่อไปนี้ให้ครบถ้วน (ระบบบันทึกคำตอบอัตโนมัติ สามารถกดตรวจและเทียบแนวคำตอบได้)',
+      writtenSections: [
+        {
+          no: 1,
+          prompt: 'จงบอกประโยชน์ของระบบเครือข่ายคอมพิวเตอร์',
+          items: [
+            { id: 'u1_q1_1', label: '1)', placeholder: 'เช่น ใช้ทรัพยากรร่วมกัน (เครื่องพิมพ์/ไฟล์/อินเทอร์เน็ต)...', model: 'ใช้ทรัพยากรร่วมกัน เช่น เครื่องพิมพ์ ไฟล์ข้อมูล และอินเทอร์เน็ต' },
+            { id: 'u1_q1_2', label: '2)', placeholder: 'เช่น ติดต่อสื่อสารสะดวกรวดเร็ว...', model: 'ติดต่อสื่อสารระหว่างผู้ใช้ได้รวดเร็ว เช่น อีเมล แชต ประชุมออนไลน์' },
+            { id: 'u1_q1_3', label: '3)', placeholder: 'เช่น ลดต้นทุนในการจัดซื้ออุปกรณ์...', model: 'ช่วยลดต้นทุนในการจัดซื้อฮาร์ดแวร์และซอฟต์แวร์' },
+            { id: 'u1_q1_4', label: '4)', placeholder: 'เช่น จัดเก็บและสำรองข้อมูลแบบรวมศูนย์...', model: 'จัดเก็บ ดูแลรักษา และสำรองข้อมูลได้อย่างเป็นระบบและปลอดภัย' }
+          ]
+        },
+        {
+          no: 2,
+          prompt: 'จงบอกองค์ประกอบของระบบเครือข่ายคอมพิวเตอร์',
+          items: [
+            { id: 'u1_q2_1', label: '1)', placeholder: 'เช่น ผู้ส่งข้อมูล (Sender)...', model: 'ผู้ส่งข้อมูล (Sender) และผู้รับข้อมูล (Receiver)' },
+            { id: 'u1_q2_2', label: '2)', placeholder: 'เช่น ข้อมูลข่าวสาร (Message)...', model: 'ข้อมูลข่าวสาร (Message)' },
+            { id: 'u1_q2_3', label: '3)', placeholder: 'เช่น สื่อกลางนำสัญญาณ (Transmission Medium)...', model: 'สื่อกลางนำสัญญาณ (Transmission Medium) เช่น สาย UTP, Fiber, คลื่นวิทยุ' },
+            { id: 'u1_q2_4', label: '4)', placeholder: 'เช่น โปรโตคอล (Protocol) / อุปกรณ์เครือข่าย...', model: 'โปรโตคอล (Protocol) และอุปกรณ์เครือข่าย เช่น Switch, Router' }
+          ]
+        },
+        {
+          no: 3,
+          prompt: 'จงบอกความแตกต่างของเครือข่ายแต่ละประเภท',
+          items: [
+            { id: 'u1_q3_1', label: '1) เครือข่าย LAN คือ', placeholder: 'อธิบายขอบเขตและลักษณะของ LAN...', model: 'เครือข่ายท้องถิ่น เชื่อมโยงในระยะใกล้ เช่น ห้องเรียน อาคาร หรือวิทยาลัยเดียวกัน ความเร็วสูง' },
+            { id: 'u1_q3_2', label: '2) เครือข่าย MAN คือ', placeholder: 'อธิบายขอบเขตและลักษณะของ MAN...', model: 'เครือข่ายระดับเมือง เชื่อมโยงหลายอาคารหรือหลายวิทยาเขตภายในเมืองหรือจังหวัดเดียวกัน' },
+            { id: 'u1_q3_3', label: '3) เครือข่าย WAN คือ', placeholder: 'อธิบายขอบเขตและลักษณะของ WAN...', model: 'เครือข่ายบริเวณกว้าง เชื่อมโยงข้ามจังหวัด ข้ามประเทศ หรือทั่วโลก เช่น อินเทอร์เน็ต' },
+            { id: 'u1_q3_4', label: '4) เครือข่าย PAN คือ', placeholder: 'อธิบายขอบเขตและลักษณะของ PAN...', model: 'เครือข่ายส่วนบุคคล ระยะใกล้ประมาณ 1–10 เมตร เช่น Bluetooth เชื่อมมือถือกับหูฟัง/สมาร์ตวอตช์' }
+          ]
+        },
+        {
+          no: 4,
+          prompt: 'จงบอกความแตกต่างของลักษณะการใช้งานเครือข่ายคอมพิวเตอร์ต่อไปนี้',
+          items: [
+            { id: 'u1_q4_1', label: '1) เครือข่ายแบบ Peer to Peer คือ', multiline: true, placeholder: 'อธิบายลักษณะของ Peer-to-Peer...', model: 'ทุกเครื่องมีสิทธิ์เท่าเทียมกัน ไม่มีเครื่องแม่ข่ายกลาง (Server) ติดตั้งง่าย ประหยัด เหมาะกับเครือข่ายขนาดเล็กไม่เกิน 10 เครื่อง' },
+            { id: 'u1_q4_2', label: '2) เครือข่ายแบบ Client-Server คือ', multiline: true, placeholder: 'อธิบายลักษณะของ Client-Server...', model: 'มีเครื่องแม่ข่าย (Server) ทำหน้าที่ให้บริการและควบคุมสิทธิ์ความปลอดภัยแบบรวมศูนย์ และมีเครื่องลูกข่าย (Client) ร้องขอใช้บริการ เหมาะกับองค์กรขนาดกลาง-ใหญ่' }
+          ]
+        },
+        {
+          no: 5,
+          prompt: 'จงบอกลักษณะการเชื่อมต่อเครือข่าย (Network Topology) ต่อไปนี้ โดยสังเขป',
+          items: [
+            { id: 'u1_q5_1', label: '1) การเชื่อมต่อแบบ Bus Topology', placeholder: 'อธิบายลักษณะของ Bus Topology...', model: 'เชื่อมต่อทุกเครื่องเข้ากับสายหลักเส้นเดียว (Backbone) มี Terminator ปิดหัวท้าย ประหยัดสายแต่สายหลักขาดจะล่มทั้งเครือข่าย' },
+            { id: 'u1_q5_2', label: '2) การเชื่อมต่อแบบ Star Topology', placeholder: 'อธิบายลักษณะของ Star Topology...', model: 'ทุกเครื่องเชื่อมต่อแยกสายเข้าสู่อุปกรณ์ศูนย์กลาง (Switch/Hub) หากสายเครื่องใดขาดจะกระทบเฉพาะเครื่องนั้น นิยมใช้มากที่สุด' },
+            { id: 'u1_q5_3', label: '3) การเชื่อมต่อแบบ Ring Topology', placeholder: 'อธิบายลักษณะของ Ring Topology...', model: 'เชื่อมต่อเป็นวงแหวนส่งข้อมูลวนทิศทางเดียวผ่าน Token ลดการชนกันของข้อมูล แต่หากสายหรือเครื่องใดเสียอาจกระทบทั้งวง' }
+          ]
+        }
+      ],
+      connectorPart: null
+    },
+    2: {
+      title: 'แบบฝึกทักษะบทเรียนที่ 2: อุปกรณ์และสื่อนำสัญญาณ',
+      instruction: 'ตอนที่ 1 ให้นักเรียนตอบคำถามต่อไปนี้ และตอนที่ 2 ระบุชื่อหัวต่อสายพร้อมประเภทสายที่ใช้จากรูปภาพทั้ง 6 ข้อ',
+      writtenSections: [
+        {
+          no: 1,
+          prompt: 'จงบอกชื่ออุปกรณ์ในระบบเครือข่ายที่นิยมใช้งานทั่วไปจำนวน 3 ชื่อ',
+          items: [
+            { id: 'u2_q1_1', label: '1)', placeholder: 'เช่น Switch (สวิตช์)...', model: 'Switch (สวิตช์เครือข่าย)' },
+            { id: 'u2_q1_2', label: '2)', placeholder: 'เช่น Router (เราเตอร์)...', model: 'Router (เราเตอร์)' },
+            { id: 'u2_q1_3', label: '3)', placeholder: 'เช่น Access Point / NIC / Modem...', model: 'Access Point (จุดกระจายสัญญาณไร้สาย) หรือ NIC / Modem' }
+          ]
+        },
+        {
+          no: 2,
+          prompt: 'สายโคแอกเชียล มีข้อดี-ข้อเสียอย่างไร และที่ใช้ในเครือข่ายคอมพิวเตอร์มีกี่ชนิด',
+          items: [
+            { id: 'u2_q2_1', label: 'คำตอบ:', multiline: true, placeholder: 'ระบุข้อดี ข้อเสีย และชนิดของสายโคแอกเชียล (เช่น Thicknet / Thinnet)...', model: 'ข้อดี: ป้องกันสัญญาณรบกวนได้ดี เดินสายได้ไกลกว่า UTP | ข้อเสีย: สายแข็ง ติดตั้งและเข้าหัวยากกว่า UTP | ชนิดที่ใช้ในเครือข่ายมี 2 ชนิด คือ แบบบาง (Thinnet / 10BASE2) และแบบหนา (Thicknet / 10BASE5)' }
+          ]
+        },
+        {
+          no: 3,
+          prompt: 'สายคู่บิดเกลียวแบบ STP กับ UTP มีข้อแตกต่างกันอย่างไร',
+          items: [
+            { id: 'u2_q3_1', label: 'คำตอบ:', multiline: true, placeholder: 'เปรียบเทียบฉนวนป้องกันสัญญาณรบกวน ราคา และการใช้งาน...', model: 'สาย STP (Shielded Twisted Pair) มีแผ่นโลหะ/ฟอยล์หุ้มป้องกันสัญญาณรบกวนแม่เหล็กไฟฟ้า (EMI) ได้ดีกว่าแต่ราคาแพงกว่าและแข็งกว่า ส่วนสาย UTP (Unshielded) ไม่มีฉนวนโลหะหุ้ม ราคาถูก ติดตั้งง่าย นิยมใช้ใน LAN ทั่วไป' }
+          ]
+        },
+        {
+          no: 4,
+          prompt: 'สายใยแก้วนำแสง (Fiber Optic) มีกี่แบบ มีข้อดีและข้อจำกัดอย่างไร',
+          items: [
+            { id: 'u2_q4_1', label: 'คำตอบ:', multiline: true, placeholder: 'ระบุชนิด (Single-Mode / Multi-Mode), ข้อดี และข้อจำกัด...', model: 'มี 2 แบบ คือ Single-Mode (SMF เดินสายไกลหลาย กม.) และ Multi-Mode (MMF ระยะใกล้กว่า) | ข้อดี: ความเร็วสูงมาก ไม่ถูกรบกวนจากคลื่นแม่เหล็กไฟฟ้า ส่งได้ไกล | ข้อจำกัด: ราคาอุปกรณ์สูง สายเปราะบางหักงอไม่ได้ เข้าหัวสายยากต้องใช้ช่างชำนาญ' }
+          ]
+        },
+        {
+          no: 5,
+          prompt: 'การสื่อสารข้อมูลโดยใช้คลื่นไมโครเวฟ (Microwave) กับ คลื่นบลูทูธ (Bluetooth) และคลื่นอินฟราเรด (Infrared) ใช้งานแตกต่างกันอย่างไร',
+          items: [
+            { id: 'u2_q5_1', label: 'คำตอบ:', multiline: true, placeholder: 'เปรียบเทียบระยะทาง ลักษณะการใช้งาน และสิ่งกีดขวางของทั้ง 3 คลื่น...', model: 'ไมโครเวฟ: ส่งข้อมูลระยะไกลระดับกิโลเมตรเชื่อมระหว่างอาคาร/สถานีแบบแนวสายตา (LOS) | บลูทูธ: ส่งระยะใกล้ 1–10 ม. (PAN) ทะลุสิ่งกีดขวางเบาได้ ใช้กับหูฟัง/อุปกรณ์พกพา | อินฟราเรด: ส่งระยะใกล้มาก ห้ามมีสิ่งกีดขวางกั้นแนวสายตา เช่น รีโมตคอนโทรล' }
+          ]
+        }
+      ],
+      connectorPart: {
+        title: 'ตอนที่ 2 จากรูปภาพต่อไปนี้ ให้นักเรียนเลือกชื่อหัวต่อสาย พร้อมทั้งระบุว่าใช้กับสายประเภทใด',
+        nameOptions: ['BNC', 'RJ-45', 'ST', 'FC', 'LC', 'SC'],
+        cableOptions: [
+          'สายโคแอกเชียล (Coaxial)',
+          'สายคู่บิดเกลียว (UTP / STP)',
+          'สายใยแก้วนำแสง (Fiber Optic)'
+        ],
+        rows: [
+          {
+            no: 1,
+            ansName: 'BNC',
+            ansCable: 'สายโคแอกเชียล (Coaxial)',
+            svg: `<svg viewBox="0 0 180 76" width="160" height="68" shape-rendering="crispEdges"><rect width="180" height="76" fill="#0f172a"/><rect x="108" y="29" width="60" height="18" fill="#1e293b" stroke="#475569"/><rect x="70" y="25" width="38" height="26" fill="#94a3b8" stroke="#e2e8f0"/><rect x="44" y="23" width="26" height="30" fill="#cbd5e1" stroke="#64748b"/><circle cx="38" cy="38" r="12" fill="#475569" stroke="#e2e8f0" stroke-width="2"/><circle cx="38" cy="38" r="4" fill="#facc15"/><line x1="52" y1="26" x2="62" y2="26" stroke="#0f172a" stroke-width="2"/></svg>`
+          },
+          {
+            no: 2,
+            ansName: 'RJ-45',
+            ansCable: 'สายคู่บิดเกลียว (UTP / STP)',
+            svg: `<svg viewBox="0 0 180 76" width="160" height="68" shape-rendering="crispEdges"><rect width="180" height="76" fill="#0f172a"/><rect x="24" y="34" width="58" height="24" fill="#cbd5e1" fill-opacity="0.35" stroke="#e2e8f0" stroke-width="2"/><polygon points="36,34 62,22 68,26 46,34" fill="#e2e8f0" fill-opacity="0.6" stroke="#cbd5e1"/><rect x="26" y="40" width="8" height="14" fill="#f59e0b"/><rect x="112" y="16" width="34" height="44" fill="#cbd5e1" fill-opacity="0.35" stroke="#e2e8f0" stroke-width="2"/><rect x="118" y="18" width="22" height="10" fill="#f59e0b"/><line x1="121" y1="18" x2="121" y2="28" stroke="#0f172a"/><line x1="125" y1="18" x2="125" y2="28" stroke="#0f172a"/><line x1="129" y1="18" x2="129" y2="28" stroke="#0f172a"/><line x1="133" y1="18" x2="133" y2="28" stroke="#0f172a"/><line x1="137" y1="18" x2="137" y2="28" stroke="#0f172a"/></svg>`
+          },
+          {
+            no: 3,
+            ansName: 'ST',
+            ansCable: 'สายใยแก้วนำแสง (Fiber Optic)',
+            svg: `<svg viewBox="0 0 180 76" width="160" height="68" shape-rendering="crispEdges"><rect width="180" height="76" fill="#0f172a"/><polygon points="94,30 164,33 164,43 94,46" fill="#1e293b" stroke="#475569"/><rect x="50" y="25" width="44" height="26" fill="#cbd5e1" stroke="#64748b" stroke-width="2"/><path d="M58 34 L70 34 L70 28" fill="none" stroke="#0f172a" stroke-width="3"/><rect x="24" y="34" width="26" height="8" fill="#f8fafc" stroke="#94a3b8"/></svg>`
+          },
+          {
+            no: 4,
+            ansName: 'FC',
+            ansCable: 'สายใยแก้วนำแสง (Fiber Optic)',
+            svg: `<svg viewBox="0 0 180 76" width="160" height="68" shape-rendering="crispEdges"><rect width="180" height="76" fill="#0f172a"/><polygon points="94,28 164,33 164,43 94,48" fill="#2563eb" stroke="#60a5fa"/><rect x="52" y="24" width="42" height="28" fill="#94a3b8" stroke="#e2e8f0" stroke-width="2"/><line x1="58" y1="24" x2="58" y2="52" stroke="#334155" stroke-width="2"/><line x1="65" y1="24" x2="65" y2="52" stroke="#334155" stroke-width="2"/><line x1="72" y1="24" x2="72" y2="52" stroke="#334155" stroke-width="2"/><line x1="79" y1="24" x2="79" y2="52" stroke="#334155" stroke-width="2"/><rect x="30" y="34" width="22" height="8" fill="#f8fafc" stroke="#94a3b8"/></svg>`
+          },
+          {
+            no: 5,
+            ansName: 'LC',
+            ansCable: 'สายใยแก้วนำแสง (Fiber Optic)',
+            svg: `<svg viewBox="0 0 180 76" width="160" height="68" shape-rendering="crispEdges"><rect width="180" height="76" fill="#0f172a"/><polygon points="104,31 164,34 164,42 104,45" fill="#e2e8f0" stroke="#94a3b8"/><rect x="44" y="26" width="60" height="24" fill="#1d4ed8" stroke="#60a5fa" stroke-width="2"/><polygon points="56,26 88,12 94,16 68,26" fill="#2563eb" stroke="#93c5fd"/><rect x="28" y="34" width="16" height="8" fill="#f8fafc" stroke="#94a3b8"/></svg>`
+          },
+          {
+            no: 6,
+            ansName: 'SC',
+            ansCable: 'สายใยแก้วนำแสง (Fiber Optic)',
+            svg: `<svg viewBox="0 0 180 76" width="160" height="68" shape-rendering="crispEdges"><rect width="180" height="76" fill="#0f172a"/><polygon points="104,30 164,34 164,42 104,46" fill="#15803d" stroke="#4ade80"/><rect x="42" y="22" width="62" height="32" fill="#16a34a" stroke="#86efac" stroke-width="2"/><rect x="54" y="28" width="38" height="20" fill="#14532d" stroke="#4ade80"/><rect x="26" y="33" width="16" height="10" fill="#f8fafc" stroke="#94a3b8"/></svg>`
+          }
+        ]
+      }
+    }
+  };
+
   global.GameData = {
     RANKS,
     CLASSES,
@@ -1324,6 +1471,7 @@
     T568B_ORDER,
     UNITS,
     INITIAL_LEADERBOARD,
-    ENCYCLOPEDIA_PORTS
+    ENCYCLOPEDIA_PORTS,
+    SKILL_EXERCISES
   };
 })(window);
