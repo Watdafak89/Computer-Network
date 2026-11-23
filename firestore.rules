@@ -10,10 +10,14 @@ service cloud.firestore {
     //   - Student (default): authenticated user (request.auth != null) without
     //     teacher claim; can read students, customQuestions, and
     //     courseSettings/unitLocks, create/update only their own
-    //     students/{request.auth.uid} document, and read/create/update only
-    //     their own skillSubmissions/{uid}_u{unitId} documents (restricted to
-    //     ungraded state: status == 'submitted', teacherScore == -1,
-    //     teacherComment == '').
+    //     students/{request.auth.uid} document, and read/create/update/delete
+    //     only their own skillSubmissions/{uid}_u{unitId} documents while
+    //     pending review (resource.data.status == 'submitted'): students may
+    //     delete a pending submission to unsubmit and edit their answers, or
+    //     update it while keeping status == 'submitted', teacherScore == -1,
+    //     and teacherComment == ''. Once graded (resource.data.status ==
+    //     'graded'), a submission is immutable to students (cannot be updated
+    //     or deleted by the student owner).
     //   - Teacher: authenticated user with Firebase Auth Custom Claim
     //     `teacher: true` (checked via isTeacher() using
     //     request.auth.token.teacher == true); can update (e.g., reset
@@ -332,10 +336,14 @@ service cloud.firestore {
         (isTeacher() ||
           (isAuthenticated() &&
             resource.data.uid == request.auth.uid &&
+            resource.data.status == 'submitted' &&
             request.resource.data.status == 'submitted' &&
             request.resource.data.teacherScore == -1 &&
             request.resource.data.teacherComment == ''));
-      allow delete: if isTeacher();
+      allow delete: if isTeacher() ||
+        (isAuthenticated() &&
+          resource.data.uid == request.auth.uid &&
+          resource.data.status == 'submitted');
     }
   }
 }

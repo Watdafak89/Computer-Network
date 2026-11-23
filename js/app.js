@@ -1064,13 +1064,15 @@
 
           <div id="skill-feedback-box" style="margin-top:14px; font-size:0.88rem; color:var(--text-muted);"></div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
-            <button class="px-btn px-btn-emerald" onclick="App.submitSkillExercise(${unit.id})">✔ ส่งงานให้ครูและตรวจคำตอบ</button>
-            <button class="px-btn px-btn-cyan" onclick="App.printSkillWorksheet(${unit.id})">🖨️ พิมพ์ใบงาน / บันทึก PDF</button>
+            <button id="btn-skill-submit" class="px-btn px-btn-emerald" onclick="App.submitSkillExercise(${unit.id})">✔ ส่งงานให้ครูและตรวจคำตอบ</button>
+            <button id="btn-skill-unsubmit" class="px-btn px-btn-crimson hidden" onclick="App.unsubmitSkillExercise(${unit.id})">↩️ ยกเลิกการส่งเพื่อแก้ไขคำตอบ</button>
+            <button class="px-btn px-btn-cyan" onclick="App.printSkillWorksheet(${unit.id}, App.activeSkillSubmission && App.activeSkillSubmission.unitId === ${unit.id} ? App.activeSkillSubmission : null)">🖨️ พิมพ์ใบงาน / บันทึก PDF</button>
             <button class="px-btn px-btn-amber" onclick="App.toggleSkillModelAnswers()">💡 เปิด/ซ่อนแนวคำตอบ (เฉลย)</button>
-            <button class="px-btn px-btn-sm" onclick="App.clearSkillAnswers(${unit.id})">🧹 ล้างคำตอบ</button>
+            <button id="btn-skill-clear" class="px-btn px-btn-sm" onclick="App.clearSkillAnswers(${unit.id})">🧹 ล้างคำตอบ</button>
           </div>
         </div>
       `;
+      this.activeSkillSubmission = null;
       this.hydrateStudentSkillCloudStatus(unit.id);
       el.querySelectorAll('.skill-model-ans').forEach((ansEl) => {
         const block = (ev) => {
@@ -1134,37 +1136,110 @@
       return { itemResults, writtenMatched, writtenTotal, part2Correct, part2Total, autoPct, suggestedScore10 };
     },
 
+    applySkillLockState(sub) {
+      const container = document.getElementById('stage-body-skill');
+      if (!container) return;
+      const isGraded = Boolean(sub && sub.status === 'graded');
+      const isSubmitted = Boolean(sub && sub.status === 'submitted');
+      const locked = isGraded || isSubmitted;
+
+      container.querySelectorAll('input, textarea, select').forEach((field) => {
+        field.disabled = locked;
+        field.style.opacity = locked ? '0.78' : '1';
+      });
+
+      const btnSubmit = document.getElementById('btn-skill-submit');
+      const btnUnsubmit = document.getElementById('btn-skill-unsubmit');
+      const btnClear = document.getElementById('btn-skill-clear');
+      if (btnSubmit) btnSubmit.classList.toggle('hidden', locked);
+      if (btnClear) btnClear.classList.toggle('hidden', locked);
+      if (btnUnsubmit) btnUnsubmit.classList.toggle('hidden', !isSubmitted);
+    },
+
     async hydrateStudentSkillCloudStatus(unitId) {
-      if (!global.FirebaseService || !this.currentUid) return;
+      if (!global.FirebaseService || !this.currentUid) {
+        this.activeSkillSubmission = null;
+        this.applySkillLockState(null);
+        return;
+      }
       const sub = await FirebaseService.fetchStudentSkillSubmission(this.currentUid, unitId);
+      this.activeSkillSubmission = sub || null;
       const banner = document.getElementById('skill-teacher-grade-banner');
       const pill = document.getElementById('skill-status-pill');
-      if (!sub || !banner) return;
+
+      if (sub && sub.answers) {
+        // Hydrate answers from Cloud if user logged in on another device
+        Object.entries(sub.answers).forEach(([key, val]) => {
+          const field = document.getElementById(`sk-${key}`);
+          if (field && !field.value && val) field.value = val;
+        });
+      }
+
+      if (!sub) {
+        if (banner) {
+          banner.classList.add('hidden');
+          banner.innerHTML = '';
+        }
+        if (pill) {
+          pill.textContent = '✏️ รอทำแบบฝึกทักษะ';
+          pill.style.color = 'var(--amber)';
+        }
+        this.applySkillLockState(null);
+        return;
+      }
 
       if (sub.status === 'graded' && typeof sub.teacherScore === 'number' && sub.teacherScore >= 0) {
-        banner.classList.remove('hidden');
-        banner.innerHTML = `
-          <div style="padding:12px 14px; background:rgba(16,185,129,0.16); border:2px solid var(--emerald); font-size:0.88rem;">
-            <b style="color:#4ade80;">✅ ครูผู้สอนตรวจแบบฝึกทักษะนี้แล้ว! คะแนนที่ได้: ${sub.teacherScore} / 10 คะแนน</b>
-            ${sub.teacherComment ? `<div style="margin-top:4px; color:#e2e8f0;">💬 ความเห็นครู: ${sub.teacherComment}</div>` : ''}
-          </div>
-        `;
+        if (banner) {
+          banner.classList.remove('hidden');
+          banner.innerHTML = `
+            <div style="padding:12px 14px; background:rgba(16,185,129,0.16); border:2px solid var(--emerald); font-size:0.88rem;">
+              <b style="color:#4ade80;">✅ ครูผู้สอนตรวจแบบฝึกทักษะนี้แล้ว! คะแนนที่ได้: ${sub.teacherScore} / 10 คะแนน</b>
+              <div style="font-size:0.8rem; color:#fde68a; margin-top:4px;">🔒 ใบงานนี้ได้รับคะแนนแล้ว ไม่สามารถแก้ไขหรือส่งซ้ำได้ (สามารถพิมพ์ใบงาน PDF หรือดูแนวคำตอบได้)</div>
+              ${sub.teacherComment ? `<div style="margin-top:4px; color:#e2e8f0;">💬 ความเห็นครู: ${sub.teacherComment}</div>` : ''}
+            </div>
+          `;
+        }
         if (pill) {
-          pill.textContent = `✅ ครูตรวจแล้ว (${sub.teacherScore}/10)`;
+          pill.textContent = `🔒 ครูตรวจแล้ว (${sub.teacherScore}/10)`;
           pill.style.color = 'var(--emerald)';
         }
       } else {
-        banner.classList.remove('hidden');
-        banner.innerHTML = `
-          <div style="padding:10px 14px; background:rgba(56,189,248,0.12); border:2px solid var(--cyan); font-size:0.84rem; color:#bae6fd;">
-            ☁️ ส่งงานให้ครูเรียบร้อยแล้วเมื่อ <b>${sub.submittedAt || '-'}</b> (คะแนนแนะนำเบื้องต้น: <b>${Math.round((sub.autoScore || 0) / 10)}/10</b> — รอครูยืนยันคะแนน)
-          </div>
-        `;
+        if (banner) {
+          banner.classList.remove('hidden');
+          banner.innerHTML = `
+            <div style="padding:10px 14px; background:rgba(56,189,248,0.12); border:2px solid var(--cyan); font-size:0.84rem; color:#bae6fd;">
+              ☁️ ส่งงานให้ครูเรียบร้อยแล้วเมื่อ <b>${sub.submittedAt || '-'}</b> (คะแนนแนะนำเบื้องต้น: <b>${Math.round((sub.autoScore || 0) / 10)}/10</b> — รอครูตรวจ)
+              <div style="margin-top:4px; font-size:0.8rem; color:#cbd5e1;">หากต้องการแก้ไขคำตอบ กดปุ่ม <b>↩️ ยกเลิกการส่งเพื่อแก้ไขคำตอบ</b> ด้านล่างก่อนครูตรวจ</div>
+            </div>
+          `;
+        }
         if (pill) {
           pill.textContent = '☁️ ส่งงานแล้ว (รอครูตรวจ)';
           pill.style.color = 'var(--cyan)';
         }
       }
+      this.applySkillLockState(sub);
+    },
+
+    async unsubmitSkillExercise(unitId) {
+      if (this.activeSkillSubmission && this.activeSkillSubmission.status === 'graded') {
+        soundFX.playPlayerHurt();
+        alert('ครูตรวจและให้คะแนนใบงานนี้แล้ว ไม่สามารถยกเลิกการส่งหรือแก้ไขได้');
+        return;
+      }
+      if (!confirm(`ต้องการยกเลิกการส่งแบบฝึกทักษะบทที่ ${unitId} เพื่อกลับไปแก้ไขคำตอบหรือไม่?\n(คำตอบเดิมที่คุณพิมพ์ไว้จะยังคงอยู่ครบ)`)) return;
+      const res = await FirebaseService.unsubmitSkillExercise(this.currentUid, unitId);
+      if (!res.ok) {
+        soundFX.playPlayerHurt();
+        alert(res.error || 'ไม่สามารถยกเลิกการส่งได้');
+        return;
+      }
+      this.activeSkillSubmission = null;
+      const fb = document.getElementById('skill-feedback-box');
+      if (fb) fb.innerHTML = `<div style="color:#facc15;">↩️ ยกเลิกการส่งใบงานบทที่ ${unitId} เรียบร้อยแล้ว สามารถแก้ไขคำตอบและกดส่งใหม่ได้เลย</div>`;
+      soundFX.playSelect();
+      this.toast(`↩️ ยกเลิกการส่งบทที่ ${unitId} แล้ว — แก้ไขคำตอบได้เลย`);
+      await this.hydrateStudentSkillCloudStatus(unitId);
     },
 
     printSkillWorksheet(unitId, customSubmission = null) {
@@ -1283,6 +1358,13 @@
     },
 
     clearSkillAnswers(unitId) {
+      if (this.activeSkillSubmission && (this.activeSkillSubmission.status === 'graded' || this.activeSkillSubmission.status === 'submitted')) {
+        soundFX.playPlayerHurt();
+        alert(this.activeSkillSubmission.status === 'graded'
+          ? 'ครูตรวจและให้คะแนนแล้ว ไม่สามารถล้างหรือแก้ไขคำตอบได้'
+          : 'กรุณากดยกเลิกการส่งก่อนล้างคำตอบ');
+        return;
+      }
       if (!confirm(`ต้องการล้างคำตอบแบบฝึกทักษะบทที่ ${unitId} ทั้งหมดหรือไม่?`)) return;
       const saved = this.loadSkillAnswers(unitId);
       saved.answers = {};
@@ -1293,6 +1375,11 @@
     },
 
     async submitSkillExercise(unitId) {
+      if (this.activeSkillSubmission && this.activeSkillSubmission.status === 'graded') {
+        soundFX.playPlayerHurt();
+        alert('ครูตรวจและให้คะแนนใบงานนี้แล้ว ไม่สามารถแก้ไขหรือส่งซ้ำได้');
+        return;
+      }
       const ex = GameData.SKILL_EXERCISES && GameData.SKILL_EXERCISES[unitId];
       if (!ex) return;
       const saved = this.loadSkillAnswers(unitId);

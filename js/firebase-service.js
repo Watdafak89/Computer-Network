@@ -1029,6 +1029,37 @@
       localMap[docId].teacherComment = cleanComment;
       this.saveLocalSkillSubmissions(localMap);
       return { ok: true, teacherScore: cleanScore, teacherComment: cleanComment };
+    },
+
+    async unsubmitSkillExercise(uid, unitId) {
+      if (!uid) return { ok: false, error: 'ไม่พบข้อมูลผู้ใช้' };
+      const docId = `${uid}_u${Number(unitId)}`;
+      if (this.isCloud() && this.auth && this.auth.currentUser) {
+        try {
+          const ref = this.db.collection('skillSubmissions').doc(docId);
+          const snap = await ref.get();
+          if (snap.exists && snap.data().status === 'graded') {
+            return { ok: false, error: 'ครูตรวจและให้คะแนนใบงานนี้แล้ว ไม่สามารถยกเลิกการส่งหรือแก้ไขได้' };
+          }
+          if (snap.exists) {
+            await ref.delete();
+          }
+          const localMap = this.getLocalSkillSubmissions();
+          delete localMap[docId];
+          this.saveLocalSkillSubmissions(localMap);
+          return { ok: true };
+        } catch (err) {
+          return { ok: false, error: translateFirebaseError(err) };
+        }
+      }
+
+      const localMap = this.getLocalSkillSubmissions();
+      if (localMap[docId] && localMap[docId].status === 'graded') {
+        return { ok: false, error: 'ครูตรวจและให้คะแนนใบงานนี้แล้ว ไม่สามารถยกเลิกการส่งหรือแก้ไขได้' };
+      }
+      delete localMap[docId];
+      this.saveLocalSkillSubmissions(localMap);
+      return { ok: true };
     }
   };
 
