@@ -1294,10 +1294,10 @@
   ];
 
   const INITIAL_LEADERBOARD = [
-    { name: 'ธนกฤต วงศ์เครือข่าย', studentId: '6720901001', classRoom: 'ปวช.2/1', heroClass: 'paladin', level: 8, xp: 4120, unitsCleared: 10, badgeCount: 14, updatedAt: '2026-11-19' },
-    { name: 'กัญญาณัฐ ไฟเบอร์ออปติก', studentId: '6720901014', classRoom: 'ปวช.2/1', heroClass: 'mage', level: 7, xp: 3380, unitsCleared: 8, badgeCount: 11, updatedAt: '2026-11-19' },
-    { name: 'ภานุพงศ์ แพ็กเก็ตมาสเตอร์', studentId: '6720901022', classRoom: 'ปวช.2/2', heroClass: 'ninja', level: 6, xp: 2490, unitsCleared: 6, badgeCount: 8, updatedAt: '2026-11-18' },
-    { name: 'สุพิชชา เราเตอร์เรนเจอร์', studentId: '6720901035', classRoom: 'ปวช.1/1', heroClass: 'ranger', level: 4, xp: 1320, unitsCleared: 3, badgeCount: 5, updatedAt: '2026-11-18' }
+    { name: 'ธนกฤต วงศ์เครือข่าย', studentId: '6720901001', classRoom: 'ปวช.2/1', heroClass: 'paladin', level: 8, xp: 4120, unitsCleared: 10, badgeCount: 14, arcadeHighScore: 1250, updatedAt: '2026-11-19' },
+    { name: 'กัญญาณัฐ ไฟเบอร์ออปติก', studentId: '6720901014', classRoom: 'ปวช.2/1', heroClass: 'mage', level: 7, xp: 3380, unitsCleared: 8, badgeCount: 11, arcadeHighScore: 950, updatedAt: '2026-11-19' },
+    { name: 'ภานุพงศ์ แพ็กเก็ตมาสเตอร์', studentId: '6720901022', classRoom: 'ปวช.2/2', heroClass: 'ninja', level: 6, xp: 2490, unitsCleared: 6, badgeCount: 8, arcadeHighScore: 725, updatedAt: '2026-11-18' },
+    { name: 'สุพิชชา เราเตอร์เรนเจอร์', studentId: '6720901035', classRoom: 'ปวช.1/1', heroClass: 'ranger', level: 4, xp: 1320, unitsCleared: 3, badgeCount: 5, arcadeHighScore: 450, updatedAt: '2026-11-18' }
   ];
 
   const ENCYCLOPEDIA_PORTS = [

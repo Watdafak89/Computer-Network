@@ -278,7 +278,10 @@
     <div class="modal-box">
       <div class="modal-header">
         <h2 class="pixel-title" style="color:var(--violet);">🕹️ Endless Cyber Arcade (โหมดเอาชีวิตรอด)</h2>
-        <button class="px-btn px-btn-sm" onclick="App.stopArcade()">✖ ออก</button>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="btn-arcade-board" class="px-btn px-btn-amber px-btn-sm" onclick="App.toggleArcadeLeaderboard()">🏆 ตารางคะแนน</button>
+          <button class="px-btn px-btn-sm" onclick="App.stopArcade()">✖ ออก</button>
+        </div>
       </div>
       <div id="arcade-body"></div>
     </div>
@@ -362,9 +365,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script src="js/pixel-sprites.js?v=2"></script>
   <script src="js/sound.js?v=2"></script>
-  <script src="js/data.js?v=4"></script>
+  <script src="js/data.js?v=5"></script>
   <script src="js/firebase-config.js?v=2"></script>
-  <script src="js/firebase-service.js?v=2"></script>
-  <script src="js/app.js?v=4"></script>
+  <script src="js/firebase-service.js?v=3"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>

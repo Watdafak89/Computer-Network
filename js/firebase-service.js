@@ -556,6 +556,7 @@
                 xp: d.xp || 0,
                 unitsCleared: d.unitsCleared || 0,
                 badgeCount: d.badgeCount || 0,
+                arcadeHighScore: d.arcadeHighScore || 0,
                 updatedAt: d.updatedAt || ''
               });
             }

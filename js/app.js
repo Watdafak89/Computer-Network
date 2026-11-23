@@ -2918,9 +2918,11 @@
       });
       // Shuffle
       pool.sort(() => Math.random() - 0.5);
-      this.arcade = { pool, idx: 0, hearts: 3, score: 0, streak: 0 };
+      this.arcade = { pool, idx: 0, hearts: 3, score: 0, streak: 0, viewingBoard: false };
       this.state.daily.arcadeRunsToday += 1;
       this.saveState();
+      const boardBtn = document.getElementById('btn-arcade-board');
+      if (boardBtn) boardBtn.textContent = '🏆 ตารางคะแนน';
       this.renderArcade();
       document.getElementById('modal-arcade').classList.remove('hidden');
     },
@@ -2930,22 +2932,93 @@
       this.closeModal('modal-arcade');
     },
 
+    async toggleArcadeLeaderboard() {
+      soundFX.playSelect();
+      if (!this.arcade) return;
+      this.arcade.viewingBoard = !this.arcade.viewingBoard;
+      const boardBtn = document.getElementById('btn-arcade-board');
+      if (this.arcade.viewingBoard) {
+        if (boardBtn) boardBtn.textContent = '🎮 กลับหน้าอาร์เคด';
+        await this.renderArcadeLeaderboard();
+      } else {
+        if (boardBtn) boardBtn.textContent = '🏆 ตารางคะแนน';
+        this.renderArcade();
+      }
+    },
+
+    async renderArcadeLeaderboard() {
+      const body = document.getElementById('arcade-body');
+      if (!body) return;
+      this.syncLeaderboardEntry();
+      body.innerHTML = `<div style="padding:20px; text-align:center; color:var(--cyan);">⏳ กำลังโหลดตารางคะแนน Endless Arcade...</div>`;
+      const fallback = this.getLeaderboardData();
+      const rawList = global.FirebaseService
+        ? await FirebaseService.fetchLeaderboard(fallback)
+        : fallback;
+      const list = [...rawList].sort((a, b) => (b.arcadeHighScore || 0) - (a.arcadeHighScore || 0));
+      const isCloud = global.FirebaseService && FirebaseService.isCloud();
+
+      body.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px; font-size:0.85rem;">
+          <span style="color:${isCloud ? 'var(--emerald)' : 'var(--amber)'}; font-weight:700;">
+            🕹️ อันดับคะแนนสูงสุด Endless Arcade (${isCloud ? '☁️ Cloud Firestore' : '💾 Local Mode'})
+          </span>
+          <div style="display:flex; gap:6px;">
+            <button class="px-btn px-btn-sm" onclick="App.renderArcadeLeaderboard()">🔄 รีเฟรช</button>
+            <button class="px-btn px-btn-violet px-btn-sm" onclick="App.toggleArcadeLeaderboard()">🎮 กลับหน้าอาร์เคด</button>
+          </div>
+        </div>
+        <table class="pixel-table">
+          <thead>
+            <tr><th>อันดับ</th><th>รหัสนักศึกษา</th><th>ชื่อ-นามสกุล</th><th>ห้อง</th><th>คะแนนสูงสุด</th></tr>
+          </thead>
+          <tbody>
+            ${list.map((r, i) => {
+              const heroKey = r.heroClass || 'paladin';
+              const clsObj = this.getClassObj(heroKey);
+              return `
+                <tr style="${r.studentId === this.state.profile.studentId ? 'background:rgba(168,85,247,0.18);' : ''}">
+                  <td>
+                    <div style="display:inline-flex; align-items:center; gap:8px;">
+                      <b>#${i + 1}</b>
+                      <span title="${clsObj.thName}" style="display:inline-flex; align-items:center;">${PixelSprites.render(heroKey, 28)}</span>
+                    </div>
+                  </td>
+                  <td>${r.studentId}</td>
+                  <td>${r.name}</td>
+                  <td>${r.classRoom}</td>
+                  <td><b style="color:var(--amber);">🏆 ${r.arcadeHighScore || 0}</b></td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    },
+
     renderArcade() {
       const a = this.arcade;
       const body = document.getElementById('arcade-body');
       if (!a) return;
       if (a.hearts <= 0 || a.idx >= a.pool.length) {
-        const isRecord = a.score > this.state.arcadeHighScore;
-        if (isRecord) this.state.arcadeHighScore = a.score;
-        const rewardXp = Math.min(200, Math.round(a.score / 5));
-        const withinDailyCoinCap = (this.state.daily.arcadeRunsToday || 0) <= 3;
-        const rewardCoins = withinDailyCoinCap ? Math.min(50, Math.round(a.score / 15)) : 0;
-        if (rewardXp > 0) this.addRewards(rewardXp, rewardCoins, `จบเกม Endless Arcade (${a.score} แต้ม)`);
+        if (!a.finished) {
+          a.finished = true;
+          const isRecord = a.score > this.state.arcadeHighScore;
+          if (isRecord) this.state.arcadeHighScore = a.score;
+          const rewardXp = Math.min(200, Math.round(a.score / 5));
+          const withinDailyCoinCap = (this.state.daily.arcadeRunsToday || 0) <= 3;
+          const rewardCoins = withinDailyCoinCap ? Math.min(50, Math.round(a.score / 15)) : 0;
+          if (rewardXp > 0) this.addRewards(rewardXp, rewardCoins, `จบเกม Endless Arcade (${a.score} แต้ม)`);
+          else if (isRecord) this.saveState(true);
+        }
         body.innerHTML = `
           <div style="text-align:center; padding:24px;">
             <h3 class="pixel-title" style="color:var(--amber); font-size:1.4rem;">🕹️ GAME OVER!</h3>
             <p style="font-size:1.2rem; margin:10px 0;">คะแนนรอบนี้: <b style="color:var(--cyan)">${a.score}</b> | สถิติสูงสุด: <b style="color:var(--emerald)">${this.state.arcadeHighScore}</b></p>
-            <button class="px-btn px-btn-violet" onclick="App.openArcade()">🔁 เล่นอาร์เคดอีกรอบ</button>
+            <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:12px;">
+              <button class="px-btn px-btn-violet" onclick="App.openArcade()">🔁 เล่นอาร์เคดอีกรอบ</button>
+              <button class="px-btn px-btn-amber" onclick="App.toggleArcadeLeaderboard()">🏆 ดูตารางคะแนนอาร์เคด</button>
+            </div>
           </div>
         `;
         return;
@@ -3060,6 +3133,7 @@
         xp: this.state.xp,
         unitsCleared: cleared,
         badgeCount: this.state.badges.length,
+        arcadeHighScore: this.state.arcadeHighScore || 0,
         updatedAt: todayKey()
       };
       const idx = list.findIndex((x) => x.studentId === entry.studentId);
@@ -3092,18 +3166,27 @@
             <tr><th>อันดับ</th><th>รหัสนักศึกษา</th><th>ชื่อ-นามสกุล</th><th>ห้อง</th><th>LV</th><th>XP</th><th>ผ่าน (หน่วย)</th><th>เหรียญ</th></tr>
           </thead>
           <tbody>
-            ${list.map((r, i) => `
-              <tr style="${r.studentId === this.state.profile.studentId ? 'background:rgba(56,189,248,0.16);' : ''}">
-                <td><b>#${i + 1}</b></td>
-                <td>${r.studentId}</td>
-                <td>${r.name}</td>
-                <td>${r.classRoom}</td>
-                <td>LV.${r.level}</td>
-                <td><b>${r.xp}</b></td>
-                <td>${r.unitsCleared}/${GameData.UNITS.length}</td>
-                <td>🏅 ${r.badgeCount}</td>
-              </tr>
-            `).join('')}
+            ${list.map((r, i) => {
+              const heroKey = r.heroClass || 'paladin';
+              const clsObj = this.getClassObj(heroKey);
+              return `
+                <tr style="${r.studentId === this.state.profile.studentId ? 'background:rgba(56,189,248,0.16);' : ''}">
+                  <td>
+                    <div style="display:inline-flex; align-items:center; gap:8px;">
+                      <b>#${i + 1}</b>
+                      <span title="${clsObj.thName}" style="display:inline-flex; align-items:center;">${PixelSprites.render(heroKey, 28)}</span>
+                    </div>
+                  </td>
+                  <td>${r.studentId}</td>
+                  <td>${r.name}</td>
+                  <td>${r.classRoom}</td>
+                  <td>LV.${r.level}</td>
+                  <td><b>${r.xp}</b></td>
+                  <td>${r.unitsCleared}/${GameData.UNITS.length}</td>
+                  <td>🏅 ${r.badgeCount}</td>
+                </tr>
+              `;
+            }).join('')}
           </tbody>
         </table>
       `;
