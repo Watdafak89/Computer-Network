@@ -1488,6 +1488,7 @@
     renderCodex(unit) {
       const el = document.getElementById('stage-body-codex');
       const hasSkill = Boolean(GameData.SKILL_EXERCISES && GameData.SKILL_EXERCISES[unit.id]);
+      const facts = (GameData.UNIT_FUN_FACTS && GameData.UNIT_FUN_FACTS[unit.id]) || [];
       el.innerHTML = `
         <div class="pixel-box codex-diagram-box">
           <div style="font-weight:700; color:var(--cyan); margin-bottom:10px;">📊 แผนภาพอินโฟกราฟิกประจำหน่วย (Pixel Infographic)</div>
@@ -1502,6 +1503,14 @@
             </div>
           `).join('')}
         </div>
+        ${facts.length > 0 ? `
+          <div class="pixel-box pixel-box-gold" style="margin-top:16px; padding:16px; background:rgba(245,158,11,0.07);">
+            <h3 style="color:var(--amber); margin-bottom:10px; font-size:1rem;">💡 เกร็ดความรู้ &amp; เปรียบเทียบให้เข้าใจง่าย (Analogy Corner)</h3>
+            <ul style="margin:0; padding-left:18px; display:flex; flex-direction:column; gap:8px; font-size:0.9rem; color:#e2e8f0; line-height:1.55;">
+              ${facts.map((f) => `<li>${f}</li>`).join('')}
+            </ul>
+          </div>
+        ` : ''}
         <div style="margin-top:18px; display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap;">
           ${hasSkill ? `<button class="px-btn px-btn-cyan" onclick="App.switchStageTab('skill')">📝 ไปทำแบบฝึกทักษะบทที่ ${unit.id}</button>` : ''}
           <button class="px-btn px-btn-emerald" onclick="App.switchStageTab('lab')">ไปฝึกปฏิบัติในห้อง Lab Simulator ➜</button>
