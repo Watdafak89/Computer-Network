@@ -1457,6 +1457,95 @@
           }
         ]
       }
+    },
+    3: {
+      title: 'แบบฝึกทักษะบทเรียนที่ 3: มาตรฐานและโปรโตคอลของระบบเครือข่าย',
+      instruction: 'ทำครบทั้ง 4 ตอน: ตอนที่ 1 ระบุชื่อองค์กร (8 ข้อ), ตอนที่ 2 จับคู่ A–J (10 ข้อ), ตอนที่ 3 ลำดับชั้น OSI Model & หน้าที่ (7 ชั้น) และตอนที่ 4 จับคู่โปรโตคอล (8 ข้อ)',
+      writtenSections: [
+        {
+          no: 1,
+          prompt: 'ตอนที่ 1 ให้นักเรียนเขียนชื่อองค์กรจากรายละเอียดต่อไปนี้',
+          items: [
+            { id: 'u3_p1_1', label: '1. เป็นองค์กรกำหนดมาตรฐาน กฎระเบียบ และพัฒนาด้านการสื่อสารโทรคมนาคม รวมไปถึงบริการแถบคลื่นความถี่วิทยุ', keywords: ['itu', 'international telecommunication'], placeholder: 'ระบุชื่อย่อองค์กร เช่น ITU...', model: 'ITU (International Telecommunication Union)' },
+            { id: 'u3_p1_2', label: '2. เป็นองค์กรวิชาชีพระดับนานาชาติ ทำหน้าที่ดูแลเทคโนโลยี งานวิจัย และพัฒนาต่าง ๆ ที่เกี่ยวกับไฟฟ้า และคอมพิวเตอร์', keywords: ['ieee'], placeholder: 'ระบุชื่อย่อองค์กร เช่น IEEE...', model: 'IEEE (Institute of Electrical and Electronics Engineers)' },
+            { id: 'u3_p1_3', label: '3. เป็นองค์กรกำหนดมาตรฐานอุตสาหกรรมระหว่างชาติ', keywords: ['iso'], placeholder: 'ระบุชื่อย่อองค์กร เช่น ISO...', model: 'ISO (International Organization for Standardization)' },
+            { id: 'u3_p1_4', label: '4. เป็นองค์กรกำหนดมาตรฐานที่เกี่ยวข้องกับอุปกรณ์ด้านฮาร์ดแวร์ อุปกรณ์ทางด้านโทรคมนาคม และอุปกรณ์การสื่อสารในเครือข่ายคอมพิวเตอร์', keywords: ['eia', 'tia'], placeholder: 'ระบุชื่อย่อองค์กร เช่น EIA หรือ EIA/TIA...', model: 'EIA (Electronic Industries Alliance) / TIA' },
+            { id: 'u3_p1_5', label: '5. เป็นองค์กรกำหนดมาตรฐาน OSI Model', keywords: ['iso'], placeholder: 'ระบุชื่อย่อองค์กร...', model: 'ISO (International Organization for Standardization)' },
+            { id: 'u3_p1_6', label: '6. เป็นองค์กรกำหนดมาตรฐานการจัดเรียงสาย TIA T568', keywords: ['tia', 'eia'], placeholder: 'ระบุชื่อย่อองค์กร...', model: 'TIA (Telecommunications Industry Association)' },
+            { id: 'u3_p1_7', label: '7. เป็นองค์กรกำหนดมาตรฐานของเครือข่าย 802', keywords: ['ieee'], placeholder: 'ระบุชื่อย่อองค์กร...', model: 'IEEE' },
+            { id: 'u3_p1_8', label: '8. เป็นองค์กรกำหนดมาตรฐานระบบโทรคมนาคม', keywords: ['itu', 'tia'], placeholder: 'ระบุชื่อย่อองค์กร...', model: 'ITU (หรือ TIA)' }
+          ]
+        },
+        {
+          no: 3,
+          prompt: 'ตอนที่ 3 ให้นักเรียนเขียนลำดับชั้นของ OSI Model รวมไปถึงให้รายละเอียดหน้าที่โดยสังเขป (ลำดับที่ 1 ตัวอย่าง: Application Layer — กำหนดมาตรฐานการติดต่อกับซอฟต์แวร์)',
+          items: [
+            { id: 'u3_p3_n_2', label: 'ลำดับที่ 2 — ชื่อชั้น OSI (ภาษาอังกฤษ):', keywords: ['presentation'], placeholder: 'เช่น Presentation Layer', model: 'Presentation Layer' },
+            { id: 'u3_p3_d_2', label: 'ลำดับที่ 2 — หน้าที่โดยสังเขป:', keywords: ['แปลง', 'รูปแบบ', 'เข้ารหัส', 'บีบอัด', 'encrypt', 'format'], placeholder: 'อธิบายหน้าที่ชั้นที่ 2...', model: 'แปลงรูปแบบข้อมูล เข้ารหัส (Encryption) และบีบอัดข้อมูล' },
+            { id: 'u3_p3_n_3', label: 'ลำดับที่ 3 — ชื่อชั้น OSI (ภาษาอังกฤษ):', keywords: ['session'], placeholder: 'เช่น Session Layer', model: 'Session Layer' },
+            { id: 'u3_p3_d_3', label: 'ลำดับที่ 3 — หน้าที่โดยสังเขป:', keywords: ['สร้าง', 'ควบคุม', 'เชื่อมต่อ', 'เซสชัน', 'session', 'ปิด'], placeholder: 'อธิบายหน้าที่ชั้นที่ 3...', model: 'สร้าง ควบคุม และสิ้นสุดการเชื่อมต่อ (Session) ระหว่างเครื่องต้นทาง-ปลายทาง' },
+            { id: 'u3_p3_n_4', label: 'ลำดับที่ 4 — ชื่อชั้น OSI (ภาษาอังกฤษ):', keywords: ['transport'], placeholder: 'เช่น Transport Layer', model: 'Transport Layer' },
+            { id: 'u3_p3_d_4', label: 'ลำดับที่ 4 — หน้าที่โดยสังเขป:', keywords: ['แบ่ง', 'รับ', 'ส่ง', 'tcp', 'udp', 'segment', 'ถูกต้อง', 'ครบถ้วน'], placeholder: 'อธิบายหน้าที่ชั้นที่ 4...', model: 'แบ่งข้อมูลเป็น Segment และควบคุมการรับ-ส่งข้อมูลให้ครบถ้วนถูกต้อง (TCP/UDP)' },
+            { id: 'u3_p3_n_5', label: 'ลำดับที่ 5 — ชื่อชั้น OSI (ภาษาอังกฤษ):', keywords: ['network'], placeholder: 'เช่น Network Layer', model: 'Network Layer' },
+            { id: 'u3_p3_d_5', label: 'ลำดับที่ 5 — หน้าที่โดยสังเขป:', keywords: ['ip', 'เส้นทาง', 'routing', 'packet', 'router', 'ที่อยู่'], placeholder: 'อธิบายหน้าที่ชั้นที่ 5...', model: 'กำหนดหมายเลข IP Address และเลือกเส้นทางส่งแพ็กเก็ตข้ามเครือข่าย (Routing)' },
+            { id: 'u3_p3_n_6', label: 'ลำดับที่ 6 — ชื่อชั้น OSI (ภาษาอังกฤษ):', keywords: ['data link', 'datalink'], placeholder: 'เช่น Data Link Layer', model: 'Data Link Layer' },
+            { id: 'u3_p3_d_6', label: 'ลำดับที่ 6 — หน้าที่โดยสังเขป:', keywords: ['mac', 'frame', 'เฟรม', 'ตรวจสอบ', 'ผิดพลาด', 'switch'], placeholder: 'อธิบายหน้าที่ชั้นที่ 6...', model: 'จัดรูปแบบเฟรมข้อมูล อ้างอิง MAC Address และตรวจสอบข้อผิดพลาดในการส่ง' },
+            { id: 'u3_p3_n_7', label: 'ลำดับที่ 7 — ชื่อชั้น OSI (ภาษาอังกฤษ):', keywords: ['physical'], placeholder: 'เช่น Physical Layer', model: 'Physical Layer' },
+            { id: 'u3_p3_d_7', label: 'ลำดับที่ 7 — หน้าที่โดยสังเขป:', keywords: ['บิต', 'bit', 'สัญญาณ', 'สาย', 'กายภาพ', 'ไฟฟ้า', 'แสง'], placeholder: 'อธิบายหน้าที่ชั้นที่ 7...', model: 'รับ-ส่งสัญญาณบิต (0/1) ผ่านสื่อนำสัญญาณทางกายภาพ เช่น สาย UTP, Fiber, คลื่นวิทยุ' }
+          ]
+        }
+      ],
+      connectorPart: null,
+      matchingParts: [
+        {
+          id: 'p2',
+          title: 'ตอนที่ 2 ให้นักเรียนจับคู่คำตอบกับคำถามต่อไปนี้ให้เหมาะสมกัน (A – J)',
+          options: [
+            { value: 'A', label: 'A. Private IP' },
+            { value: 'B', label: 'B. Public IP' },
+            { value: 'C', label: 'C. IEEE 802.11' },
+            { value: 'D', label: 'D. AppleTalk' },
+            { value: 'E', label: 'E. NetBEUI' },
+            { value: 'F', label: 'F. IEEE 802.3' },
+            { value: 'G', label: 'G. IPX/SPX' },
+            { value: 'H', label: 'H. IEEE 802.15' },
+            { value: 'I', label: 'I. NAT' },
+            { value: 'J', label: 'J. Protocol' }
+          ],
+          rows: [
+            { id: 'u3_p2_1', no: 1, prompt: 'ข้อกำหนดหรือข้อตกลงในการติดต่อสื่อสารข้อมูล', ans: 'J' },
+            { id: 'u3_p2_2', no: 2, prompt: 'เหมาะกับเครือข่ายขนาดเล็ก ไม่มีความสามารถในการกำหนดเส้นทางการส่งข้อมูล', ans: 'E' },
+            { id: 'u3_p2_3', no: 3, prompt: 'ใช้ระบบปฏิบัติการเครือข่าย Netware', ans: 'G' },
+            { id: 'u3_p2_4', no: 4, prompt: 'ใช้ในระบบเครือข่ายคอมพิวเตอร์ Macintosh', ans: 'D' },
+            { id: 'u3_p2_5', no: 5, prompt: 'ไอพีแอดเดรสที่ใช้งานกับเครือข่ายอินเทอร์เน็ต', ans: 'B' },
+            { id: 'u3_p2_6', no: 6, prompt: 'ไอพีแอดเดรสที่ใช้งานในเครือข่ายภายในองค์กร', ans: 'A' },
+            { id: 'u3_p2_7', no: 7, prompt: 'การแปลง Private IP เป็น Public IP', ans: 'I' },
+            { id: 'u3_p2_8', no: 8, prompt: 'มาตรฐานการสื่อสารข้อมูล Ethernet', ans: 'F' },
+            { id: 'u3_p2_9', no: 9, prompt: 'มาตรฐานเกี่ยวกับระบบเครือข่ายไร้สาย', ans: 'C' },
+            { id: 'u3_p2_10', no: 10, prompt: 'มาตรฐานการเชื่อมต่อเครือข่ายไร้สายระยะใกล้', ans: 'H' }
+          ]
+        },
+        {
+          id: 'p4',
+          title: 'ตอนที่ 4 ให้นักเรียนจับคู่ชื่อโปรโตคอลที่เกี่ยวข้องกับข้อมูลการปฏิบัติงานต่อไปนี้',
+          options: [
+            { value: 'TCP/IP', label: 'TCP/IP' },
+            { value: 'NetBEUI', label: 'NetBEUI' },
+            { value: 'AppleTalk', label: 'AppleTalk' },
+            { value: 'IPX/SPX', label: 'IPX/SPX' }
+          ],
+          rows: [
+            { id: 'u3_p4_1', no: 1, prompt: 'ใช้ในระบบเครือข่ายอินเทอร์เน็ต', ans: 'TCP/IP' },
+            { id: 'u3_p4_2', no: 2, prompt: 'ใช้กับเครือข่ายขนาดเล็ก', ans: 'NetBEUI' },
+            { id: 'u3_p4_3', no: 3, prompt: 'กำหนดหมายเลขด้วย IP Address', ans: 'TCP/IP' },
+            { id: 'u3_p4_4', no: 4, prompt: 'ใช้กับระบบเครือข่ายคอมพิวเตอร์ Macintosh', ans: 'AppleTalk' },
+            { id: 'u3_p4_5', no: 5, prompt: 'ไม่มีความสามารถในการค้นหาเส้นทาง', ans: 'NetBEUI' },
+            { id: 'u3_p4_6', no: 6, prompt: 'พัฒนาโดยบริษัท Novell', ans: 'IPX/SPX' },
+            { id: 'u3_p4_7', no: 7, prompt: 'ใช้ในระบบปฏิบัติการ Netware', ans: 'IPX/SPX' },
+            { id: 'u3_p4_8', no: 8, prompt: 'Ether Talk และ Token Talk', ans: 'AppleTalk' }
+          ]
+        }
+      ]
     }
   };
 

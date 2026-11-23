@@ -1028,6 +1028,38 @@
                 </div>
               </div>
             ` : ''}
+
+            ${Array.isArray(ex.matchingParts) ? ex.matchingParts.map((mp) => `
+              <div class="pixel-box" style="padding:14px;">
+                <h4 style="color:var(--amber); margin-bottom:10px;">${mp.title}</h4>
+                <div style="overflow-x:auto;">
+                  <table class="pixel-table">
+                    <thead>
+                      <tr>
+                        <th style="width:52px;">ข้อ</th>
+                        <th>รายการ / คำถาม</th>
+                        <th style="width:230px;">คำตอบที่จับคู่</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${mp.rows.map((row) => `
+                        <tr id="sk-match-row-${row.id}">
+                          <td><b>${row.no}</b></td>
+                          <td style="text-align:left;">${row.prompt}</td>
+                          <td>
+                            <select id="sk-${row.id}" class="px-select" onchange="App.saveSkillField(${unit.id}, '${row.id}', this.value)">
+                              <option value="">-- เลือกคำตอบ --</option>
+                              ${mp.options.map((opt) => `<option value="${opt.value}" ${ans[row.id] === opt.value ? 'selected' : ''}>${opt.label}</option>`).join('')}
+                            </select>
+                            <div class="skill-model-ans hidden" style="margin-top:4px; font-size:0.78rem; color:#6ee7b7;">เฉลย: ${row.ans}</div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            `).join('') : ''}
           </div>
 
           <div id="skill-feedback-box" style="margin-top:14px; font-size:0.88rem; color:var(--text-muted);"></div>
@@ -1069,6 +1101,14 @@
           const nVal = ans[`u2_p2_n_${row.no}`] || '';
           const cVal = ans[`u2_p2_c_${row.no}`] || '';
           if (nVal === row.ansName && cVal === row.ansCable) part2Correct++;
+        });
+      }
+      if (Array.isArray(ex.matchingParts)) {
+        ex.matchingParts.forEach((mp) => {
+          mp.rows.forEach((row) => {
+            part2Total++;
+            if ((ans[row.id] || '') === row.ans) part2Correct++;
+          });
         });
       }
 
@@ -1175,6 +1215,30 @@
             </div>
           ` : ''}
 
+          ${Array.isArray(ex.matchingParts) ? ex.matchingParts.map((mp) => `
+            <div style="margin-top:14px;">
+              <div style="font-weight:700; margin-bottom:6px;">${mp.title}</div>
+              <table style="width:100%; border-collapse:collapse; font-size:0.86rem;">
+                <thead>
+                  <tr style="background:#e2e8f0;">
+                    <th style="border:1px solid #0f172a; padding:5px; width:44px;">ข้อ</th>
+                    <th style="border:1px solid #0f172a; padding:5px;">รายการ</th>
+                    <th style="border:1px solid #0f172a; padding:5px; width:160px;">คำตอบ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${mp.rows.map((row) => `
+                    <tr>
+                      <td style="border:1px solid #0f172a; padding:5px; text-align:center;">${row.no}</td>
+                      <td style="border:1px solid #0f172a; padding:5px;">${esc(row.prompt)}</td>
+                      <td style="border:1px solid #0f172a; padding:5px;">${esc(ans[row.id] || '-')}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `).join('') : ''}
+
           <div style="margin-top:18px; border-top:2px dashed #334155; padding-top:12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:0.9rem;">
             <div>
               <div><b>ผลการตรวจของครูผู้สอน:</b> คะแนนที่ได้ <b>${tScore}</b></div>
@@ -1246,18 +1310,31 @@
           if (tr) tr.style.background = ok ? 'rgba(16,185,129,0.18)' : 'rgba(239,68,68,0.16)';
         });
       }
+      if (Array.isArray(ex.matchingParts)) {
+        ex.matchingParts.forEach((mp) => {
+          mp.rows.forEach((row) => {
+            connTotal++;
+            const val = document.getElementById(`sk-${row.id}`)?.value || '';
+            saved.answers[row.id] = val;
+            const ok = val === row.ans;
+            if (ok) connCorrect++;
+            const tr = document.getElementById(`sk-match-row-${row.id}`);
+            if (tr) tr.style.background = ok ? 'rgba(16,185,129,0.18)' : 'rgba(239,68,68,0.16)';
+          });
+        });
+      }
 
       if (missingWritten > 0) {
         soundFX.playPlayerHurt();
         try { localStorage.setItem(this.getSkillStorageKey(unitId), JSON.stringify(saved)); } catch (e) { /* ignore */ }
-        fb.innerHTML = `<div style="color:#fda4af;">⚠️ ยังตอบคำถามตอนที่ 1 ไม่ครบ (เหลืออีก ${missingWritten} ช่อง) กรุณากรอกให้ครบก่อนส่งตรวจนะครับ</div>`;
+        fb.innerHTML = `<div style="color:#fda4af;">⚠️ ยังตอบคำถามข้อเขียนไม่ครบ (เหลืออีก ${missingWritten} ช่อง) กรุณากรอกให้ครบก่อนส่งตรวจนะครับ</div>`;
         return;
       }
 
-      if (ex.connectorPart && connCorrect < connTotal) {
+      if ((ex.connectorPart || (Array.isArray(ex.matchingParts) && ex.matchingParts.length > 0)) && connCorrect < connTotal) {
         soundFX.playPlayerHurt();
         try { localStorage.setItem(this.getSkillStorageKey(unitId), JSON.stringify(saved)); } catch (e) { /* ignore */ }
-        fb.innerHTML = `<div style="color:#facc15;">🔎 ตอนที่ 2 (รูปภาพหัวต่อ) ถูก <b>${connCorrect}/${connTotal} ข้อ</b> — แถวสีแดงยังมีจุดผิด ลองปรับคำตอบแล้วกดตรวจอีกครั้งนะ!</div>`;
+        fb.innerHTML = `<div style="color:#facc15;">🔎 ส่วนจับคู่/รูปภาพ ถูก <b>${connCorrect}/${connTotal} ข้อ</b> — แถวสีแดงยังมีจุดผิด ลองปรับคำตอบแล้วกดตรวจอีกครั้งนะ!</div>`;
         return;
       }
 
@@ -3787,6 +3864,7 @@
                   <option value="all" ${this.teacherSkillFilterUnit === 'all' ? 'selected' : ''}>ทุกบทเรียน</option>
                   <option value="1" ${this.teacherSkillFilterUnit === '1' ? 'selected' : ''}>บทที่ 1</option>
                   <option value="2" ${this.teacherSkillFilterUnit === '2' ? 'selected' : ''}>บทที่ 2</option>
+                  <option value="3" ${this.teacherSkillFilterUnit === '3' ? 'selected' : ''}>บทที่ 3</option>
                 </select>
                 <select id="teacher-skill-status" class="px-select" onchange="App.filterTeacherSkills()">
                   <option value="all" ${this.teacherSkillFilterStatus === 'all' ? 'selected' : ''}>ทุกสถานะ</option>
@@ -4041,6 +4119,18 @@
                 </div>
               </div>
             ` : ''}
+            ${Array.isArray(ex.matchingParts) ? ex.matchingParts.map((mp) => `
+              <div style="padding:8px 10px; background:#0f172a; border:1px solid #334155; font-size:0.82rem;">
+                <b style="color:var(--amber);">${mp.title}</b>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:6px; margin-top:6px;">
+                  ${mp.rows.map((row) => {
+                    const val = sub.answers[row.id] || '-';
+                    const ok = val === row.ans;
+                    return `<div style="padding:4px 6px; border:1px solid ${ok ? '#22c55e' : '#ef4444'};">${ok ? '✔' : '✖'} ข้อ ${row.no}: ${esc(val)} <span style="color:#94a3b8;">(เฉลย: ${row.ans})</span></div>`;
+                  }).join('')}
+                </div>
+              </div>
+            `).join('') : ''}
           </div>
 
           <div style="display:grid; grid-template-columns:130px 1fr auto; gap:8px; align-items:end;">
