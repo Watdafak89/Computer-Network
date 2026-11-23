@@ -1400,10 +1400,12 @@
 
     renderCodex(unit) {
       const el = document.getElementById('stage-body-codex');
+      const hasSkill = Boolean(GameData.SKILL_EXERCISES && GameData.SKILL_EXERCISES[unit.id]);
       el.innerHTML = `
         <div class="pixel-box codex-diagram-box">
           <div style="font-weight:700; color:var(--cyan); margin-bottom:10px;">📊 แผนภาพอินโฟกราฟิกประจำหน่วย (Pixel Infographic)</div>
           ${unit.svgDiagram}
+          ${unit.svgDiagram2 ? `<div style="margin-top:12px;">${unit.svgDiagram2}</div>` : ''}
         </div>
         <div class="codex-cards-grid">
           ${unit.codexCards.map((c) => `
@@ -1413,7 +1415,8 @@
             </div>
           `).join('')}
         </div>
-        <div style="margin-top:18px; text-align:right;">
+        <div style="margin-top:18px; display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap;">
+          ${hasSkill ? `<button class="px-btn px-btn-cyan" onclick="App.switchStageTab('skill')">📝 ไปทำแบบฝึกทักษะบทที่ ${unit.id}</button>` : ''}
           <button class="px-btn px-btn-emerald" onclick="App.switchStageTab('lab')">ไปฝึกปฏิบัติในห้อง Lab Simulator ➜</button>
         </div>
       `;

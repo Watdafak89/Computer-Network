@@ -258,28 +258,36 @@
       `,
       codexCards: [
         {
-          title: '1-2. ประโยชน์ องค์ประกอบ และหลักการทำงาน',
+          title: '1. ประโยชน์และองค์ประกอบของระบบเครือข่ายคอมพิวเตอร์',
           bullets: [
-            '<b>ประโยชน์ของเครือข่าย</b>: ใช้ทรัพยากรร่วมกัน (เครื่องพิมพ์/ไฟล์/อินเทอร์เน็ต), สื่อสารรวดเร็ว (อีเมล/แชต/ประชุมออนไลน์), ลดต้นทุน และสำรองข้อมูลรวมศูนย์',
-            '<b>องค์ประกอบหลัก 5 อย่าง</b>: ผู้ส่ง (Sender), ผู้รับ (Receiver), ข้อมูลข่าวสาร (Message), สื่อกลางนำสัญญาณ (Transmission Medium) และโปรโตคอล (Protocol)',
-            '<b>ทิศทางการสื่อสาร</b>: Simplex (ทางเดียว เช่น วิทยุ), Half-Duplex (สลับรับส่ง เช่น วิทยุสื่อสาร), Full-Duplex (รับ-ส่งพร้อมกัน เช่น โทรศัพท์/Switch)'
+            '<b>ประโยชน์หลัก 4 ด้าน</b>: (1) ใช้ทรัพยากรร่วมกัน (เครื่องพิมพ์ ไฟล์ อินเทอร์เน็ต), (2) ติดต่อสื่อสารรวดเร็ว (อีเมล แชต ประชุมออนไลน์), (3) ลดต้นทุนการจัดซื้ออุปกรณ์/ซอฟต์แวร์, (4) จัดเก็บและสำรองข้อมูลแบบรวมศูนย์อย่างปลอดภัย',
+            '<b>องค์ประกอบพื้นฐาน 5 ประการ</b>: ผู้ส่ง (Sender), ผู้รับ (Receiver), ข้อมูลข่าวสาร (Message), สื่อกลางนำสัญญาณ (Transmission Medium เช่น สาย UTP/Fiber/คลื่นวิทยุ) และโปรโตคอล (Protocol ข้อตกลงการสื่อสาร)',
+            '<b>ทิศทางการสื่อสาร</b>: <b>Simplex</b> (ทางเดียว เช่น วิทยุ/ทีวี), <b>Half-Duplex</b> (สลับกันรับ-ส่ง เช่น วิทยุสื่อสาร), <b>Full-Duplex</b> (รับ-ส่งพร้อมกัน เช่น โทรศัพท์/Switch)'
           ]
         },
         {
-          title: '3-4. ประเภทเครือข่ายและสถาปัตยกรรมเครือข่าย',
+          title: '2. ประเภทของเครือข่ายตามขนาดพื้นที่ (PAN / LAN / MAN / WAN)',
           bullets: [
-            '<b>PAN</b> (ระยะ 1–10 ม. เช่น Bluetooth), <b>LAN</b> (ภายในห้อง/อาคาร ความเร็วสูง), <b>MAN</b> (ระดับเมือง/หลายวิทยาเขต), <b>WAN</b> (ข้ามประเทศ/อินเทอร์เน็ต)',
-            '<b>Peer-to-Peer (Workgroup)</b>: ทุกเครื่องมีสิทธิ์เท่าเทียมกัน ไม่มี Server กลาง ติดตั้งง่าย ราคาถูก เหมาะกับเครือข่ายเล็ก ≤ 10 เครื่อง',
-            '<b>Client-Server (Domain)</b>: มีเครื่องแม่ข่าย (Server) ควบคุมสิทธิ์ ฐานข้อมูล และความปลอดภัยแบบรวมศูนย์ เหมาะกับองค์กรและสถานศึกษา'
+            '<b>PAN (Personal Area Network)</b>: เครือข่ายส่วนบุคคลระยะใกล้ 1–10 เมตร เช่น Bluetooth เชื่อมสมาร์ตโฟนกับหูฟังหรือสมาร์ตวอตช์',
+            '<b>LAN (Local Area Network)</b>: เครือข่ายท้องถิ่นในห้องเรียน อาคาร หรือวิทยาลัยเดียวกัน ส่งข้อมูลความเร็วสูง ต้นทุนต่ำ ดูแลง่าย',
+            '<b>MAN (Metropolitan Area Network)</b>: เครือข่ายระดับเมือง เชื่อมโยงหลายอาคารหรือหลายวิทยาเขตภายในเมืองหรือจังหวัดเดียวกัน',
+            '<b>WAN (Wide Area Network)</b>: เครือข่ายบริเวณกว้าง ข้ามจังหวัด ข้ามประเทศ หรือทั่วโลก เช่น ระบบอินเทอร์เน็ตและสาขาธนาคาร'
           ]
         },
         {
-          title: '5. รูปแบบการเชื่อมต่อเครือข่าย (Network Topologies)',
+          title: '3. สถาปัตยกรรมเครือข่าย (Peer-to-Peer vs Client-Server)',
           bullets: [
-            '<b>Star</b>: นิยมมากที่สุด ทุกเครื่องต่อเข้า Switch ตรงกลาง สายขาด 1 เส้นกระทบเฉพาะเครื่องนั้น',
-            '<b>Bus</b>: ใช้สายหลักเส้นเดียว (Backbone) + Terminator ปิดหัวท้าย ราคาถูกแต่สายหลักขาดล่มทั้งวง',
-            '<b>Ring</b>: ส่งข้อมูลเป็นวงแหวนผ่าน Token Passing ชนกันน้อย แต่เพิ่ม/ถอดเครื่องทำได้ยาก',
-            '<b>Mesh & Hybrid</b>: Full Mesh ใช้สาย N(N-1)/2 เส้น มีเส้นทางสำรองสูง ส่วน Hybrid ผสมผสานหลายรูปแบบตามความเหมาะสม'
+            '<b>Peer-to-Peer (Workgroup)</b>: ทุกเครื่องมีสิทธิ์เท่าเทียมกัน ไม่มีเครื่องแม่ข่ายกลาง (Server) ติดตั้งง่าย ราคาประหยัด เหมาะกับเครือข่ายขนาดเล็กไม่เกิน 10 เครื่อง แต่จัดการความปลอดภัยยากเมื่อเครื่องเยอะขึ้น',
+            '<b>Client-Server (Domain)</b>: มีเครื่องแม่ข่าย (Server) ทำหน้าที่ให้บริการและควบคุมสิทธิ์ผู้ใช้ ฐานข้อมูล การสำรองข้อมูล และความปลอดภัยแบบรวมศูนย์ โดยมีเครื่องลูกข่าย (Client) ร้องขอใช้บริการ เหมาะกับองค์กรและสถานศึกษา'
+          ]
+        },
+        {
+          title: '4. รูปแบบการเชื่อมต่อเครือข่าย (Network Topologies)',
+          bullets: [
+            '<b>Bus Topology</b>: เชื่อมทุกเครื่องเข้าสายหลักเส้นเดียว (Backbone) และมี <b>Terminator</b> ปิดหัวท้ายกันสัญญาณสะท้อน ประหยัดสายแต่หากสายหลักขาดจะล่มทั้งเครือข่าย',
+            '<b>Star Topology</b>: นิยมมากที่สุด ทุกเครื่องต่อสายแยกเข้าอุปกรณ์ศูนย์กลาง (Switch/Hub) หากสายเครื่องใดขาดจะกระทบเฉพาะเครื่องนั้น',
+            '<b>Ring Topology</b>: เชื่อมเป็นวงแหวนส่งข้อมูลทิศทางเดียวผ่าน <b>Token Passing</b> ลดการชนกันของข้อมูล แต่เพิ่ม/ถอดเครื่องยากและสายขาดอาจกระทบทั้งวง',
+            '<b>Mesh & Hybrid Topology</b>: Full Mesh เชื่อมทุกเครื่องเข้าหากันโดยตรง (จำนวนสาย = <code>N(N-1)/2</code>) ทนทานสูงสุด ส่วน Hybrid ผสมหลายรูปแบบตามพื้นที่จริง'
           ]
         }
       ],
@@ -372,29 +380,49 @@
           <text x="525" y="180" fill="#c084fc" font-size="11" text-anchor="middle">AP / Modem = Wi-Fi / ISP</text>
         </svg>
       `,
+      svgDiagram2: `
+        <svg viewBox="0 0 640 165" class="pixel-infographic-svg" shape-rendering="crispEdges">
+          <rect width="640" height="165" fill="#0b1224"/>
+          <rect x="6" y="6" width="628" height="153" fill="none" stroke="#38bdf8" stroke-width="3"/>
+          <text x="320" y="26" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">หัวต่อสายสัญญาณมาตรฐานทั้ง 6 ชนิด (Connectors)</text>
+          <rect x="18" y="38" width="94" height="108" fill="#111c36" stroke="#facc15"/><text x="65" y="62" fill="#fde047" font-size="12" font-weight="bold" text-anchor="middle">1. BNC</text><text x="65" y="84" fill="#e2e8f0" font-size="10" text-anchor="middle">หัวกลมล็อกเขี้ยว</text><text x="65" y="108" fill="#94a3b8" font-size="9" text-anchor="middle">ใช้กับสาย</text><text x="65" y="124" fill="#4ade80" font-size="10" font-weight="bold" text-anchor="middle">Coaxial</text>
+          <rect x="120" y="38" width="94" height="108" fill="#111c36" stroke="#f97316"/><text x="167" y="62" fill="#fdba74" font-size="12" font-weight="bold" text-anchor="middle">2. RJ-45</text><text x="167" y="84" fill="#e2e8f0" font-size="10" text-anchor="middle">หัวใส 8 พิน</text><text x="167" y="108" fill="#94a3b8" font-size="9" text-anchor="middle">ใช้กับสาย</text><text x="167" y="124" fill="#4ade80" font-size="10" font-weight="bold" text-anchor="middle">UTP / STP</text>
+          <rect x="222" y="38" width="94" height="108" fill="#111c36" stroke="#10b981"/><text x="269" y="62" fill="#6ee7b7" font-size="12" font-weight="bold" text-anchor="middle">3. ST</text><text x="269" y="84" fill="#e2e8f0" font-size="10" text-anchor="middle">หัวกลมบิดล็อก</text><text x="269" y="108" fill="#94a3b8" font-size="9" text-anchor="middle">ใช้กับสาย</text><text x="269" y="124" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">Fiber Optic</text>
+          <rect x="324" y="38" width="94" height="108" fill="#111c36" stroke="#10b981"/><text x="371" y="62" fill="#6ee7b7" font-size="12" font-weight="bold" text-anchor="middle">4. FC</text><text x="371" y="84" fill="#e2e8f0" font-size="10" text-anchor="middle">หัวกลมเกลียวหมุน</text><text x="371" y="108" fill="#94a3b8" font-size="9" text-anchor="middle">ใช้กับสาย</text><text x="371" y="124" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">Fiber Optic</text>
+          <rect x="426" y="38" width="94" height="108" fill="#111c36" stroke="#10b981"/><text x="473" y="62" fill="#6ee7b7" font-size="12" font-weight="bold" text-anchor="middle">5. LC</text><text x="473" y="84" fill="#e2e8f0" font-size="10" text-anchor="middle">เหลี่ยมเล็กมีสลัก</text><text x="473" y="108" fill="#94a3b8" font-size="9" text-anchor="middle">ใช้กับสาย</text><text x="473" y="124" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">Fiber Optic</text>
+          <rect x="528" y="38" width="94" height="108" fill="#111c36" stroke="#10b981"/><text x="575" y="62" fill="#6ee7b7" font-size="12" font-weight="bold" text-anchor="middle">6. SC</text><text x="575" y="84" fill="#e2e8f0" font-size="10" text-anchor="middle">เหลี่ยมกด-ดึง</text><text x="575" y="108" fill="#94a3b8" font-size="9" text-anchor="middle">ใช้กับสาย</text><text x="575" y="124" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">Fiber Optic</text>
+        </svg>
+      `,
       codexCards: [
         {
           title: '1. อุปกรณ์ในระบบเครือข่าย (Network Devices)',
           bullets: [
-            '<b>NIC (Network Interface Card)</b>: การ์ดเครือข่ายประจำเครื่อง มีหมายเลข MAC Address เฉพาะตัว',
-            '<b>Repeater & Hub (Layer 1)</b>: ทวนสัญญาณ/กระจายข้อมูลออกทุกพอร์ต (Broadcast) ทำให้เกิดการชนกันของข้อมูลสูง',
-            '<b>Bridge & Switch (Layer 2)</b>: จดจำ MAC Address ส่งข้อมูลตรงถึงพอร์ตปลายทาง ลดการชนกันและทำงาน Full-Duplex',
-            '<b>Router (Layer 3), Access Point & Modem</b>: Router เชื่อมต่างเครือข่ายและเลือกเส้นทางด้วย IP, AP กระจายสัญญาณไร้สาย, Modem แปลงสัญญาณจากผู้ให้บริการ (ISP)'
+            '<b>NIC (การ์ดแลน)</b>: เชื่อมคอมพิวเตอร์กับสื่อนำสัญญาณ มีหมายเลข MAC Address เฉพาะตัว',
+            '<b>Repeater & Hub (Layer 1)</b>: ทวนสัญญาณให้ไกลขึ้น / กระจายสัญญาณออกทุกพอร์ต (Broadcast) ทำให้ชนกันง่าย',
+            '<b>Bridge & Switch (Layer 2)</b>: เชื่อมวง LAN และจดจำ MAC Address ส่งข้อมูลตรงถึงพอร์ตปลายทางแบบ Full-Duplex',
+            '<b>Router (Layer 3), Access Point & Modem</b>: Router หาเส้นทางข้ามเครือข่ายด้วย IP, AP กระจายสัญญาณ Wi-Fi, Modem แปลงสัญญาณจากผู้ให้บริการ (ISP)'
           ]
         },
         {
-          title: '2. สื่อกลางแบบสาย (Guided Media)',
+          title: '2. สื่อกลางแบบสาย: Coaxial และคู่บิดเกลียว (STP vs UTP)',
           bullets: [
-            '<b>สายคู่บิดเกลียว (UTP / STP)</b>: นิยมใช้ใน LAN มากที่สุด ระยะมาตรฐานไม่เกิน 100 เมตร (STP มีฉนวนหุ้มกันสัญญาณรบกวน EMI ดีกว่า UTP)',
-            '<b>สายโคแอกเชียล (Coaxial)</b>: มีแกนทองแดงตรงกลางและชิลด์หุ้ม นิยมใช้ในระบบทีวีเคเบิลและกล้องวงจรปิด',
-            '<b>สายใยแก้วนำแสง (Fiber Optic)</b>: ส่งข้อมูลด้วยพัลส์แสง ความเร็วสูงมาก ไม่ถูกรบกวนจากคลื่นแม่เหล็กไฟฟ้า เดินสายข้ามอาคารได้ไกลหลายกิโลเมตร (SMF ไกลกว่า MMF)'
+            '<b>สายโคแอกเชียล (Coaxial)</b>: มี <b>2 ชนิด</b> คือ <b>แบบบาง (Thinnet / 10BASE2)</b> และ <b>แบบหนา (Thicknet / 10BASE5)</b> | <b>ข้อดี</b>: กันสัญญาณรบกวนได้ดี เดินสายได้ไกลกว่า UTP | <b>ข้อเสีย</b>: สายแข็ง ติดตั้งและเข้าหัวยากกว่า UTP',
+            '<b>สายคู่บิดเกลียว STP vs UTP</b>: <b>STP (Shielded)</b> มีแผ่นโลหะ/ฟอยล์หุ้มป้องกันคลื่นรบกวน EMI ได้ดีกว่าแต่ราคาแพงและสายแข็งกว่า ส่วน <b>UTP (Unshielded)</b> ไม่มีฉนวนโลหะหุ้ม ราคาถูก ดัดงอง่าย นิยมใช้ใน LAN มากที่สุด (ระยะ ≤ 100 ม.)'
           ]
         },
         {
-          title: '3-4. สื่อกลางแบบไร้สาย และหัวต่อสายสัญญาณ (Connectors)',
+          title: '3. สายใยแก้วนำแสง (Fiber Optic) และสื่อกลางไร้สาย',
           bullets: [
-            '<b>สื่อกลางแบบไร้สาย (Wireless Media)</b>: คลื่นวิทยุ (Wi-Fi/Bluetooth), ไมโครเวฟ (เชื่อมจุดต่อจุดข้ามอาคารแบบแนวสายตา LOS), อินฟราเรด (ระยะใกล้ ห้ามมีสิ่งกีดขวาง) และดาวเทียม',
-            '<b>หัวต่อสายสัญญาณ</b>: <b>RJ-45</b> (8 ขา ใช้กับสาย UTP เครือข่าย LAN), <b>RJ-11</b> (4/6 ขา ใช้กับสายโทรศัพท์), <b>BNC</b> (ใช้กับสาย Coaxial), <b>SC / LC / ST</b> (ใช้กับสาย Fiber Optic)'
+            '<b>Fiber Optic มี 2 แบบ</b>: <b>Single-Mode (SMF)</b> แกนเล็ก ส่งแสงแนวตรงได้ไกลหลายกิโลเมตร และ <b>Multi-Mode (MMF)</b> แกนใหญ่กว่า ใช้ระยะใกล้ในอาคาร | <b>ข้อดี</b>: ความเร็วสูงมาก ไม่ถูกรบกวนจาก EMI เดินสายได้ไกล | <b>ข้อจำกัด</b>: ราคาสูง สายเปราะหักงอไม่ได้ เข้าหัวสายยาก',
+            '<b>สื่อกลางไร้สายเปรียบเทียบ 3 ชนิด</b>: <b>ไมโครเวฟ (Microwave)</b> ส่งระยะไกลระดับกิโลเมตรเชื่อมข้ามอาคาร/สถานีแบบแนวสายตา (LOS), <b>บลูทูธ (Bluetooth)</b> ระยะใกล้ 1–10 ม. (PAN) ทะลุสิ่งกีดขวางเบาได้ ใช้กับหูฟัง/อุปกรณ์พกพา, <b>อินฟราเรด (Infrared)</b> ระยะใกล้มากและ<b>ห้ามมีสิ่งกีดขวาง</b>กั้นแนวสายตา (เช่น รีโมตทีวี)'
+          ]
+        },
+        {
+          title: '4. หัวต่อสายสัญญาณ (Connectors ทั้ง 6 ชนิด)',
+          bullets: [
+            '<b>BNC</b>: หัวต่อโลหะแบบเขี้ยวหมุนล็อก ใช้กับ <b>สายโคแอกเชียล (Coaxial)</b>',
+            '<b>RJ-45 (8P8C)</b>: หัวต่อพลาสติกใส 8 ขา ใช้กับ <b>สายคู่บิดเกลียว (UTP / STP)</b> (ส่วน RJ-11 ใช้กับสายโทรศัพท์)',
+            '<b>หัวต่อ Fiber Optic 4 แบบ</b>: <b>ST</b> (หัวกลมบิดล็อกแบบ Bayonet), <b>FC</b> (หัวกลมเกลียวหมุนแน่น), <b>LC</b> (หัวเหลี่ยมขนาดเล็กมีสลักกดคล้าย RJ-45), <b>SC</b> (หัวสี่เหลี่ยมแบบเสียบกด-ดึง Push-Pull)'
           ]
         }
       ],
@@ -482,25 +510,38 @@
       `,
       codexCards: [
         {
-          title: '1-2. องค์กรกำหนดมาตรฐาน และแบบจำลอง OSI 7 Layers',
+          title: '1. องค์กรกำหนดมาตรฐานสากล (5 องค์กรสำคัญ)',
           bullets: [
-            '<b>องค์กรมาตรฐานสำคัญ</b>: <b>ISO</b> (สร้าง OSI Model), <b>IEEE</b> (มาตรฐาน 802 LAN/WLAN), <b>IETF</b> (โปรโตคอลอินเทอร์เน็ต TCP/IP), <b>ITU</b> (โทรคมนาคม), <b>TIA/EIA</b> (มาตรฐานการเดินสาย T568A/B)',
-            '<b>OSI 7 Layers (ล่างขึ้นบน)</b>: 1. Physical (Bits) → 2. Data Link (Frame/MAC) → 3. Network (Packet/IP) → 4. Transport (Segment/TCP-UDP) → 5. Session → 6. Presentation → 7. Application (Data)'
+            '<b>ITU</b> (International Telecommunication Union): กำหนดมาตรฐาน กฎระเบียบ และพัฒนาระบบการสื่อสารโทรคมนาคม รวมถึงจัดสรรแถบคลื่นความถี่วิทยุ',
+            '<b>IEEE</b>: องค์กรวิชาชีพระดับนานาชาติด้านไฟฟ้าและคอมพิวเตอร์ เป็นผู้กำหนดมาตรฐานตระกูล <b>IEEE 802</b> (802.3 Ethernet, 802.11 Wi-Fi, 802.15 ไร้สายระยะใกล้)',
+            '<b>ISO</b>: องค์กรกำหนดมาตรฐานอุตสาหกรรมระหว่างชาติ เป็นผู้สร้างแบบจำลอง <b>OSI 7 Layers Model</b>',
+            '<b>EIA & TIA</b>: <b>EIA</b> กำหนดมาตรฐานอุปกรณ์ฮาร์ดแวร์/โทรคมนาคม ส่วน <b>TIA</b> กำหนดมาตรฐานการจัดเรียงสายสัญญาณ <b>TIA T568A/B</b>'
           ]
         },
         {
-          title: '3-4. โปรโตคอลในการสื่อสารข้อมูล และ TCP/IP Model',
+          title: '2. แบบจำลอง OSI 7 Layers และหน้าที่ครบทุกชั้น',
           bullets: [
-            '<b>TCP/IP 4 ชั้น</b>: Network Access → Internet (IP/ICMP) → Transport (TCP/UDP) → Application (HTTP/HTTPS, FTP, SMTP, DNS, DHCP, SSH)',
-            '<b>TCP vs UDP</b>: <b>TCP</b> เชื่อมต่อแบบ 3-Way Handshake ตรวจสอบความถูกต้องครบถ้วน (เว็บ/อีเมล/ไฟล์) ส่วน <b>UDP</b> ส่งเร็วไม่รอตอบรับ (สตรีมมิง/เกมออนไลน์/DNS)'
+            '<b>7. Application</b>: กำหนดมาตรฐานการติดต่อกับซอฟต์แวร์ผู้ใช้ (HTTP, DNS, FTP) | <b>6. Presentation</b>: แปลงรูปแบบข้อมูล เข้ารหัส (SSL/TLS) และบีบอัดข้อมูล',
+            '<b>5. Session</b>: สร้าง ควบคุม และสิ้นสุดการเชื่อมต่อเซสชัน | <b>4. Transport</b>: แบ่งข้อมูลเป็น Segment ควบคุมการรับ-ส่งให้ครบถ้วน (TCP/UDP)',
+            '<b>3. Network</b>: กำหนดหมายเลข IP Address และเลือกเส้นทาง (Routing) | <b>2. Data Link</b>: จัดรูปแบบเฟรม อ้างอิง MAC Address และตรวจสอบความผิดพลาด',
+            '<b>1. Physical</b>: รับ-ส่งสัญญาณบิต (0/1) ผ่านสื่อนำสัญญาณทางกายภาพ (สาย UTP, Fiber, คลื่นวิทยุ)'
           ]
         },
         {
-          title: '5-6. การกำหนด IPv4, การแบ่งคลาส และมาตรฐาน IEEE 802',
+          title: '3. โปรโตคอลในการสื่อสารข้อมูล (Protocol 4 ตระกูล)',
           bullets: [
-            '<b>IPv4 (32 บิต = 4 ชุด 0–255)</b>: <b>Class A</b> (1–126, Mask 255.0.0.0), <b>Class B</b> (128–191, Mask 255.255.0.0), <b>Class C</b> (192–223, Mask 255.255.255.0), 127.0.0.1 = Loopback',
-            '<b>Private IP</b>: 10.0.0.0/8, 172.16.0.0–172.31.255.255, 192.168.0.0/16 ใช้ในวง LAN ภายใน',
-            '<b>มาตรฐาน IEEE 802</b>: <b>802.3</b> (Ethernet LAN), <b>802.11</b> (Wireless LAN / Wi-Fi), <b>802.15</b> (WPAN / Bluetooth), <b>802.1Q</b> (VLAN)'
+            '<b>Protocol</b> คือ ข้อกำหนดหรือข้อตกลงร่วมกันในการติดต่อสื่อสารข้อมูลระหว่างอุปกรณ์เครือข่าย',
+            '<b>TCP/IP</b>: โปรโตคอลหลักที่ใช้ในระบบเครือข่ายอินเทอร์เน็ต กำหนดหมายเลขเครื่องด้วย IP Address (TCP เน้นถูกต้อง, UDP เน้นความเร็ว)',
+            '<b>NetBEUI</b>: เหมาะกับเครือข่ายขนาดเล็ก ใช้งานง่ายแต่<b>ไม่มีความสามารถในการค้นหา/กำหนดเส้นทาง (Non-routable)</b>',
+            '<b>AppleTalk</b>: ใช้ในระบบเครือข่ายคอมพิวเตอร์ <b>Macintosh</b> (เช่น EtherTalk และ TokenTalk) | <b>IPX/SPX</b>: พัฒนาโดยบริษัท <b>Novell</b> ใช้ในระบบปฏิบัติการเครือข่าย <b>NetWare</b>'
+          ]
+        },
+        {
+          title: '4. IPv4, Private/Public IP, NAT และมาตรฐาน IEEE 802',
+          bullets: [
+            '<b>Public IP vs Private IP</b>: <b>Public IP</b> ใช้เชื่อมต่อบนอินเทอร์เน็ตโดยตรง ส่วน <b>Private IP</b> (10.x, 172.16–31.x, 192.168.x) ใช้ภายในองค์กร และใช้ <b>NAT (Network Address Translation)</b> แปลง Private IP เป็น Public IP เพื่อออกอินเทอร์เน็ต',
+            '<b>การแบ่งคลาส IPv4</b>: Class A (1–126 /8), Class B (128–191 /16), Class C (192–223 /24), 127.0.0.1 = Loopback',
+            '<b>มาตรฐาน IEEE 802</b>: <b>802.3</b> = Ethernet, <b>802.11</b> = ระบบเครือข่ายไร้สาย (Wi-Fi), <b>802.15</b> = เครือข่ายไร้สายระยะใกล้ (WPAN/Bluetooth), <b>802.1Q</b> = VLAN'
           ]
         }
       ],
@@ -584,28 +625,52 @@
           <text x="470" y="198" fill="#cbd5e1" font-size="11" text-anchor="middle">T568A ↔ T568B (PC ↔ PC / สลับพิน 1-3, 2-6)</text>
         </svg>
       `,
+      svgDiagram2: `
+        <svg viewBox="0 0 640 155" class="pixel-infographic-svg" shape-rendering="crispEdges">
+          <rect width="640" height="155" fill="#0b1224"/>
+          <rect x="6" y="6" width="628" height="143" fill="none" stroke="#14b8a6" stroke-width="3"/>
+          <text x="320" y="26" fill="#5eead4" font-size="12" font-weight="bold" text-anchor="middle">8 ขั้นตอนการเข้าหัวสาย UTP CAT5e กับหัวต่อ RJ-45</text>
+          <rect x="18" y="40" width="144" height="44" fill="#111c36" stroke="#38bdf8"/><text x="90" y="58" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">1. ปอกเปลือกหุ้มสาย</text><text x="90" y="74" fill="#cbd5e1" font-size="9" text-anchor="middle">ยาว ~2-3 ซม.</text>
+          <rect x="172" y="40" width="144" height="44" fill="#111c36" stroke="#38bdf8"/><text x="244" y="58" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">2. คลี่สายออกมา</text><text x="244" y="74" fill="#cbd5e1" font-size="9" text-anchor="middle">แยกเกลียวทั้ง 4 คู่</text>
+          <rect x="326" y="40" width="144" height="44" fill="#111c36" stroke="#38bdf8"/><text x="398" y="58" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">3. จัดเรียงสายตามมาตรฐาน</text><text x="398" y="74" fill="#cbd5e1" font-size="9" text-anchor="middle">TIA-568A หรือ 568B</text>
+          <rect x="480" y="40" width="142" height="44" fill="#111c36" stroke="#38bdf8"/><text x="551" y="58" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">4. จัดสายให้เรียงชิดกัน</text><text x="551" y="74" fill="#cbd5e1" font-size="9" text-anchor="middle">ดึงให้ตรงแนบชิด</text>
+          <rect x="18" y="94" width="144" height="44" fill="#111c36" stroke="#4ade80"/><text x="90" y="112" fill="#4ade80" font-size="10" font-weight="bold" text-anchor="middle">5. ตัดปลายสายแนวตรง</text><text x="90" y="128" fill="#cbd5e1" font-size="9" text-anchor="middle">ให้ยาวเท่ากัน ~1.2 ซม.</text>
+          <rect x="172" y="94" width="144" height="44" fill="#111c36" stroke="#4ade80"/><text x="244" y="112" fill="#4ade80" font-size="10" font-weight="bold" text-anchor="middle">6. สอดเข้าไปในหัวต่อ</text><text x="244" y="128" fill="#cbd5e1" font-size="9" text-anchor="middle">ดันสุดปลายพินทองแดง</text>
+          <rect x="326" y="94" width="144" height="44" fill="#111c36" stroke="#4ade80"/><text x="398" y="112" fill="#4ade80" font-size="10" font-weight="bold" text-anchor="middle">7. ใช้คีมบีบหัวต่อให้แน่น</text><text x="398" y="128" fill="#cbd5e1" font-size="9" text-anchor="middle">ย้ำด้วย Crimping Tool</text>
+          <rect x="480" y="94" width="142" height="44" fill="#111c36" stroke="#facc15"/><text x="551" y="112" fill="#facc15" font-size="10" font-weight="bold" text-anchor="middle">8. ตรวจด้วย Cable Tester</text><text x="551" y="128" fill="#cbd5e1" font-size="9" text-anchor="middle">ไฟติดครบพิน 1–8 ✔</text>
+        </svg>
+      `,
       codexCards: [
         {
-          title: '1-2. เทคโนโลยีเครือข่าย LAN และมาตรฐาน Ethernet',
+          title: '1. การรับส่งข้อมูลแบบ Ethernet vs Token Pass',
           bullets: [
-            '<b>Ethernet (IEEE 802.3)</b>: เทคโนโลยี LAN แบบใช้สายที่นิยมมากที่สุด เดิมใช้กลไกตรวจสอบการชนกัน <b>CSMA/CD</b> ปัจจุบันใช้ Switch ทำงานแบบ Full-Duplex จึงไม่เกิดการชน',
-            '<b>มาตรฐานความเร็ว</b>: <b>10BASE-T</b> (10 Mbps), <b>100BASE-TX</b> (Fast Ethernet 100 Mbps), <b>1000BASE-T</b> (Gigabit 1 Gbps — Cat5e/Cat6), <b>10GBASE-T</b> (10 Gbps — Cat6a)'
+            '<b>Ethernet (IEEE 802.3)</b>: ใช้กลไก <b>CSMA/CD</b> ตรวจสอบว่าสายสัญญาณว่างก่อนส่งข้อมูล หากเกิดการชนกันจะหยุดรอแล้วสุ่มเวลาส่งใหม่ (ปัจจุบันผ่าน Switch ทำงาน Full-Duplex ไม่มีสัญญาณชน)',
+            '<b>Token Pass</b>: ส่งสัญญาณรหัสสิทธิ์ (<b>Token</b>) วนไปตามลำดับในเครือข่าย (เช่น Ring Topology) เฉพาะเครื่องที่ได้รับ Token เท่านั้นจึงจะมีสิทธิ์ส่งข้อมูล ช่วยป้องกันการชนกันของข้อมูล',
+            '<b>อุปกรณ์ LAN แบบใช้สาย</b>: Switch, การ์ดแลน (NIC), สาย UTP + หัวต่อ RJ-45, Patch Panel, Wall Outlet และ Router'
           ]
         },
         {
-          title: '3. อุปกรณ์ในเครือข่ายอีเทอร์เน็ตแบบใช้สาย UTP',
+          title: '2. ตารางมาตรฐานเครือข่ายอีเทอร์เน็ต (IEEE 802.3 ครบ 7 รุ่น)',
           bullets: [
-            '<b>Switch</b>: ศูนย์กลางกระจายสายในห้อง/ชั้นอาคาร รองรับ 8, 16, 24 หรือ 48 พอร์ต',
-            '<b>Patch Panel & Wall Outlet (Faceplate)</b>: แผงรวมสายในตู้ Rack และเต้ารับติดผนัง ช่วยให้เดินสายเป็นระเบียบและดูแลรักษาง่าย',
-            '<b>เครื่องมือช่าง LAN</b>: คีมย้ำหัวสาย (Crimping Tool), ที่ปอกสาย (Wire Stripper), คีมตอกสาย (Punch Down Tool) และเครื่องทดสอบสาย (LAN Cable Tester)'
+            '<b>10BASE-T</b>: IEEE <b>802.3i</b> | สาย UTP (Cat3/Cat5) | แบบ Baseband (10 Mbps)',
+            '<b>100BASE-TX</b>: IEEE <b>802.3u</b> | สาย UTP (Cat5/Cat5e) | แบบ Baseband (100 Mbps) | <b>100BASE-FX</b>: IEEE <b>802.3u</b> | สาย Fiber Optic (MMF) | Baseband',
+            '<b>1000Base-SX</b>: IEEE <b>802.3z</b> | Fiber Optic (MMF คลื่นสั้น) | <b>1000Base-LX</b>: IEEE <b>802.3z</b> | Fiber Optic (SMF/MMF คลื่นยาว)',
+            '<b>1000Base-T</b>: IEEE <b>802.3ab</b> | สาย UTP (Cat5e/Cat6) | <b>1000Base-LX10</b>: IEEE <b>802.3ah</b> | Fiber Optic (SMF ระยะ 10 กม.) | แบบ Baseband ทั้งหมด'
           ]
         },
         {
-          title: '4. การเข้าสาย UTP กับหัวต่อ RJ-45 (T568A / T568B)',
+          title: '3. มาตรฐานการเรียงสาย TIA-568A / TIA-568B และลักษณะการเข้าสาย',
           bullets: [
-            '<b>T568B (นิยมที่สุด)</b>: 1.ขาว-ส้ม, 2.ส้ม, 3.ขาว-เขียว, 4.น้ำเงิน, 5.ขาว-น้ำเงิน, 6.เขียว, 7.ขาว-น้ำตาล, 8.น้ำตาล',
-            '<b>T568A</b>: 1.ขาว-เขียว, 2.เขียว, 3.ขาว-ส้ม, 4.น้ำเงิน, 5.ขาว-น้ำเงิน, 6.ส้ม, 7.ขาว-น้ำตาล, 8.น้ำตาล',
-            '<b>สายตรง (Straight-Through)</b>: เข้าหัวเหมือนกันทั้งสองข้าง (B-B) ใช้ต่ออุปกรณ์ต่างชนิด (PC ↔ Switch) | <b>สายไขว้ (Crossover)</b>: เข้าหัว A-B ใช้ต่ออุปกรณ์ชนิดเดียวกัน (PC ↔ PC)'
+            '<b>TIA-568A (พิน 1–8)</b>: 1.ขาว-เขียว, 2.เขียว, 3.ขาว-ส้ม, 4.น้ำเงิน, 5.ขาว-น้ำเงิน, 6.ส้ม, 7.ขาว-น้ำตาล, 8.น้ำตาล',
+            '<b>TIA-568B (พิน 1–8 นิยมสุด)</b>: 1.ขาว-ส้ม, 2.ส้ม, 3.ขาว-เขียว, 4.น้ำเงิน, 5.ขาว-น้ำเงิน, 6.เขียว, 7.ขาว-น้ำตาล, 8.น้ำตาล',
+            '<b>ลักษณะการเข้าสาย 2 แบบ</b>: <b>สายตรง (Straight-Through: B–B หรือ A–A)</b> ต่ออุปกรณ์ต่างชนิด (PC ↔ Switch) | <b>สายไขว้ (Crossover: A–B)</b> สลับพิน 1-3, 2-6 ต่ออุปกรณ์ชนิดเดียวกัน (PC ↔ PC)'
+          ]
+        },
+        {
+          title: '4. 8 ขั้นตอนการเข้าสาย UTP CAT5e กับหัวต่อ RJ-45',
+          bullets: [
+            '1) ปอกเปลือกหุ้มสาย → 2) คลี่สายออกมา → 3) จัดเรียงสายตามมาตรฐาน (568A/B) → 4) จัดสายให้เรียงชิดกัน',
+            '5) ตัดปลายสายเป็นแนวตรง → 6) สอดเข้าไปในหัวต่อ RJ-45 → 7) ใช้คีมบีบหัวต่อที่เข้าสายให้แน่น → 8) ใช้เครื่องมือตรวจสอบการเข้าสาย (LAN Cable Tester)'
           ]
         }
       ],
@@ -691,26 +756,34 @@
       `,
       codexCards: [
         {
-          title: '1-2. ระบบ WLAN และมาตรฐานเครือข่ายไร้สาย (IEEE 802.11)',
+          title: '1. ข้อดีของเครือข่ายไร้สาย และมาตรฐาน IEEE 802.11 (Wi-Fi 4/5/6)',
           bullets: [
-            '<b>WLAN (Wireless LAN)</b>: เชื่อมต่อเครือข่ายด้วยคลื่นวิทยุ โดยมี <b>SSID</b> เป็นชื่อเครือข่าย และเลือก <b>Channel</b> ที่ไม่ซ้อนทับกัน (ย่าน 2.4 GHz ใช้ช่อง 1, 6, 11)',
-            '<b>ย่านความถี่</b>: <b>2.4 GHz</b> ทะลุกำแพงไกลกว่าแต่สัญญาณรบกวนเยอะ | <b>5 GHz / 6 GHz</b> ความเร็วสูง สัญญาณกวนน้อย แต่ระยะสั้นกว่า',
-            '<b>มาตรฐาน 802.11</b>: 802.11b/g (รุ่นเก่า) → <b>802.11n (Wi-Fi 4)</b> → <b>802.11ac (Wi-Fi 5)</b> → <b>802.11ax (Wi-Fi 6/6E)</b> รองรับหลายอุปกรณ์พร้อมกันด้วย OFDMA/MU-MIMO'
+            '<b>ข้อดีของ WLAN</b>: (1) เคลื่อนย้ายอุปกรณ์ได้อิสระไม่ต้องต่อสาย, (2) ติดตั้งง่ายและขยายเครือข่ายได้รวดเร็ว, (3) รองรับอุปกรณ์พกพาหลากหลายและประหยัดค่าเดินสาย',
+            '<b>มาตรฐานและความเร็วสูงสุด</b>: <b>IEEE 802.11n</b> (สูงสุด <b>600 Mbps</b> = <b>Wi-Fi 4</b>), <b>IEEE 802.11ac</b> (สูงสุด <b>6.9 Gbps</b> = <b>Wi-Fi 5</b>), <b>IEEE 802.11ax</b> (สูงสุด <b>9.6 Gbps</b> = <b>Wi-Fi 6 / 6E</b>)',
+            '<b>ย่านความถี่</b>: 2.4 GHz ทะลุกำแพงไกลกว่า (ช่องไม่ซ้อนทับคือ 1, 6, 11) | 5 GHz / 6 GHz ความเร็วสูงและสัญญาณกวนน้อยกว่า'
           ]
         },
         {
-          title: '3-4. อุปกรณ์ไร้สายและรูปแบบการเชื่อมต่อ',
+          title: '2. เทคนิคการส่งข้อมูล SU-MIMO vs MU-MIMO',
           bullets: [
-            '<b>อุปกรณ์หลัก</b>: Wireless NIC (USB/PCIe/Built-in), <b>Access Point (AP)</b> ตัวกระจายสัญญาณเชื่อมกับวง LAN, <b>Wireless Router</b> (รวม Router+Switch+AP) และเสาอากาศ (Omni / Directional)',
-            '<b>Ad-Hoc Mode (IBSS)</b>: อุปกรณ์เชื่อมต่อกันโดยตรงแบบ Peer-to-Peer ไม่ต้องใช้ Access Point',
-            '<b>Infrastructure Mode (BSS / ESS)</b>: ทุกเครื่องเชื่อมต่อผ่าน Access Point (ถ้ามี AP หลายตัวใช้ SSID เดียวกันเพื่อ Roaming เรียกว่า ESS)'
+            '<b>SU-MIMO (Single-User MIMO)</b>: ใช้หลายเสาอากาศรับ-ส่งข้อมูลความเร็วสูงให้ลูกข่ายได้ทีละ <b>1 เครื่อง</b>ต่อครั้ง',
+            '<b>MU-MIMO (Multi-User MIMO)</b>: พัฒนาให้ Access Point สามารถส่งข้อมูลไปยังลูกข่าย<b>หลายเครื่องพร้อมกัน</b>ในเวลาเดียวกัน ช่วยลดความหน่วงในห้องเรียนที่มีอุปกรณ์หนาแน่น'
           ]
         },
         {
-          title: '5. การรักษาความปลอดภัยในเครือข่ายไร้สาย',
+          title: '3. อุปกรณ์เครือข่ายไร้สายและรูปแบบการเชื่อมต่อ',
           bullets: [
-            '<b>การเข้ารหัส</b>: ห้ามใช้ WEP/WPA เดิมเพราะถูกถอดรหัสได้ง่าย ควรใช้ <b>WPA2-PSK (AES)</b> หรือ <b>WPA3-Personal/Enterprise</b>',
-            '<b>มาตรการเสริม</b>: เปลี่ยนรหัสผ่าน Admin ของ Router, ปิด WPS, ตั้ง <b>MAC Address Filtering</b>, แยกเครือข่าย Guest Wi-Fi และอัปเดต Firmware สม่ำเสมอ'
+            '<b>Access Point (AP)</b>: จุดกระจายสัญญาณไร้สายเพื่อเชื่อมลูกข่ายไร้สายเข้ากับเครือข่าย LAN แบบสาย',
+            '<b>Range Extender (Repeater)</b>: รับสัญญาณ Wi-Fi เดิมแล้วขยาย/ทวนสัญญาณให้ครอบคลุมพื้นที่ได้ไกลขึ้น',
+            '<b>Wireless Bridge</b>: เชื่อมต่อเครือข่าย LAN สองวงหรือสองอาคารเข้าด้วยกันแบบไร้สาย',
+            '<b>รูปแบบการเชื่อมต่อ</b>: <b>Ad-Hoc (IBSS)</b> เชื่อมตรงเครื่องต่อเครื่อง, <b>Infrastructure (BSS)</b> ผ่าน AP ศูนย์กลาง, <b>ESS / Mesh / Point-to-Point</b> ใช้ AP หลายตัวเชื่อมโยงกัน'
+          ]
+        },
+        {
+          title: '4. การรักษาความปลอดภัยในเครือข่ายไร้สาย',
+          bullets: [
+            '<b>การเข้ารหัส</b>: ใช้ <b>WPA2-PSK (AES)</b> หรือ <b>WPA3</b> (หลีกเลี่ยง WEP/WPA รุ่นเก่าที่ถูกเจาะได้ง่าย)',
+            '<b>มาตรการเสริม</b>: เปิด <b>MAC Address Filtering</b>, ซ่อนชื่อ <b>SSID</b>, เปลี่ยนรหัสผ่าน Admin ของ Router, ปิด WPS, แยกเครือข่าย Guest และอัปเดต Firmware สม่ำเสมอ'
           ]
         }
       ],
@@ -796,25 +869,33 @@
       `,
       codexCards: [
         {
-          title: '1-3. ชื่อเครื่อง, ชื่อเครือข่าย (Workgroup) และการตั้งค่า IPv4',
+          title: '1-2. ขั้นตอนเปลี่ยนชื่อเครื่องและเปลี่ยนชื่อเครือข่าย (Workgroup)',
           bullets: [
-            '<b>เปลี่ยนชื่อเครื่อง & Workgroup</b>: เข้า <code>Settings → System → About → Rename this PC</code> หรือ <code>sysdm.cpl → Computer Name → Change</code> เพื่อให้ทุกเครื่องในห้องอยู่ใน Workgroup เดียวกันและชื่อเครื่องไม่ซ้ำกัน',
-            '<b>เปลี่ยนหมายเลข IP Address</b>: เข้า <code>ncpa.cpl</code> → คลิกขวาการ์ดแลน (Ethernet/Wi-Fi) → Properties → <b>Internet Protocol Version 4 (TCP/IPv4)</b> เลือกรับอัตโนมัติ (DHCP) หรือกำหนดเอง (Static IP, Subnet Mask, Default Gateway, DNS)'
+            '<b>เปลี่ยนชื่อเครื่อง (4 ขั้นตอน)</b>: (1) เปิด <code>Settings → System → About</code> (หรือคลิกขวา This PC → Properties / รัน <code>sysdm.cpl</code>) → (2) คลิก <b>Rename this PC</b> (หรือแท็บ Computer Name → Change) → (3) พิมพ์ชื่อเครื่องใหม่ที่ไม่ซ้ำในวง LAN แล้วกด Next/OK → (4) <b>Restart</b> เครื่องเพื่อให้มีผล',
+            '<b>เปลี่ยนชื่อเครือข่าย Workgroup (4 ขั้นตอน)</b>: (1) เปิด <code>sysdm.cpl</code> → (2) เลือกแท็บ <b>Computer Name</b> แล้วคลิก <b>Change</b> → (3) เลือก <b>Workgroup</b> แล้วพิมพ์ชื่อกลุ่มงานเดียวกันทุกเครื่องในห้อง → (4) กด OK และ <b>Restart</b> เครื่อง'
           ]
         },
         {
-          title: '4-5. การแชร์โฟลเดอร์และการแชร์เครื่องพิมพ์ใน Windows',
+          title: '3. ขั้นตอนการเปลี่ยนหมายเลข IP Address ใน Windows 10/11',
           bullets: [
-            '<b>เปิดการแชร์ในเครือข่าย</b>: ตั้งค่าโปรไฟล์เป็น <b>Private Network</b> และเปิด <b>Network Discovery</b> + <b>File and Printer Sharing</b> ใน Advanced Sharing Settings',
-            '<b>แชร์โฟลเดอร์</b>: คลิกขวาโฟลเดอร์ → Properties → แท็บ <b>Sharing → Advanced Sharing</b> → กำหนดชื่อแชร์และสิทธิ์ (Permissions: Read / Change / Full Control)',
-            '<b>แชร์เครื่องพิมพ์</b>: เข้า <code>Control Panel → Devices and Printers</code> → คลิกขวาเครื่องพิมพ์ → Printer Properties → แท็บ <b>Sharing</b> → ติ๊ก <b>Share this printer</b>'
+            '(1) เปิด <code>Control Panel → Network and Sharing Center → Change adapter settings</code> (หรือกด <code>Win+R</code> พิมพ์ <code>ncpa.cpl</code>)',
+            '(2) คลิกขวาที่การ์ดเครือข่าย (<b>Ethernet</b> หรือ <b>Wi-Fi</b>) → เลือก <b>Properties</b>',
+            '(3) ดับเบิลคลิก <b>Internet Protocol Version 4 (TCP/IPv4)</b>',
+            '(4) เลือก <b>Use the following IP address</b> กรอก <b>IP Address, Subnet Mask, Default Gateway</b> และ <b>DNS Server</b> แล้วกด OK'
           ]
         },
         {
-          title: '6-7. การเชื่อมต่อโฟลเดอร์/เครื่องพิมพ์ที่แชร์ และเครือข่ายไร้สาย',
+          title: '4. ขั้นตอนการแชร์โฟลเดอร์และการแชร์เครื่องพิมพ์ใน Windows 10/11',
           bullets: [
-            '<b>เข้าใช้งานไฟล์/เครื่องพิมพ์ที่แชร์</b>: กด <code>Win + R</code> พิมพ์ UNC Path เช่น <code>\\\\192.168.10.20</code> หรือ <code>\\\\LAB-PC01\\Homework</code> หรือคลิก <b>Map Network Drive</b> เพื่อสร้างไดรฟ์เสมือน (เช่น ไดรฟ์ Z:)',
-            '<b>เชื่อมต่อเครือข่ายไร้สาย (Wi-Fi)</b>: คลิกไอคอนเครือข่ายที่มุมขวาล่าง Taskbar → เลือกชื่อ SSID → ใส่รหัสผ่าน Security Key → เลือก Connect automatically (หากเป็นเครือข่ายองค์กร/บ้าน ให้เลือก Private Network)'
+            '<b>แชร์โฟลเดอร์ (4 ขั้นตอน)</b>: (1) คลิกขวาโฟลเดอร์ → Properties → แท็บ <b>Sharing</b> → (2) คลิก <b>Advanced Sharing</b> ติ๊ก <b>Share this folder</b> → (3) คลิก <b>Permissions</b> กำหนดสิทธิ์ (Read/Change/Full Control) → (4) เปิด <b>Network Discovery & File Sharing</b> แล้วทดสอบเข้าถึงผ่าน <code>\\\\ชื่อเครื่อง\\ชื่อแชร์</code>',
+            '<b>แชร์เครื่องพิมพ์ (4 ขั้นตอน)</b>: (1) เปิด <code>Control Panel → Devices and Printers</code> → (2) คลิกขวาเครื่องพิมพ์ → <b>Printer properties</b> → (3) แท็บ <b>Sharing</b> ติ๊ก <b>Share this printer</b> ตั้งชื่อแชร์แล้วกด OK → (4) เครื่องลูกข่ายในวง LAN เชื่อมต่อผ่าน Network หรือ <code>\\\\ชื่อเครื่อง</code> และทดสอบสั่งพิมพ์'
+          ]
+        },
+        {
+          title: '5. การเข้าใช้งานทรัพยากรที่แชร์และเชื่อมต่อเครือข่ายไร้สาย',
+          bullets: [
+            '<b>UNC Path & Map Network Drive</b>: กด <code>Win+R</code> พิมพ์ <code>\\\\192.168.10.20\\Homework</code> หรือคลิก <b>Map Network Drive</b> เพื่อสร้างไดรฟ์เสมือนถาวร (เช่น ไดรฟ์ Z:)',
+            '<b>เชื่อมต่อ Wi-Fi</b>: คลิกไอคอนเครือข่ายที่มุมขวาล่าง Taskbar → เลือกชื่อ SSID → กรอกรหัสผ่าน → ตั้งโปรไฟล์เป็น <b>Private Network</b> เมื่ออยู่ในเครือข่ายองค์กร/บ้าน'
           ]
         }
       ],
@@ -901,25 +982,32 @@
       `,
       codexCards: [
         {
-          title: '1-2. ระบบปฏิบัติการเครือข่าย (NOS) และซอฟต์แวร์ Server',
+          title: '1. ระบบปฏิบัติการเครือข่าย (NOS) และบริการหลัก 5 ประการ',
           bullets: [
-            '<b>NOS (Network Operating System)</b>: ระบบปฏิบัติการที่ออกแบบสำหรับเครื่องแม่ข่าย (Server) เพื่อจัดการบัญชีผู้ใช้ บริการเครือข่าย (DNS, DHCP, File, Web) และความปลอดภัยแบบรวมศูนย์',
-            '<b>ซอฟต์แวร์ NOS ยอดนิยม</b>: <b>Windows Server</b> (จัดการโดเมนด้วย Active Directory ใช้งานง่ายผ่าน GUI), <b>Linux Server</b> (Ubuntu Server, Debian, Rocky/RHEL — ฟรี Open-Source เสถียร กินทรัพยากรน้อย), <b>FreeBSD</b>'
+            '<b>NOS (Network Operating System)</b>: ระบบปฏิบัติการสำหรับเครื่องแม่ข่าย (Server) เพื่อให้บริการและบริหารจัดการผู้ใช้/ความปลอดภัยแบบรวมศูนย์',
+            '<b>บริการสำคัญใน NOS (5 บริการ)</b>: (1) <b>File & Print Services</b> แชร์ไฟล์/เครื่องพิมพ์, (2) <b>DHCP</b> แจก IP อัตโนมัติ, (3) <b>DNS</b> แปลงชื่อโดเมน, (4) <b>Web / Mail / FTP Services</b>, (5) <b>Active Directory / Directory Service</b> จัดการบัญชีผู้ใช้และสิทธิ์รวมศูนย์'
           ]
         },
         {
-          title: '3. ซอฟต์แวร์จำลองเครื่องคอมพิวเตอร์ (Virtualization)',
+          title: '2. รายชื่อระบบปฏิบัติการเครือข่าย (NOS) และ Linux Server ยอดนิยม',
           bullets: [
-            '<b>Hypervisor Type 1 (Bare-Metal)</b>: ติดตั้งบนฮาร์ดแวร์โดยตรง เช่น VMware ESXi, Proxmox VE, Microsoft Hyper-V Server (ใช้ใน Data Center)',
-            '<b>Hypervisor Type 2 (Hosted)</b>: ติดตั้งเป็นโปรแกรมบน OS หลัก เช่น <b>Oracle VirtualBox</b>, <b>VMware Workstation</b> เหมาะสำหรับฝึกปฏิบัติในห้องเรียน',
-            '<b>ประโยชน์</b>: ประหยัดฮาร์ดแวร์ จำลองเครือข่ายหลายเครื่องได้ในพีซีเครื่องเดียว และมีฟีเจอร์ <b>Snapshot</b> ย้อนสถานะได้ทันทีเมื่อตั้งค่าพลาด'
+            '<b>ชื่อระบบปฏิบัติการเครือข่าย (5 ชื่อ)</b>: (1) <b>Windows Server</b>, (2) <b>Linux Server</b>, (3) <b>UNIX / FreeBSD</b>, (4) <b>Novell NetWare</b>, (5) <b>macOS Server / Oracle Solaris</b>',
+            '<b>Linux ที่นิยมใช้เป็น NOS (3+ ชื่อ)</b>: <b>Ubuntu Server</b>, <b>Debian</b>, <b>Red Hat Enterprise Linux (RHEL)</b>, <b>CentOS / Rocky Linux</b>, <b>openSUSE</b> (ฟรี Open-Source เสถียร กินทรัพยากรน้อย)'
           ]
         },
         {
-          title: '4. การติดตั้งระบบปฏิบัติการเครือข่ายบนเครื่องจำลอง (VM)',
+          title: '3. ซอฟต์แวร์จำลองเครื่องคอมพิวเตอร์ (Virtual Machine / Hypervisor)',
           bullets: [
-            '<b>ขั้นตอนสร้าง VM</b>: 1) เปิด Intel VT-x / AMD-V ใน BIOS → 2) สร้าง VM กำหนด vCPU, RAM (เช่น ≥ 2–4 GB) และ Virtual Hard Disk (.vdi/.vmdk) → 3) เลือกไฟล์ติดตั้ง <b>.ISO</b>',
-            '<b>โหมดเครือข่าย VM (Virtual NIC)</b>: <b>NAT</b> (VM ออกเน็ตผ่าน Host ได้แต่เครื่องอื่นใน LAN เรียกเข้าไม่ได้), <b>Bridged Adapter</b> (VM ได้รับ IP วง LAN จริงเหมือนเครื่องจริง), <b>Internal / Host-Only</b> (ทดสอบระบบปิดเฉพาะเครื่องจำลอง)'
+            '<b>ซอฟต์แวร์ VM ยอดนิยม</b>: <b>Oracle VM VirtualBox</b>, <b>VMware Workstation</b>, <b>Microsoft Hyper-V</b> (Type 2 สำหรับฝึกปฏิบัติ) และ <b>VMware ESXi / Proxmox VE</b> (Type 1 Bare-Metal สำหรับ Data Center)',
+            '<b>ประโยชน์</b>: จำลองหลายเครื่องในพีซีเดียว ประหยัดฮาร์ดแวร์ และมีฟีเจอร์ <b>Snapshot</b> ย้อนสถานะได้ทันที'
+          ]
+        },
+        {
+          title: '4. ขั้นตอนการติดตั้งระบบปฏิบัติการบน VirtualBox',
+          bullets: [
+            '(1) เปิด <b>Oracle VirtualBox</b> คลิก <b>New</b> ตั้งชื่อ VM เลือกชนิด OS และจัดสรร <b>vCPU / RAM / Virtual Hard Disk (.vdi)</b>',
+            '(2) เข้า <b>Settings → Storage</b> เพื่อ Mount ไฟล์ติดตั้ง <b>.ISO</b> และตั้งค่า <b>Network Adapter</b> (<b>NAT</b> ออกเน็ตผ่าน Host / <b>Bridged</b> รับ IP วง LAN จริง / <b>Host-Only</b> คุยเฉพาะเครื่องแม่)',
+            '(3) กด <b>Start</b> เพื่อบูตจากไฟล์ .ISO และดำเนินการติดตั้งระบบปฏิบัติการเครือข่ายตามขั้นตอนจนเสร็จสมบูรณ์'
           ]
         }
       ],
@@ -1006,26 +1094,49 @@
           <text x="488" y="206" fill="#e2e8f0" font-size="11" text-anchor="middle">• SSH / PuTTY (Port 22 - CLI)</text>
         </svg>
       `,
+      svgDiagram2: `
+        <svg viewBox="0 0 640 165" class="pixel-infographic-svg" shape-rendering="crispEdges">
+          <rect width="640" height="165" fill="#0b1224"/>
+          <rect x="6" y="6" width="628" height="153" fill="none" stroke="#06b6d4" stroke-width="3"/>
+          <text x="320" y="26" fill="#22d3ee" font-size="12" font-weight="bold" text-anchor="middle">Cisco 3-Layer Hierarchical Network Design Model</text>
+          <rect x="190" y="36" width="260" height="34" fill="#7c3aed" stroke="#c084fc" stroke-width="2"/>
+          <text x="320" y="57" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">1. Core Layer (ชั้นแกนหลักความเร็วสูง)</text>
+          <rect x="115" y="78" width="410" height="34" fill="#0284c7" stroke="#38bdf8" stroke-width="2"/>
+          <text x="320" y="99" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">2. Distribution Layer (ชั้นกระจายสัญญาณ • Routing / VLAN / Policy)</text>
+          <rect x="40" y="120" width="560" height="30" fill="#0d9488" stroke="#5eead4" stroke-width="2"/>
+          <text x="320" y="139" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">3. Access Layer (ชั้นการเชื่อมต่ออุปกรณ์ปลายทาง • PC / Printer / Access Point)</text>
+        </svg>
+      `,
       codexCards: [
         {
-          title: '1-2. การออกแบบแผนผังเครือข่ายและการติดตั้ง',
+          title: '1. การออกแบบเครือข่าย 3 ชั้น (Cisco) และเครื่องมือเขียนแผนผัง',
           bullets: [
-            '<b>แผนผังเครือข่าย</b>: แบ่งเป็น <b>Physical Diagram</b> (ตำแหน่งวางตู้ Rack, เส้นทางเดินสาย, จุดติดตั้ง AP) และ <b>Logical Diagram</b> (การแบ่ง IP Plan, Subnet, VLAN, Gateway)',
-            '<b>ขั้นตอนติดตั้งที่ดี</b>: สำรวจพื้นที่ → จัดทำรายการอุปกรณ์ (BOM) → เดินสายและติดป้ายกำกับ (Cable Labeling) → เข้าหัวสายและทดสอบด้วย Cable Tester → ตั้งค่าอุปกรณ์และทำเอกสารส่งมอบ'
+            '<b>Cisco 3-Layer Model</b>: (1) <b>Core Layer (ชั้นแกนหลัก)</b> ส่งผ่านข้อมูลความเร็วสูงเสถียรสุด, (2) <b>Distribution Layer (ชั้นกระจายสัญญาณ)</b> จัดเส้นทาง Routing/VLAN/นโยบาย, (3) <b>Access Layer (ชั้นการเชื่อมต่อ)</b> ต่อเครื่องผู้ใช้ปลายทาง (PC/Printer/AP)',
+            '<b>เครื่องมือเขียนแผนผังเครือข่าย</b>: <b>Microsoft Visio</b>, <b>Cisco Packet Tracer</b>, <b>draw.io (diagrams.net)</b>, <b>SmartDraw</b>, <b>Lucidchart</b>'
           ]
         },
         {
-          title: '3-4. การตรวจสอบ การวิเคราะห์ และแก้ปัญหาเครือข่าย',
+          title: '2. ตู้ Rack และการเดินสาย LAN',
           bullets: [
-            '<b>คำสั่งตรวจสอบ (CLI)</b>: <code>ipconfig /all</code> (ดู IP/MAC/DNS), <code>ping</code> (ทดสอบเชื่อมต่อ), <code>tracert</code> (ไล่เส้นทางแต่ละ Hop), <code>nslookup</code> (ทดสอบ DNS), <code>netstat</code> (ดูพอร์ตที่เปิดอยู่)',
-            '<b>หลักการแก้ปัญหาทีละชั้น (Bottom-Up)</b>: 1) ตรวจไฟสถานะสายแลน/พอร์ต Switch (Physical) → 2) ตรวจ IP ไม่ใช่ <code>169.254.x.x</code> (APIPA) → 3) <code>ping</code> Gateway → 4) <code>ping 8.8.8.8</code> → 5) ทดสอบ DNS'
+            '<b>ตู้ Rack แบ่งตามการติดตั้ง</b>: แบบตั้งพื้น (<b>Floor/Close Rack</b>), แบบติดผนัง (<b>Wall Rack</b>) และแบบโครงเปิด (<b>Open Rack</b>)',
+            '<b>ตู้ Rack แบ่งตามขนาด</b>: หน้ากว้างมาตรฐาน <b>19 นิ้ว</b> แบ่งความสูงเป็นหน่วย <b>U</b> (เช่น 6U, 9U, 15U, 27U, 42U) และความลึก (60/80/100 ซม.)',
+            '<b>วิธีเดินสาย LAN</b>: เดินในรางเก็บสาย (Wireway), เดินในท่อร้อยสาย (PVC/EMT), เดินบนฝ้าเพดาน หรือเดินใต้พื้นยก (Raised Floor) พร้อมติดป้ายกำกับสาย'
           ]
         },
         {
-          title: '5-6. ซอฟต์แวร์ช่วยงานและซอฟต์แวร์ควบคุมคอมพิวเตอร์ระยะไกล',
+          title: '3. คำสั่ง CLI ตรวจสอบเครือข่าย (5 คำสั่ง) และปัญหาที่พบบ่อย',
           bullets: [
-            '<b>ซอฟต์แวร์ช่วยงานเครือข่าย</b>: <b>Wireshark</b> (จับและวิเคราะห์ Packet), <b>Advanced IP Scanner / Nmap</b> (สแกนอุปกรณ์ในวง LAN), <b>Cisco Packet Tracer</b> (จำลองออกแบบเครือข่าย), <b>PuTTY</b> (เชื่อมต่อ SSH/Serial)',
-            '<b>ซอฟต์แวร์ควบคุมระยะไกล (Remote Control)</b>: <b>Remote Desktop (RDP - Port 3389)</b> ของ Windows, <b>AnyDesk / TeamViewer / Chrome Remote Desktop</b> (ควบคุมหน้าจอผ่านอินเทอร์เน็ตได้แม้ติด NAT), <b>VNC</b> และ <b>SSH</b>'
+            '<b>5 คำสั่งสำคัญ</b>: <code>ping</code> (ตรวจสอบการเชื่อมต่อ), <code>netstat</code> (ค้นหาจุดบกพร่อง/แสดงสถิติและพอร์ต), <code>ipconfig</code> (แสดงชื่อเครื่องและ IP), <code>tracert</code> (ตรวจสอบเส้นทางแต่ละ Hop), <code>nslookup</code> (ตรวจสอบระบบ Domain Name / DNS)',
+            '<b>ปัญหาสาย UTP</b>: สายขาดใน/หักงอ, เข้าหัว RJ-45 หลวม/เรียงสีผิด, เดินสายยาวเกิน 100 ม. หรือใกล้แหล่ง EMI | <b>ปัญหา Switch Hub</b>: พอร์ตเสีย, อะแดปเตอร์/ไฟดับ, เครื่องร้อนค้าง (Hang), เกิด <b>Network Loop</b> (Broadcast Storm)'
+          ]
+        },
+        {
+          title: '4. ซอฟต์แวร์ช่วยงานเครือข่าย (Utility 4 กลุ่ม)',
+          bullets: [
+            '<b>1) ตรวจสอบการทำงานเครือข่าย</b>: Wireshark, Advanced IP Scanner, Nmap, PRTG Network Monitor',
+            '<b>2) โอนย้ายไฟล์ข้อมูลในเครือข่าย</b>: FileZilla, WinSCP, CuteFTP',
+            '<b>3) ควบคุมเครือข่ายระยะไกล</b>: TeamViewer, AnyDesk, Windows Remote Desktop (RDP - Port 3389), VNC, PuTTY (SSH)',
+            '<b>4) ดูแลความปลอดภัยเครือข่าย</b>: Windows Defender Firewall, ESET, Kaspersky, Bitdefender, Snort (IDS/IPS)'
           ]
         }
       ],
@@ -1114,27 +1225,47 @@
           <text x="546" y="190" fill="#ef4444" font-size="11" font-weight="bold" text-anchor="middle">✖ BLOCK</text>
         </svg>
       `,
+      svgDiagram2: `
+        <svg viewBox="0 0 640 160" class="pixel-infographic-svg" shape-rendering="crispEdges">
+          <rect width="640" height="160" fill="#0b1224"/>
+          <rect x="6" y="6" width="628" height="148" fill="none" stroke="#f59e0b" stroke-width="3"/>
+          <text x="320" y="26" fill="#facc15" font-size="12" font-weight="bold" text-anchor="middle">ประเภทของ Firewall (ตามการทำงาน &amp; การติดตั้ง)</text>
+          <rect x="20" y="38" width="190" height="50" fill="#111c36" stroke="#38bdf8"/><text x="115" y="58" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle">1. Packet Filtering</text><text x="115" y="76" fill="#cbd5e1" font-size="9" text-anchor="middle">ตรวจสอบและกลั่นกรองแพ็กเกต</text>
+          <rect x="225" y="38" width="190" height="50" fill="#111c36" stroke="#a855f7"/><text x="320" y="58" fill="#c084fc" font-size="11" font-weight="bold" text-anchor="middle">2. Application Gateway</text><text x="320" y="76" fill="#cbd5e1" font-size="9" text-anchor="middle">คุมแอปพลิเคชันติดต่อภายนอก (Proxy)</text>
+          <rect x="430" y="38" width="190" height="50" fill="#111c36" stroke="#10b981"/><text x="525" y="58" fill="#4ade80" font-size="11" font-weight="bold" text-anchor="middle">3. Stateful Inspection</text><text x="525" y="76" fill="#cbd5e1" font-size="9" text-anchor="middle">บันทึกสถานะและรายละเอียดเข้า-ออก</text>
+          <rect x="20" y="98" width="290" height="44" fill="#1e293b" stroke="#ef4444"/><text x="165" y="116" fill="#fca5a5" font-size="11" font-weight="bold" text-anchor="middle">🏢 Network Firewall</text><text x="165" y="132" fill="#e2e8f0" font-size="9" text-anchor="middle">ป้องกันทั้งวง LAN • ติดตั้งที่ Gateway/Router ขอบเครือข่าย</text>
+          <rect x="330" y="98" width="290" height="44" fill="#1e293b" stroke="#22c55e"/><text x="475" y="116" fill="#4ade80" font-size="11" font-weight="bold" text-anchor="middle">💻 Personal Firewall</text><text x="475" y="132" fill="#e2e8f0" font-size="9" text-anchor="middle">ซอฟต์แวร์ป้องกันเฉพาะเครื่อง • ติดตั้งบน PC แต่ละเครื่อง</text>
+        </svg>
+      `,
       codexCards: [
         {
-          title: '1-3. ภัยคุกคาม การป้องกัน และมาตรการความปลอดภัย',
+          title: '1. ภัยคุกคาม 3 ลักษณะ และมัลแวร์สำคัญ (Virus / Trojan / Spyware)',
           bullets: [
-            '<b>ภัยคุกคามสำคัญ</b>: <b>Malware</b> (Virus, Worm แพร่เองผ่านเครือข่าย, Trojan แฝงตัว, Spyware แอบดักข้อมูล, <b>Ransomware</b> เข้ารหัสเรียกค่าไถ่), <b>Phishing</b> (เว็บ/อีเมลปลอม), <b>DDoS</b> (ถล่มให้ระบบล่ม), <b>MITM</b> (ดักจับข้อมูลกลางทาง)',
-            '<b>หลัก CIA Triad</b>: <b>Confidentiality</b> (ความลับ/การเข้ารหัส), <b>Integrity</b> (ความถูกต้องไม่ถูกแก้ไข), <b>Availability</b> (พร้อมใช้งานตลอดเวลา)',
-            '<b>มาตรการความปลอดภัย</b>: นโยบายรหัสผ่านแข็งแรง + <b>2FA/MFA</b>, อัปเดต Patch สม่ำเสมอ, ใช้ <b>VPN</b> เมื่อต่อเน็ตสาธารณะ และสำรองข้อมูล <b>Backup แบบ Offline</b>'
+            '<b>ภัยคุกคาม 3 ลักษณะ</b>: (1) ภัยจากมนุษย์/ผู้บุกรุก (แฮกเกอร์, Phishing, ความประมาท), (2) ภัยจากซอฟต์แวร์/มัลแวร์ (Virus, Worm, Trojan, Ransomware, DDoS), (3) ภัยทางกายภาพและธรรมชาติ (ไฟดับ/น้ำท่วม/ไฟไหม้/ฮาร์ดแวร์เสีย)',
+            '<b>ไวรัสคอมพิวเตอร์</b>: แฝงเข้ากับไฟล์อื่น คัดลอกตัวเองแพร่กระจายเมื่อเปิดไฟล์และทำลายข้อมูล | <b>โทรจัน (Trojan)</b>: ปลอมเป็นโปรแกรมปกติหลอกให้ติดตั้งแล้วเปิด Backdoor ควบคุมเครื่อง | <b>สปายแวร์ (Spyware)</b>: แอบดักจับพฤติกรรมและขโมยรหัสผ่าน/ข้อมูลส่วนตัว'
           ]
         },
         {
-          title: '4. โปรแกรมตรวจจับและกำจัดไวรัส (Antivirus)',
+          title: '2. วิธีป้องกันซอฟต์แวร์-ข้อมูล และหน้าที่ Anti-Virus / Firewall / Anti-Spyware',
           bullets: [
-            '<b>การทำงานของ Antivirus</b>: ตรวจจับแบบ <b>Signature-based</b> (เทียบฐานข้อมูลไวรัสที่รู้จัก), <b>Heuristic/Behavior</b> (ตรวจพฤติกรรมต้องสงสัย) และ <b>Real-time Protection</b>',
-            '<b>การจัดการไฟล์ติดเชื้อ</b>: เมื่อพบไฟล์อันตราย ระบบจะย้ายไปกักกัน (<b>Quarantine</b>) หรือลบออก และต้องอัปเดต Virus Definition ให้เป็นปัจจุบันอยู่เสมอ (เช่น Windows Defender / Microsoft Security)'
+            '<b>วิธีป้องกันด้านซอฟต์แวร์และข้อมูล</b>: (1) ติดตั้ง Antivirus & อัปเดต Patch สม่ำเสมอ, (2) สำรองข้อมูล (Offline/Cloud Backup 3-2-1), (3) ตั้งรหัสผ่านแข็งแรง + เปิด 2FA และไม่คลิกลิงก์/โปรแกรมเถื่อน',
+            '<b>หน้าที่ 3 โปรแกรม</b>: <b>Anti-Virus</b> (สแกน ตรวจจับ กักกัน Quarantine และกำจัดไวรัส), <b>Firewall</b> (คัดกรองทราฟฟิกขาเข้า-ขาออกตาม IP/Port), <b>Anti-Spyware</b> (ตรวจจับและลบสปายแวร์ที่แอบดักข้อมูล)',
+            '<b>ซอฟต์แวร์ป้องกันไวรัสยอดนิยม</b>: Microsoft Windows Defender, ESET NOD32, Kaspersky, Bitdefender, Norton, Avast'
           ]
         },
         {
-          title: '5-6. การสร้างความปลอดภัยด้วย Firewall และ Windows Firewall',
+          title: '3. ประเภทของ Firewall ตามการทำงาน (3 ประเภท)',
           bullets: [
-            '<b>Firewall</b>: กำแพงไฟคัดกรองทราฟฟิกขาเข้า (<b>Inbound Rules</b>) และขาออก (<b>Outbound Rules</b>) ตาม IP, Protocol และหมายเลข Port (เช่น Allow HTTPS 443/DNS 53, Block Telnet 23/SMB 445 จากภายนอก)',
-            '<b>Windows Defender Firewall</b>: แบ่งโปรไฟล์ 3 แบบคือ <b>Domain</b>, <b>Private</b> และ <b>Public Network</b> สามารถอนุญาตเฉพาะโปรแกรม (Allow an app) หรือตั้งกฎพอร์ตละเอียดได้ที่ <code>wf.msc</code> (Windows Firewall with Advanced Security)'
+            '<b>1) Packet Filtering Firewall</b>: ตรวจสอบและกลั่นกรองแพ็กเกตตาม IP ต้นทาง-ปลายทาง และหมายเลข Port',
+            '<b>2) Application-Level Gateway (Proxy Firewall)</b>: ควบคุมการเข้าถึงระดับแอปพลิเคชันที่จะติดต่อกับภายนอก',
+            '<b>3) Stateful Inspection Firewall</b>: มีการบันทึกข้อมูลสถานะและรายละเอียดการเชื่อมต่อขาเข้า-ขาออกเพื่อตรวจสอบความถูกต้อง'
+          ]
+        },
+        {
+          title: '4. Network Firewall vs Personal Firewall และ Windows Firewall',
+          bullets: [
+            '<b>Network Firewall</b>: ป้องกันทั้งวงเครือข่าย (มักเป็นฮาร์ดแวร์/Router เฉพาะทาง) ติดตั้งไว้ที่จุดเชื่อมต่อขอบเครือข่าย (<b>Gateway</b>) ระหว่าง LAN กับอินเทอร์เน็ต',
+            '<b>Personal Firewall</b>: ซอฟต์แวร์ป้องกันเฉพาะเครื่อง (เช่น <b>Windows Defender Firewall</b> ตั้งกฎละเอียดได้ที่ <code>wf.msc</code> แบ่ง 3 โปรไฟล์ Domain/Private/Public) ติดตั้งไว้บนเครื่องคอมพิวเตอร์แต่ละเครื่อง'
           ]
         }
       ],
@@ -1227,28 +1358,47 @@
           <text x="524" y="200" fill="#94a3b8" font-size="10" text-anchor="middle">ยึดหลัก Least Privilege</text>
         </svg>
       `,
+      svgDiagram2: `
+        <svg viewBox="0 0 640 165" class="pixel-infographic-svg" shape-rendering="crispEdges">
+          <rect width="640" height="165" fill="#0b1224"/>
+          <rect x="6" y="6" width="628" height="153" fill="none" stroke="#eab308" stroke-width="3"/>
+          <text x="320" y="26" fill="#facc15" font-size="12" font-weight="bold" text-anchor="middle">ตารางสรุปสิทธิ์ NTFS Permissions ทั้ง 6 ระดับ</text>
+          <rect x="18" y="38" width="194" height="50" fill="#111c36" stroke="#facc15"/><text x="115" y="56" fill="#facc15" font-size="11" font-weight="bold" text-anchor="middle">1. Full Control</text><text x="115" y="74" fill="#cbd5e1" font-size="9" text-anchor="middle">คุมทั้งหมด + เปลี่ยนสิทธิ์/เจ้าของได้</text>
+          <rect x="223" y="38" width="194" height="50" fill="#111c36" stroke="#38bdf8"/><text x="320" y="56" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle">2. Modify</text><text x="320" y="74" fill="#cbd5e1" font-size="9" text-anchor="middle">อ่าน เขียน แก้ไข และลบไฟล์ได้</text>
+          <rect x="428" y="38" width="194" height="50" fill="#111c36" stroke="#4ade80"/><text x="525" y="56" fill="#4ade80" font-size="11" font-weight="bold" text-anchor="middle">3. Read &amp; Execute</text><text x="525" y="74" fill="#cbd5e1" font-size="9" text-anchor="middle">อ่านไฟล์และสั่งรันโปรแกรมได้</text>
+          <rect x="18" y="98" width="194" height="48" fill="#111c36" stroke="#a855f7"/><text x="115" y="116" fill="#c084fc" font-size="11" font-weight="bold" text-anchor="middle">4. List Folder Contents</text><text x="115" y="134" fill="#cbd5e1" font-size="9" text-anchor="middle">ดูรายชื่อไฟล์/โฟลเดอร์ย่อยข้างใน</text>
+          <rect x="223" y="98" width="194" height="48" fill="#111c36" stroke="#10b981"/><text x="320" y="116" fill="#6ee7b7" font-size="11" font-weight="bold" text-anchor="middle">5. Read</text><text x="320" y="134" fill="#cbd5e1" font-size="9" text-anchor="middle">เปิดอ่านและคัดลอกเท่านั้น</text>
+          <rect x="428" y="98" width="194" height="48" fill="#111c36" stroke="#f97316"/><text x="525" y="116" fill="#fdba74" font-size="11" font-weight="bold" text-anchor="middle">6. Write</text><text x="525" y="134" fill="#cbd5e1" font-size="9" text-anchor="middle">สร้างไฟล์/โฟลเดอร์และเขียนเพิ่มได้</text>
+        </svg>
+      `,
       codexCards: [
         {
-          title: '1-2. ประโยชน์และการสร้างบัญชีผู้ใช้งาน (User Accounts)',
+          title: '1. ประโยชน์ของการสร้างบัญชีผู้ใช้ และข้อดีของกลุ่มผู้ใช้',
           bullets: [
-            '<b>ประโยชน์ของบัญชีผู้ใช้</b>: ยืนยันตัวตน (Authentication), แยกพื้นที่ไฟล์ส่วนตัว (User Profile), กำหนดขอบเขตสิทธิ์ (Authorization) และตรวจสอบย้อนหลังได้ (Auditing)',
-            '<b>ประเภทบัญชีใน Windows</b>: <b>Administrator</b> (ติดตั้งโปรแกรม/แก้ระบบได้ทั้งหมด), <b>Standard User</b> (ใช้งานประจำวัน ปลอดภัยจากมัลแวร์มากกว่า), <b>Guest</b> (ใช้ชั่วคราว)',
-            '<b>วิธีสร้างบัญชี</b>: เข้า <code>Settings → Accounts → Other users</code> หรือ <code>lusrmgr.msc</code> (Local Users and Groups) หรือคำสั่ง <code>net user ชื่อ รหัส /add</code>'
+            '<b>ประโยชน์ของบัญชีผู้ใช้ (3 ข้อ)</b>: (1) ยืนยันตัวตน (Authentication) ป้องกันผู้ไม่มีสิทธิ์เข้าถึง, (2) แยกพื้นที่ไฟล์และการตั้งค่าส่วนตัว (User Profile), (3) กำหนดขอบเขตสิทธิ์ (Authorization) และตรวจสอบย้อนหลังได้ (Auditing)',
+            '<b>ข้อดีของการสร้างกลุ่มผู้ใช้ (User Groups)</b>: กำหนดและปรับเปลี่ยนสิทธิ์ให้ผู้ใช้หลายคนพร้อมกันในครั้งเดียว (เช่น กลุ่ม Teachers / Students) สะดวก เป็นระเบียบ และลดความผิดพลาด'
           ]
         },
         {
-          title: '3-4. การสร้างกลุ่มผู้ใช้และการกำหนดสิทธิการใช้งาน',
+          title: '2. รายละเอียดและตัวเลือก 4 แบบในการสร้างบัญชีผู้ใช้ (lusrmgr.msc)',
           bullets: [
-            '<b>การสร้างกลุ่มผู้ใช้ (User Groups)</b>: รวมบัญชีที่มีหน้าที่คล้ายกันไว้ในกลุ่มเดียว (เช่น กลุ่ม <code>Teachers</code>, <code>Students</code>, <code>Administrators</code>) แล้วกำหนดสิทธิ์ที่ระดับกลุ่มแทนการตั้งทีละคน',
-            '<b>NTFS Permissions vs Share Permissions</b>: แท็บ <b>Security (NTFS)</b> คุมสิทธิ์ละเอียดระดับไฟล์/โฟลเดอร์ (Full Control, Modify, Read & Execute, Write) ส่วนแท็บ <b>Sharing</b> คุมสิทธิ์เมื่อเข้าผ่านเครือข่าย (เมื่อใช้ร่วมกันจะยึดสิทธิ์ที่<b>เข้มงวดกว่า</b>)',
-            '<b>หลักสิทธิ์น้อยที่สุด (Least Privilege)</b>: ให้สิทธิ์เฉพาะเท่าที่จำเป็น และจำกฎสำคัญว่า <b>Explicit Deny จะชนะ Allow เสมอ</b>'
+            '<b>ข้อมูลสำคัญ 4 ช่อง</b>: <b>User name</b> (ชื่อล็อกอินห้ามซ้ำ), <b>Full Name</b> (ชื่อ-นามสกุลจริงที่แสดงผล), <b>Description</b> (คำอธิบายตำแหน่ง/ห้อง), <b>Password</b> (รหัสผ่านยืนยันตัวตน)',
+            '<b>ตัวเลือกบัญชี 4 แบบ</b>: (1) <b>User must change password at next logon</b> = บังคับเปลี่ยนรหัสผ่านเมื่อล็อกอินครั้งถัดไป, (2) <b>User cannot change password</b> = ห้ามผู้ใช้เปลี่ยนรหัสผ่านเอง, (3) <b>Password never expires</b> = รหัสผ่านไม่มีวันหมดอายุ, (4) <b>Account is disabled</b> = ปิด/ระงับบัญชีชั่วคราวโดยไม่ลบข้อมูล'
           ]
         },
         {
-          title: '5. การใช้งานตามบัญชีผู้ใช้ในเครือข่ายวินโดวส์',
+          title: '3. ขั้นตอนการแชร์โฟลเดอร์ในเครือข่ายและการใช้งานตามบัญชี',
           bullets: [
-            '<b>การสลับและลงชื่อเข้าใช้</b>: กด <code>Ctrl + Alt + Del</code> เพื่อ Sign out / Switch user หรือล็อกหน้าจอด้วย <code>Win + L</code> ทุกครั้งเมื่อลุกจากเครื่อง',
-            '<b>การใช้งานข้ามเครือข่าย</b>: เมื่อเข้าถึงโฟลเดอร์แชร์บนเครื่องแม่ข่าย (เช่น <code>\\\\LAB-SRV\\Exam_Bank</code>) Windows จะถาม Username/Password ของบัญชีที่ได้รับอนุญาต หากใช้บัญชีกลุ่ม Students จะเปิดอ่านได้แต่แก้ไขไฟล์ข้อสอบไม่ได้'
+            '<b>4 ขั้นตอนแชร์โฟลเดอร์</b>: (1) คลิกขวาโฟลเดอร์ → Properties → แท็บ <b>Sharing</b> → (2) คลิก <b>Advanced Sharing</b> ติ๊ก <b>Share this folder</b> → (3) คลิก <b>Permissions</b> เพิ่มบัญชี/กลุ่มผู้ใช้และกำหนดสิทธิ์ → (4) ตรวจ/กำหนดสิทธิ์ในแท็บ <b>Security (NTFS)</b> ให้สอดคล้องกัน กด OK แล้วทดสอบเข้าใช้งานผ่าน <code>\\\\ชื่อเครื่อง\\ชื่อแชร์</code>',
+            '<b>หลักสิทธิ์น้อยที่สุด (Least Privilege)</b>: ให้นักเรียนใช้ <b>Standard User</b> แทน Administrator และจำกฎเหล็กว่า <b>Explicit Deny ชนะ Allow เสมอ</b> และเมื่อใช้ Share + NTFS ร่วมกันจะยึดสิทธิ์ที่<b>เข้มงวดกว่า</b>'
+          ]
+        },
+        {
+          title: '4. รายละเอียดการกำหนดสิทธิ์ NTFS Permissions ทั้ง 6 ระดับ',
+          bullets: [
+            '<b>1) Full Control</b>: ควบคุมสูงสุด อ่าน/เขียน/แก้ไข/ลบ/รัน และเปลี่ยนสิทธิ์หรือความเป็นเจ้าของได้ | <b>2) Modify</b>: อ่าน เขียน แก้ไข สร้าง และลบไฟล์ได้ (แต่เปลี่ยนสิทธิ์ไม่ได้)',
+            '<b>3) Read & Execute</b>: เปิดอ่านและสั่งรันโปรแกรมได้ | <b>4) List Folder Contents</b>: ดูรายชื่อไฟล์และโฟลเดอร์ย่อยภายในโฟลเดอร์ได้',
+            '<b>5) Read</b>: เปิดอ่านและคัดลอกออกไปได้เท่านั้น | <b>6) Write</b>: สร้างไฟล์/โฟลเดอร์ใหม่และเขียนข้อมูลเพิ่มได้'
           ]
         }
       ],
