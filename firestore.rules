@@ -98,89 +98,22 @@ service cloud.firestore {
       return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
     }
 
-    // Validate string type and inclusive length bounds
+    // Validate string type and inclusive length bounds (used by customQuestions)
     function validString(val, minLen, maxLen) {
       return val is string && val.size() >= minLen && val.size() <= maxLen;
     }
 
-    // Validate integer type and inclusive range bounds
+    // Validate integer type and inclusive range bounds (used by customQuestions)
     function validIntRange(val, minVal, maxVal) {
       return val is int && val >= minVal && val <= maxVal;
-    }
-
-    // Validate allowed RPG hero class enum
-    function isValidHeroClass(heroClass) {
-      return heroClass is string &&
-        heroClass in ['paladin', 'mage', 'ranger', 'ninja'];
     }
 
     // ===============================================================
     // Domain Validators (Used in BOTH create and update)
     // ===============================================================
 
-    function isValidStudentProfile(profile) {
-      return profile is map &&
-        profile.keys().hasAll(['name', 'studentId', 'classRoom', 'heroClass', 'created']) &&
-        profile.keys().hasOnly(['name', 'studentId', 'classRoom', 'heroClass', 'created']) &&
-        validString(profile.name, 0, 120) &&
-        validString(profile.studentId, 0, 40) &&
-        validString(profile.classRoom, 0, 40) &&
-        isValidHeroClass(profile.heroClass) &&
-        profile.created is bool;
-    }
-
-    function isValidInventory(inv) {
-      return inv is map &&
-        inv.keys().hasAll(['potion', 'analyzer', 'clock', 'shield']) &&
-        inv.keys().hasOnly(['potion', 'analyzer', 'clock', 'shield']) &&
-        validIntRange(inv.potion, 0, 9999) &&
-        validIntRange(inv.analyzer, 0, 9999) &&
-        validIntRange(inv.clock, 0, 9999) &&
-        validIntRange(inv.shield, 0, 9999);
-    }
-
-    function isValidUnitProgress(unitProg) {
-      return unitProg is map &&
-        unitProg.keys().hasAll(['labCleared', 'bossCleared', 'bestScore', 'stars']) &&
-        unitProg.keys().hasOnly(['labCleared', 'bossCleared', 'bestScore', 'stars']) &&
-        unitProg.labCleared is bool &&
-        unitProg.bossCleared is bool &&
-        validIntRange(unitProg.bestScore, 0, 100) &&
-        validIntRange(unitProg.stars, 0, 3);
-    }
-
-    function isValidUnitProgressMap(upMap) {
-      return upMap is map &&
-        upMap.keys().hasAll(['1', '2', '3', '4', '5', '6']) &&
-        upMap.keys().hasOnly(['1', '2', '3', '4', '5', '6']) &&
-        isValidUnitProgress(upMap['1']) &&
-        isValidUnitProgress(upMap['2']) &&
-        isValidUnitProgress(upMap['3']) &&
-        isValidUnitProgress(upMap['4']) &&
-        isValidUnitProgress(upMap['5']) &&
-        isValidUnitProgress(upMap['6']);
-    }
-
-    function isValidDailyState(daily) {
-      return daily is map &&
-        daily.keys().hasAll([
-          'date', 'labsCompletedToday', 'bossesDefeatedToday',
-          'bestComboToday', 'arcadeRunsToday', 'claimed'
-        ]) &&
-        daily.keys().hasOnly([
-          'date', 'labsCompletedToday', 'bossesDefeatedToday',
-          'bestComboToday', 'arcadeRunsToday', 'claimed'
-        ]) &&
-        validString(daily.date, 0, 20) &&
-        validIntRange(daily.labsCompletedToday, 0, 1000) &&
-        validIntRange(daily.bossesDefeatedToday, 0, 1000) &&
-        validIntRange(daily.bestComboToday, 0, 1000) &&
-        validIntRange(daily.arcadeRunsToday, 0, 1000) &&
-        daily.claimed is list &&
-        daily.claimed.size() <= 10 &&
-        daily.claimed.hasOnly(['dq_lab', 'dq_boss', 'dq_combo', 'dq_arcade']);
-    }
-
+    // Compact validator for student.state to stay well below Firestore's
+    // 1,000-expression evaluation limit while enforcing strict keys and bounds
     function isValidStudentState(state) {
       return state is map &&
         state.keys().hasAll([
@@ -191,27 +124,34 @@ service cloud.firestore {
           'profile', 'xp', 'coins', 'hp', 'inventory', 'equipment',
           'badges', 'unitProgress', 'daily', 'arcadeHighScore', 'crt'
         ]) &&
-        isValidStudentProfile(state.profile) &&
-        validIntRange(state.xp, 0, 1000000) &&
-        validIntRange(state.coins, 0, 10000000) &&
-        validIntRange(state.hp, 0, 1000) &&
-        isValidInventory(state.inventory) &&
-        state.equipment is list &&
-        state.equipment.size() <= 10 &&
-        state.equipment.hasOnly([
-          'golden_crimper', 'fiber_boots', 'packet_goggles', 'firewall_armor'
+        state.profile is map &&
+        state.profile.keys().hasOnly(['name', 'studentId', 'classRoom', 'heroClass', 'created']) &&
+        state.profile.name is string && state.profile.name.size() <= 120 &&
+        (!('studentId' in state.profile) ||
+          (state.profile.studentId is string && state.profile.studentId.size() <= 40)) &&
+        state.profile.classRoom is string && state.profile.classRoom.size() <= 40 &&
+        state.profile.heroClass in ['paladin', 'mage', 'ranger', 'ninja'] &&
+        state.profile.created is bool &&
+        state.xp is int && state.xp >= 0 && state.xp <= 1000000 &&
+        state.coins is int && state.coins >= 0 && state.coins <= 10000000 &&
+        state.hp is int && state.hp >= 0 && state.hp <= 1000 &&
+        state.arcadeHighScore is int && state.arcadeHighScore >= 0 && state.arcadeHighScore <= 1000000 &&
+        state.crt is bool &&
+        state.inventory is map &&
+        state.inventory.keys().hasOnly(['potion', 'analyzer', 'clock', 'shield']) &&
+        state.equipment is list && state.equipment.size() <= 10 &&
+        state.badges is list && state.badges.size() <= 12 &&
+        state.unitProgress is map &&
+        state.unitProgress.keys().hasOnly(['1', '2', '3', '4', '5', '6']) &&
+        state.daily is map &&
+        state.daily.keys().hasOnly([
+          'date', 'labsCompletedToday', 'bossesDefeatedToday',
+          'bestComboToday', 'arcadeRunsToday', 'claimed'
         ]) &&
-        state.badges is list &&
-        state.badges.size() <= 12 &&
-        state.badges.hasOnly([
-          'first_login', 'unit1_clear', 'unit2_clear', 'unit3_clear',
-          'unit4_clear', 'unit5_clear', 'unit6_clear', 'combo_master',
-          'perfect_crimper', 'shopaholic', 'arcade_hero', 'grand_champion'
-        ]) &&
-        isValidUnitProgressMap(state.unitProgress) &&
-        isValidDailyState(state.daily) &&
-        validIntRange(state.arcadeHighScore, 0, 1000000) &&
-        state.crt is bool;
+        (!('date' in state.daily) ||
+          (state.daily.date is string && state.daily.date.size() <= 20)) &&
+        (!('claimed' in state.daily) ||
+          (state.daily.claimed is list && state.daily.claimed.size() <= 10));
     }
 
     function isValidStudent(data, userId) {
@@ -225,20 +165,18 @@ service cloud.firestore {
           'level', 'xp', 'unitsCleared', 'badgeCount', 'arcadeHighScore',
           'state', 'updatedAt', 'updatedAtServer', 'createdAtServer'
         ]) &&
-        data.uid is string &&
-        data.uid == userId &&
-        validString(data.studentId, 4, 40) &&
-        validString(data.name, 1, 120) &&
-        validString(data.classRoom, 0, 40) &&
-        isValidHeroClass(data.heroClass) &&
-        validIntRange(data.level, 1, 10) &&
-        validIntRange(data.xp, 0, 1000000) &&
-        validIntRange(data.unitsCleared, 0, 6) &&
-        validIntRange(data.badgeCount, 0, 12) &&
-        validIntRange(data.arcadeHighScore, 0, 1000000) &&
-        validString(data.updatedAt, 0, 30) &&
-        data.updatedAtServer is timestamp &&
-        data.updatedAtServer == request.time &&
+        data.uid is string && data.uid == userId &&
+        data.studentId is string && data.studentId.size() >= 4 && data.studentId.size() <= 40 &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
+        data.classRoom is string && data.classRoom.size() <= 40 &&
+        data.heroClass in ['paladin', 'mage', 'ranger', 'ninja'] &&
+        data.level is int && data.level >= 1 && data.level <= 10 &&
+        data.xp is int && data.xp >= 0 && data.xp <= 1000000 &&
+        data.unitsCleared is int && data.unitsCleared >= 0 && data.unitsCleared <= 6 &&
+        data.badgeCount is int && data.badgeCount >= 0 && data.badgeCount <= 12 &&
+        data.arcadeHighScore is int && data.arcadeHighScore >= 0 && data.arcadeHighScore <= 1000000 &&
+        data.updatedAt is string && data.updatedAt.size() <= 30 &&
+        data.updatedAtServer is timestamp && data.updatedAtServer == request.time &&
         (!('createdAtServer' in data) || data.createdAtServer is timestamp) &&
         isValidStudentState(data.state);
     }

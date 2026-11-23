@@ -132,7 +132,7 @@
       }
     },
 
-    applyLoadedState(loadedState, fallbackStudentId = '') {
+    applyLoadedState(loadedState, fallbackStudentId = '', fallbackProfileMeta = null) {
       const def = createDefaultState();
       if (loadedState && typeof loadedState === 'object') {
         this.state = {
@@ -146,8 +146,16 @@
       } else {
         this.state = def;
       }
+      if (fallbackProfileMeta) {
+        if (!this.state.profile.name && fallbackProfileMeta.name) this.state.profile.name = fallbackProfileMeta.name;
+        if (!this.state.profile.classRoom && fallbackProfileMeta.classRoom) this.state.profile.classRoom = fallbackProfileMeta.classRoom;
+        if (!this.state.profile.heroClass && fallbackProfileMeta.heroClass) this.state.profile.heroClass = fallbackProfileMeta.heroClass;
+      }
       if (fallbackStudentId && !this.state.profile.studentId) {
         this.state.profile.studentId = fallbackStudentId;
+      }
+      if (this.state.profile.name && this.state.profile.name.trim()) {
+        this.state.profile.created = true;
       }
     },
 
@@ -497,8 +505,13 @@
       this.closeModal('modal-auth');
       this.renderHUD();
       this.renderDashboard();
+      if (!this.state.profile.created) {
+        this.openProfileModal(true);
+      } else {
+        this.closeModal('modal-profile');
+      }
       soundFX.playPowerUp();
-      this.toast(`🔑 เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ ${this.state.profile.name || res.studentId}${this.isTeacher ? ' [สิทธิ์ครูผู้สอน]' : ''}`);
+      this.toast(`🔑 เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ ${this.state.profile.name || res.studentId} (${this.state.profile.classRoom || ''})${this.isTeacher ? ' [สิทธิ์ครูผู้สอน]' : ''}`);
     },
 
     async submitRegister() {
@@ -556,12 +569,16 @@
       this.currentUid = res.uid;
       this.isTeacher = false;
       this.applyLoadedState(res.state || fresh, res.studentId);
-      this.saveState(true);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+        this.syncLeaderboardEntry();
+      } catch (e) { /* ignore */ }
       this.closeModal('modal-auth');
+      this.closeModal('modal-profile');
       this.renderHUD();
       this.renderDashboard();
       soundFX.playLevelUp();
-      this.toast(`🎉 ลงทะเบียนสำเร็จ! ยินดีต้อนรับ ${name} (${res.studentId})`);
+      this.toast(`🎉 ลงทะเบียนสำเร็จ! ยินดีต้อนรับ ${name} (${room})`);
     },
 
     async quickDemoLogin() {
@@ -611,7 +628,10 @@
       if (!confirm('ต้องการออกจากระบบเพื่อสลับบัญชีนักศึกษาหรือไม่?')) return;
       this.stopBattleTimer();
       this.saveState(true);
-      await FirebaseService.logout();
+      if (global.FirebaseService) {
+        await FirebaseService.flushSave();
+        await FirebaseService.logout();
+      }
       this.currentUid = null;
       this.isTeacher = false;
       this.state = createDefaultState();

@@ -94,6 +94,36 @@
     return msg || 'เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล';
   }
 
+  function extractStateWithProfile(docData, user, fallbackStudentId) {
+    const baseState = (docData && docData.state && typeof docData.state === 'object')
+      ? { ...docData.state }
+      : null;
+    const rawProf = (baseState && baseState.profile && typeof baseState.profile === 'object')
+      ? baseState.profile
+      : {};
+    const resolvedName = String(rawProf.name || (docData && docData.name) || (user && user.displayName) || '').trim();
+    const resolvedSid = String(rawProf.studentId || (docData && docData.studentId) || fallbackStudentId || '').trim();
+    const resolvedRoom = String(rawProf.classRoom || (docData && docData.classRoom) || 'ปวช.2/1').trim();
+    const resolvedClass = String(rawProf.heroClass || (docData && docData.heroClass) || 'paladin');
+    const isCreated = Boolean(rawProf.created || resolvedName.length > 0);
+
+    if (!baseState && !isCreated) {
+      return null;
+    }
+
+    return {
+      ...(baseState || {}),
+      profile: {
+        ...rawProf,
+        name: resolvedName,
+        studentId: resolvedSid,
+        classRoom: resolvedRoom,
+        heroClass: resolvedClass,
+        created: isCreated
+      }
+    };
+  }
+
   const FirebaseService = {
     mode: 'local', // 'firebase' | 'local'
     auth: null,
@@ -101,6 +131,9 @@
     configSource: 'none',
     activeConfig: null,
     saveTimer: null,
+    _pendingWriteFn: null,
+    _pendingSavePromise: null,
+    _authBusy: false,
     authUnsubscribe: null,
 
     getEffectiveConfig() {
@@ -192,6 +225,7 @@
 
       if (this.isCloud()) {
         this.authUnsubscribe = this.auth.onAuthStateChanged(async (user) => {
+          if (this._authBusy) return;
           if (!user) {
             callback(null);
             return;
@@ -212,11 +246,12 @@
             const snap = await this.db.collection('students').doc(user.uid).get();
             if (snap.exists) {
               const doc = snap.data();
+              const resolvedState = extractStateWithProfile(doc, user, emailPrefix);
               callback({
                 uid: user.uid,
                 studentId: doc.studentId || emailPrefix,
                 isTeacher,
-                state: doc.state || null
+                state: resolvedState
               });
               return;
             }
@@ -235,7 +270,7 @@
             uid: user.uid,
             studentId: emailPrefix,
             isTeacher,
-            state: backupState
+            state: extractStateWithProfile(backupState ? { state: backupState } : null, user, emailPrefix)
           });
         });
         return;
@@ -284,34 +319,59 @@
         return { ok: false, error: 'กรุณากรอกชื่อ-นามสกุลผู้เรียน' };
       }
 
+      const cleanName = name.trim();
+      const cleanRoom = (classRoom || 'ปวช.2/1').trim();
+      const stateToSave = {
+        ...initialState,
+        profile: {
+          ...(initialState.profile || {}),
+          name: cleanName,
+          studentId: cleanId,
+          classRoom: cleanRoom,
+          heroClass: heroClass || 'paladin',
+          created: true
+        }
+      };
+
       const summary = {
         studentId: cleanId,
-        name: name.trim(),
-        classRoom: (classRoom || 'ปวช.2/1').trim(),
+        name: cleanName,
+        classRoom: cleanRoom,
         heroClass: heroClass || 'paladin',
         level: 1,
-        xp: 0,
+        xp: stateToSave.xp || 0,
         unitsCleared: 0,
-        badgeCount: 1,
+        badgeCount: Array.isArray(stateToSave.badges) ? stateToSave.badges.length : 1,
         arcadeHighScore: 0,
         updatedAt: new Date().toISOString().slice(0, 10)
       };
 
       if (this.isCloud()) {
+        this._authBusy = true;
+        let createdUser = null;
         try {
           const cred = await this.auth.createUserWithEmailAndPassword(email, password);
+          createdUser = cred.user;
           const uid = cred.user.uid;
+          try {
+            await cred.user.updateProfile({ displayName: cleanName });
+          } catch (e) { /* non-fatal */ }
           await this.db.collection('students').doc(uid).set({
             uid,
             ...summary,
-            state: initialState,
+            state: stateToSave,
             createdAtServer: global.firebase.firestore.FieldValue.serverTimestamp(),
             updatedAtServer: global.firebase.firestore.FieldValue.serverTimestamp()
           });
-          localStorage.setItem(LOCAL_BACKUP_PREFIX + uid, JSON.stringify(initialState));
-          return { ok: true, uid, studentId: cleanId, state: initialState };
+          localStorage.setItem(LOCAL_BACKUP_PREFIX + uid, JSON.stringify(stateToSave));
+          return { ok: true, uid, studentId: cleanId, isTeacher: false, state: stateToSave };
         } catch (err) {
+          if (createdUser) {
+            try { await createdUser.delete(); } catch (e) { /* ignore cleanup error */ }
+          }
           return { ok: false, error: translateFirebaseError(err) };
+        } finally {
+          this._authBusy = false;
         }
       }
 
@@ -327,11 +387,11 @@
         studentId: cleanId,
         passHash: simpleHash(password),
         summary,
-        state: initialState
+        state: stateToSave
       };
       this.saveLocalAccounts(accounts);
       localStorage.setItem(LOCAL_SESSION_KEY, key);
-      return { ok: true, uid, studentId: cleanId, state: initialState };
+      return { ok: true, uid, studentId: cleanId, isTeacher: false, state: stateToSave };
     },
 
     async loginStudent({ studentId, password }) {
@@ -346,6 +406,7 @@
       }
 
       if (this.isCloud()) {
+        this._authBusy = true;
         try {
           const cred = await this.auth.signInWithEmailAndPassword(email, password);
           const uid = cred.user.uid;
@@ -359,15 +420,26 @@
             const snap = await this.db.collection('students').doc(uid).get();
             if (snap.exists) docData = snap.data();
           } catch (e) { /* handled below */ }
+          let resolvedState = extractStateWithProfile(docData, cred.user, (docData && docData.studentId) || cleanId);
+          if (!resolvedState) {
+            try {
+              const rawBak = localStorage.getItem(LOCAL_BACKUP_PREFIX + uid);
+              if (rawBak) {
+                resolvedState = extractStateWithProfile({ state: JSON.parse(rawBak) }, cred.user, cleanId);
+              }
+            } catch (e) { /* ignore */ }
+          }
           return {
             ok: true,
             uid,
             studentId: (docData && docData.studentId) || cleanId,
             isTeacher,
-            state: (docData && docData.state) || null
+            state: resolvedState
           };
         } catch (err) {
           return { ok: false, error: translateFirebaseError(err) };
+        } finally {
+          this._authBusy = false;
         }
       }
 
@@ -386,10 +458,7 @@
     },
 
     async logout() {
-      if (this.saveTimer) {
-        clearTimeout(this.saveTimer);
-        this.saveTimer = null;
-      }
+      await this.flushSave();
       localStorage.removeItem(LOCAL_SESSION_KEY);
       if (this.isCloud()) {
         try {
@@ -399,6 +468,23 @@
     },
 
     /* ---------------- STATE PERSISTENCE ---------------- */
+    async flushSave() {
+      if (this.saveTimer) {
+        clearTimeout(this.saveTimer);
+        this.saveTimer = null;
+        if (this._pendingWriteFn) {
+          const fn = this._pendingWriteFn;
+          this._pendingWriteFn = null;
+          await fn();
+        }
+      }
+      if (this._pendingSavePromise) {
+        try {
+          await this._pendingSavePromise;
+        } catch (e) { /* ignore */ }
+      }
+    },
+
     saveStudentState(uid, stateObj, summary, immediate = false) {
       if (!uid) return;
 
@@ -418,23 +504,35 @@
       }
 
       const writeFn = () => {
-        if (!this.isCloud()) return;
-        this.db.collection('students').doc(uid).set({
+        if (!this.isCloud()) return Promise.resolve();
+        const p = this.db.collection('students').doc(uid).set({
           uid,
           ...summary,
           state: stateObj,
           updatedAtServer: global.firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true }).catch((err) => {
           console.warn('Firestore save warning:', err);
+        }).finally(() => {
+          if (this._pendingSavePromise === p) this._pendingSavePromise = null;
         });
+        this._pendingSavePromise = p;
+        return p;
       };
 
-      if (this.saveTimer) clearTimeout(this.saveTimer);
-      if (immediate) {
-        writeFn();
-      } else {
-        this.saveTimer = setTimeout(writeFn, 500);
+      if (this.saveTimer) {
+        clearTimeout(this.saveTimer);
+        this.saveTimer = null;
       }
+      this._pendingWriteFn = writeFn;
+      if (immediate) {
+        this._pendingWriteFn = null;
+        return writeFn();
+      }
+      this.saveTimer = setTimeout(() => {
+        this.saveTimer = null;
+        this._pendingWriteFn = null;
+        writeFn();
+      }, 450);
     },
 
     /* ---------------- LEADERBOARD & CUSTOM QUESTIONS ---------------- */
