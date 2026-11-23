@@ -1072,6 +1072,20 @@
         </div>
       `;
       this.hydrateStudentSkillCloudStatus(unit.id);
+      el.querySelectorAll('.skill-model-ans').forEach((ansEl) => {
+        const block = (ev) => {
+          ev.preventDefault();
+          if (ev.type === 'copy' || ev.type === 'cut' || ev.type === 'contextmenu') {
+            this.toast('🚫 ห้ามคัดลอกแนวคำตอบ (กรุณาอ่านทำความเข้าใจแล้วพิมพ์ตอบด้วยตนเอง)');
+          }
+          return false;
+        };
+        ansEl.addEventListener('copy', block);
+        ansEl.addEventListener('cut', block);
+        ansEl.addEventListener('contextmenu', block);
+        ansEl.addEventListener('selectstart', block);
+        ansEl.addEventListener('dragstart', block);
+      });
     },
 
     evaluateSkillAnswers(unitId, answersMap) {
