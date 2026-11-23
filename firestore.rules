@@ -29,8 +29,8 @@ service cloud.firestore {
     //   - heroClass: string (required, enum: 'paladin'|'mage'|'ranger'|'ninja')
     //   - level: int (required, 1..10) - rank level
     //   - xp: int (required, 0..1000000) - total experience points
-    //   - unitsCleared: int (required, 0..6) - number of unit bosses cleared
-    //   - badgeCount: int (required, 0..12) - unlocked badge count
+    //   - unitsCleared: int (required, 0..10) - number of unit bosses cleared
+    //   - badgeCount: int (required, 0..16) - unlocked badge count
     //   - arcadeHighScore: int (required, 0..1000000) - best Endless Arcade score
     //   - state: map (required, strictly bounded nested game progress state)
     //   - updatedAt: string (required, 0..30 chars) - YYYY-MM-DD display date
@@ -41,7 +41,7 @@ service cloud.firestore {
     // Collection: customQuestions
     // Document ID: {docId} (auto-generated)
     // Fields:
-    //   - unitId: int (required, 1..6) - target curriculum unit
+    //   - unitId: int (required, 1..10) - target curriculum unit
     //   - q: string (required, 1..500 chars) - question prompt
     //   - options: list of 4 strings (required, each 1..500 chars) - answer choices
     //   - ans: int (required, 0..3) - zero-based correct option index
@@ -141,9 +141,9 @@ service cloud.firestore {
         state.inventory is map &&
         state.inventory.keys().hasOnly(['potion', 'analyzer', 'clock', 'shield']) &&
         state.equipment is list && state.equipment.size() <= 10 &&
-        state.badges is list && state.badges.size() <= 12 &&
+        state.badges is list && state.badges.size() <= 16 &&
         state.unitProgress is map &&
-        state.unitProgress.keys().hasOnly(['1', '2', '3', '4', '5', '6']) &&
+        state.unitProgress.keys().hasOnly(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']) &&
         state.daily is map &&
         state.daily.keys().hasOnly([
           'date', 'labsCompletedToday', 'bossesDefeatedToday',
@@ -173,8 +173,8 @@ service cloud.firestore {
         data.heroClass in ['paladin', 'mage', 'ranger', 'ninja'] &&
         data.level is int && data.level >= 1 && data.level <= 10 &&
         data.xp is int && data.xp >= 0 && data.xp <= 1000000 &&
-        data.unitsCleared is int && data.unitsCleared >= 0 && data.unitsCleared <= 6 &&
-        data.badgeCount is int && data.badgeCount >= 0 && data.badgeCount <= 12 &&
+        data.unitsCleared is int && data.unitsCleared >= 0 && data.unitsCleared <= 10 &&
+        data.badgeCount is int && data.badgeCount >= 0 && data.badgeCount <= 16 &&
         data.arcadeHighScore is int && data.arcadeHighScore >= 0 && data.arcadeHighScore <= 1000000 &&
         data.updatedAt is string && data.updatedAt.size() <= 30 &&
         data.updatedAtServer is timestamp && data.updatedAtServer == request.time &&
@@ -189,7 +189,7 @@ service cloud.firestore {
         hasOnlyAllowedFields([
           'unitId', 'q', 'options', 'ans', 'exp', 'createdAtServer'
         ]) &&
-        validIntRange(data.unitId, 1, 6) &&
+        validIntRange(data.unitId, 1, 10) &&
         validString(data.q, 1, 500) &&
         data.options is list &&
         data.options.size() == 4 &&

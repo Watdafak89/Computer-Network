@@ -112,6 +112,50 @@
       'C': '#22d3ee', // cyber core
       'W': '#ffffff'
     },
+    cable_titan: {
+      '.': null,
+      'K': '#0b1020',
+      'T': '#0d9488', // teal steel
+      'L': '#5eead4', // bright teal
+      'D': '#134e4a', // dark teal
+      'G': '#f59e0b', // gold RJ-45 pins
+      'O': '#f97316', // orange UTP wire
+      'B': '#3b82f6', // blue UTP wire
+      'R': '#ef4444'  // visor
+    },
+    win_phantom: {
+      '.': null,
+      'K': '#0b1020',
+      'B': '#2563eb', // windows blue
+      'C': '#38bdf8', // cyan pane
+      'D': '#1e3a8a', // deep blue cloak
+      'W': '#f8fafc', // glowing eyes/frame
+      'G': '#22c55e', // pane accent
+      'Y': '#facc15', // pane accent
+      'R': '#f43f5e'  // pane accent
+    },
+    hypervisor_mech: {
+      '.': null,
+      'K': '#0b1020',
+      'S': '#475569', // server chassis
+      'L': '#94a3b8', // highlight steel
+      'D': '#1e293b', // dark chassis
+      'E': '#10b981', // VM status green LED
+      'C': '#06b6d4', // cyan core
+      'P': '#a855f7', // hypervisor energy
+      'Y': '#facc15'
+    },
+    access_sovereign: {
+      '.': null,
+      'K': '#0b1020',
+      'G': '#d97706', // gold armor
+      'Y': '#fde047', // bright gold crown/key
+      'P': '#6d28d9', // royal purple robe
+      'V': '#c084fc', // highlight violet
+      'D': '#3b0764', // shadow purple
+      'C': '#38bdf8', // auth eye
+      'W': '#ffffff'
+    },
     items: {
       '.': null,
       'K': '#0b1020',
@@ -505,6 +549,78 @@
       'KRRRRKRRRRKRRRRK',
       'KRRRRKRRRRKRRRRK',
       '.KKKKKKKKKKKKKK.',
+      '................',
+      '................'
+    ],
+    cable_titan: [
+      '..KKKKKKKKKKKK..',
+      '.KGGKGGKGGKGGGK.',
+      '.KTTTTTTTTTTTTK.',
+      '.KTLKRRRRRRKLTK.',
+      '.KTTTTTTTTTTTTK.',
+      'KKDDDDDDDDDDDDKK',
+      'KOOTTTTGGTTTTOOK',
+      'KBBTTTTGGTTTTBBK',
+      'KOOTTTTTTTTTTOOK',
+      '.KKDDDDDDDDDDKK.',
+      '..KTTTOBBOTTTK..',
+      '..KTTK....KTTK..',
+      '..KDDK....KDDK..',
+      '.KKKKK....KKKKK.',
+      '................',
+      '................'
+    ],
+    win_phantom: [
+      '....KKKKKKKK....',
+      '...KBBBBBBBBK...',
+      '..KBBCCCCCCBBK..',
+      '..KBKWWKKWWKBK..',
+      '..KBBBBBBBBBBK..',
+      '.KDDKRRKKGGKDDK.',
+      '.KDDKRRKKGGKDDK.',
+      '.KDDKKKKKKKKDDK.',
+      '.KDDKCCKKYYKDDK.',
+      '.KDDKCCKKYYKDDK.',
+      '..KDDDDDDDDDDK..',
+      '..KDBKDDDDKBDK..',
+      '...KK.KDDK.KK...',
+      '......K..K......',
+      '................',
+      '................'
+    ],
+    hypervisor_mech: [
+      '..KKKKKKKKKKKK..',
+      '.KLLLLLLLLLLLLK.',
+      '.KSDDDDDDDDDDSK.',
+      '.KSDKEEKCCKEDSK.',
+      '.KSDDDDDDDDDDSK.',
+      'KKSSSSSSSSSSSSKK',
+      'KPPSSCCCCCCSSPPK',
+      'KPPSSCEEEECSSPPK',
+      'KKKSSCCCCCCSSKKK',
+      '..KSDDDDDDDDSK..',
+      '..KSSEEYYEESSK..',
+      '..KSSK....KSSK..',
+      '..KDDK....KDDK..',
+      '.KKKKK....KKKKK.',
+      '................',
+      '................'
+    ],
+    access_sovereign: [
+      '...K..K..K..K...',
+      '..KYYYYYYYYYYK..',
+      '..KYGYGYYGYGYK..',
+      '...KGGGGGGGGK...',
+      '..KPPKCKKCKPPK..',
+      '..KPPPPPPPPPPK..',
+      '.KGGKVVVVVVKKGGK',
+      '.KPPKPVYYVPKPPK.',
+      '.KDPKPVYYVPKPDK.',
+      '..KKKPPPPPPKKK..',
+      '...KDDGGGGDDK...',
+      '...KPPK..KPPK...',
+      '...KGGK..KGGK...',
+      '..KKKKK..KKKKK..',
       '................',
       '................'
     ]

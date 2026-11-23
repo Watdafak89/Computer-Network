@@ -43,8 +43,8 @@
     <div class="hud-resources">
       <div id="hud-cloud-status" class="cloud-pill cloud-local" title="สถานะการเชื่อมต่อฐานข้อมูล Firebase">💾 Local Mode</div>
       <div class="res-pill" title="เหรียญ BitCoins สำหรับซื้อไอเทม">🪙 <span id="hud-coins">0</span></div>
-      <div class="res-pill" title="เหรียญตราความสำเร็จ">🏅 <span id="hud-badges">0/12</span></div>
-      <div class="res-pill" title="หน่วยการเรียนรู้ที่พิชิตแล้ว">🚩 <span id="hud-units">0/6</span></div>
+      <div class="res-pill" title="เหรียญตราความสำเร็จ">🏅 <span id="hud-badges">0/16</span></div>
+      <div class="res-pill" title="หน่วยการเรียนรู้ที่พิชิตแล้ว">🚩 <span id="hud-units">0/10</span></div>
     </div>
 
     <nav class="hud-nav">
@@ -79,9 +79,9 @@
             <span class="unit-code" style="color:var(--amber);">หลักสูตร ปวช. ระบบเครือข่ายคอมพิวเตอร์</span>
             <button class="px-btn px-btn-sm" onclick="App.openProfileModal()">✏️ แก้ไขตัวละคร</button>
           </div>
-          <h1 class="pixel-title" style="font-size:1.45rem; color:#fff;">กอบกู้อาณาจักรไซเบอร์ทั้ง 6 หน่วย!</h1>
+          <h1 class="pixel-title" style="font-size:1.45rem; color:#fff;">กอบกู้อาณาจักรไซเบอร์ทั้ง 10 หน่วย!</h1>
           <p style="color:var(--text-muted); font-size:0.95rem;">
-            สวมบทบาทช่างเทคนิคเครือข่ายฝึกหัด ฝึกทักษะปฏิบัติในห้อง <b>Pixel Lab Simulator</b> ครบ 6 หน่วย 
+            สวมบทบาทช่างเทคนิคเครือข่ายฝึกหัด ฝึกทักษะปฏิบัติในห้อง <b>Pixel Lab Simulator</b> ครบ 10 หน่วย 
             แล้วตะลุยดวล <b>Boss Battle 16-Bit</b> สะสม XP, BitCoins, อุปกรณ์เทพ และเหรียญตราเพื่อรับเกียรติบัตรส่งครู!
           </p>
           <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
@@ -95,7 +95,7 @@
       <div class="dashboard-grid">
         <div>
           <div class="section-heading">
-            <span>🗺️ แผนที่อาณาจักรเครือข่าย (6 หน่วยการเรียนรู้ ปวช.)</span>
+            <span>🗺️ แผนที่อาณาจักรเครือข่าย (10 หน่วยการเรียนรู้ ปวช.)</span>
             <span style="font-size:0.82rem; color:var(--text-muted);">คลิกการ์ดเพื่อเข้าเรียน + ทำแล็บ + ปราบบอส</span>
           </div>
           <div id="units-grid" class="units-grid"></div>
@@ -112,8 +112,8 @@
 
           <div class="pixel-box panel-section">
             <div class="section-heading">
-              <span>🏅 ตู้เหรียญตรา (12 Pixel Badges)</span>
-              <span id="badge-counter-text" style="font-size:0.8rem;">0/12</span>
+              <span>🏅 ตู้เหรียญตรา (16 Pixel Badges)</span>
+              <span id="badge-counter-text" style="font-size:0.8rem;">0/16</span>
             </div>
             <div id="badges-grid" class="badges-grid"></div>
             <div id="badge-detail-tip" style="margin-top:10px; font-size:0.8rem; color:var(--text-muted); min-height:20px;">
@@ -335,7 +335,7 @@
         <div style="padding:12px;">
           <h3 style="color:var(--crimson);">ภัยคุกคามแห่ง NetQuest World</h3>
           <p style="color:var(--text-muted); font-size:0.9rem; margin-top:6px;">
-            บอสทั้ง 6 ตัวแทนปัญหาจริงในระบบเครือข่าย ตั้งแต่สายขาด เข้าหัว RJ-45 ผิด โปรโตคอลสับสน IP ชนกัน คลื่น Wi-Fi กวน ไปจนถึงแรนซัมแวร์ 
+            บอสทั้ง 10 ตัวแทนปัญหาจริงในระบบเครือข่าย ตั้งแต่สายขาด สื่อสัญญาณผิด โปรโตคอลสับสน เข้าหัว RJ-45 ผิด คลื่น Wi-Fi กวน แชร์ Windows ไม่ผ่าน VM บูตไม่ได้ CLI ล่ม แรนซัมแวร์ ไปจนถึงสิทธิ์บัญชีผู้ใช้ 
             เคล็ดลับ: ทำห้อง Lab ให้ผ่านก่อนสู้บอสเพื่อปลดล็อกโบนัสโจมตี!
           </p>
         </div>
@@ -360,11 +360,11 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script src="js/pixel-sprites.js"></script>
-  <script src="js/sound.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/firebase-config.js"></script>
-  <script src="js/firebase-service.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/pixel-sprites.js?v=2"></script>
+  <script src="js/sound.js?v=2"></script>
+  <script src="js/data.js?v=2"></script>
+  <script src="js/firebase-config.js?v=2"></script>
+  <script src="js/firebase-service.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
 </body>
 </html>

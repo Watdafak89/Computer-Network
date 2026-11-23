@@ -36,7 +36,11 @@
         3: { labCleared: false, bossCleared: false, bestScore: 0, stars: 0 },
         4: { labCleared: false, bossCleared: false, bestScore: 0, stars: 0 },
         5: { labCleared: false, bossCleared: false, bestScore: 0, stars: 0 },
-        6: { labCleared: false, bossCleared: false, bestScore: 0, stars: 0 }
+        6: { labCleared: false, bossCleared: false, bestScore: 0, stars: 0 },
+        7: { labCleared: false, bossCleared: false, bestScore: 0, stars: 0 },
+        8: { labCleared: false, bossCleared: false, bestScore: 0, stars: 0 },
+        9: { labCleared: false, bossCleared: false, bestScore: 0, stars: 0 },
+        10: { labCleared: false, bossCleared: false, bestScore: 0, stars: 0 }
       },
       daily: {
         date: todayKey(),
@@ -320,15 +324,16 @@
 
     checkBadges() {
       if (this.state.profile.created) this.unlockBadge('first_login');
+      const totalUnits = GameData.UNITS.length;
       let clearedCount = 0;
-      for (let i = 1; i <= 6; i++) {
+      for (let i = 1; i <= totalUnits; i++) {
         const up = this.state.unitProgress[i];
         if (up && up.bossCleared) {
           clearedCount++;
           this.unlockBadge(`unit${i}_clear`);
         }
       }
-      if (clearedCount >= 6) this.unlockBadge('grand_champion');
+      if (clearedCount >= totalUnits) this.unlockBadge('grand_champion');
       if (this.state.arcadeHighScore >= 500) this.unlockBadge('arcade_hero');
     },
 
@@ -376,7 +381,7 @@
 
       document.getElementById('hud-coins').textContent = this.state.coins;
       document.getElementById('hud-badges').textContent = `${this.state.badges.length}/${GameData.BADGES.length}`;
-      document.getElementById('hud-units').textContent = `${clearedUnits}/6`;
+      document.getElementById('hud-units').textContent = `${clearedUnits}/${GameData.UNITS.length}`;
 
       const eqText = this.state.equipment.length > 0
         ? `⚔️ อุปกรณ์สวมใส่: ${this.state.equipment.length}/4 ชิ้น (ATK ${stats.atk} | CRIT ${Math.round(stats.crit * 100)}%)`
@@ -716,8 +721,8 @@
     },
 
     continueNextUnit() {
-      for (let i = 1; i <= 6; i++) {
-        if (!this.state.unitProgress[i].bossCleared) {
+      for (let i = 1; i <= GameData.UNITS.length; i++) {
+        if (!this.state.unitProgress[i] || !this.state.unitProgress[i].bossCleared) {
           this.openUnit(i);
           return;
         }
@@ -726,7 +731,7 @@
     },
 
     renderDashboard() {
-      // Render 6 Units
+      // Render 10 Units
       const grid = document.getElementById('units-grid');
       grid.innerHTML = GameData.UNITS.map((u) => {
         const prog = this.state.unitProgress[u.id] || { labCleared: false, bossCleared: false, bestScore: 0, stars: 0 };
@@ -878,15 +883,19 @@
       `;
     },
 
-    /* ---------------- 6 INTERACTIVE PIXEL LAB SIMULATORS ---------------- */
+    /* ---------------- 10 INTERACTIVE PIXEL LAB SIMULATORS ---------------- */
     renderLab(unit) {
       const el = document.getElementById('stage-body-lab');
       if (unit.id === 1) this.initLab1(el);
-      else if (unit.id === 2) this.initLab2(el);
+      else if (unit.id === 2) this.initLabMedia(el);
       else if (unit.id === 3) this.initLab3(el);
-      else if (unit.id === 4) this.initLab4(el);
+      else if (unit.id === 4) this.initLab2(el);
       else if (unit.id === 5) this.initLab5(el);
-      else if (unit.id === 6) this.initLab6(el);
+      else if (unit.id === 6) this.initLabWindowsNet(el);
+      else if (unit.id === 7) this.initLabNosVm(el);
+      else if (unit.id === 8) this.initLab4(el);
+      else if (unit.id === 9) this.initLab6(el);
+      else if (unit.id === 10) this.initLabUserPerm(el);
     },
 
     completeUnitLab(unitId, msg) {
@@ -1317,7 +1326,7 @@
       const d3 = document.getElementById('l2-dev3').value;
       const d4 = document.getElementById('l2-dev4').value;
       if (d1 === 'router' && d2 === 'switch' && d3 === 'ap' && d4 === 'fiber') {
-        this.completeUnitLab(2, 'ผ่าน Lab 2 เข้าหัว RJ-45 & ติดตั้งอุปกรณ์');
+        this.completeUnitLab(4, 'ผ่าน Lab 4 การเข้าหัวสาย UTP กับหัวต่อ RJ-45');
       } else {
         soundFX.playPlayerHurt();
         alert('สาย RJ-45 ผ่านแล้ว! แต่อุปกรณ์เครือข่ายทางขวายังเลือกผิดบางจุด ลองตรวจสอบดูนะ');
@@ -1578,7 +1587,7 @@
       } else if (cmd === 'ping 8.8.8.8') {
         if (allFixed) {
           res += 'Reply from 8.8.8.8: bytes=32 time=14ms TTL=117\nReply from 8.8.8.8: bytes=32 time=13ms TTL=117\n✔ เชื่อมต่ออินเทอร์เน็ตสำเร็จ 100%!';
-          this.completeUnitLab(4, 'ผ่าน Lab 4 แก้ปัญหา IPv4 & CLI');
+          this.completeUnitLab(8, 'ผ่าน Lab 8 ตรวจสอบและแก้ปัญหาเครือข่าย CLI');
         } else {
           res += 'Request timed out. (กรุณาแก้ไขและกด "บันทึกการตั้งค่า IP ทั้ง 3 เครื่อง" ก่อน!)';
         }
@@ -1765,10 +1774,428 @@
           soundFX.playTesterBeep(idx + 3);
           log.innerHTML += `<div style="color:${w.startsWith('🛡️') ? '#fbbf24' : '#4ade80'}">${w}</div>`;
           if (idx === waves.length - 1) {
-            this.completeUnitLab(6, 'ผ่าน Lab 6 Firewall Defender');
+            this.completeUnitLab(9, 'ผ่าน Lab 9 Windows Firewall & ป้องกันภัยคุกคาม');
           }
         }, idx * 240);
       });
+    },
+
+    /* === LAB 2 (NEW): Media, Device & Connector Engineering Lab === */
+    initLabMedia(el) {
+      el.innerHTML = `
+        <div class="pixel-box lab-panel">
+          <div class="lab-title-row">
+            <div>
+              <h3 style="color:var(--amber);">🔌 Lab 2: วิศวกรเลือกอุปกรณ์ สื่อนำสัญญาณ และหัวต่อ</h3>
+              <p style="font-size:0.86rem; color:var(--text-muted);">วิเคราะห์โจทย์งานติดตั้งจริง 4 สถานการณ์ แล้วเลือกอุปกรณ์ สื่อกลาง และหัวต่อสัญญาณให้เหมาะสมครบทุกข้อ</p>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px; margin-top:12px;">
+            <div class="pixel-box" style="padding:12px;">
+              <div style="font-weight:700; color:var(--cyan); margin-bottom:6px;">ภารกิจ 1: เดินสายเชื่อมตึกเรียนห่างกัน 500 ม. ใกล้หม้อแปลงไฟฟ้า</div>
+              <label style="font-size:0.8rem; color:var(--text-muted);">เลือกสื่อนำสัญญาณ:</label>
+              <select id="lm-m1" class="px-input" style="margin:4px 0 8px;">
+                <option value="">-- เลือกสื่อกลาง --</option>
+                <option value="utp">สาย UTP Cat5e (ระยะไม่เกิน 100 ม.)</option>
+                <option value="fiber">สาย Fiber Optic (ใยแก้วนำแสง)</option>
+                <option value="ir">อินฟราเรด (Infrared)</option>
+              </select>
+              <label style="font-size:0.8rem; color:var(--text-muted);">เลือกหัวต่อมาตรฐาน:</label>
+              <select id="lm-c1" class="px-input" style="margin-top:4px;">
+                <option value="">-- เลือกหัวต่อ --</option>
+                <option value="rj11">RJ-11 (สายโทรศัพท์)</option>
+                <option value="bnc">BNC (สาย Coaxial)</option>
+                <option value="sc_lc">SC / LC (หัวต่อไฟเบอร์ออปติก)</option>
+              </select>
+            </div>
+
+            <div class="pixel-box" style="padding:12px;">
+              <div style="font-weight:700; color:var(--emerald); margin-bottom:6px;">ภารกิจ 2: เชื่อมคอมพิวเตอร์ 30 เครื่องในห้องแล็บแบบ Full-Duplex</div>
+              <label style="font-size:0.8rem; color:var(--text-muted);">เลือกอุปกรณ์ศูนย์กลาง:</label>
+              <select id="lm-d2" class="px-input" style="margin:4px 0 8px;">
+                <option value="">-- เลือกอุปกรณ์ --</option>
+                <option value="hub">Hub (Layer 1 กระจายทุกพอร์ต)</option>
+                <option value="switch">Switch (Layer 2 จดจำ MAC Address)</option>
+                <option value="repeater">Repeater (ทวนสัญญาณอย่างเดียว)</option>
+              </select>
+              <label style="font-size:0.8rem; color:var(--text-muted);">เลือกสาย + หัวต่อในห้องแล็บ:</label>
+              <select id="lm-c2" class="px-input" style="margin-top:4px;">
+                <option value="">-- เลือกสายและหัวต่อ --</option>
+                <option value="utp_rj45">สาย UTP Cat6 + หัวต่อ RJ-45</option>
+                <option value="coax_bnc">สาย Coaxial + หัวต่อ BNC</option>
+                <option value="phone_rj11">สายโทรศัพท์ + หัวต่อ RJ-11</option>
+              </select>
+            </div>
+
+            <div class="pixel-box" style="padding:12px;">
+              <div style="font-weight:700; color:var(--violet); margin-bottom:6px;">ภารกิจ 3: เชื่อมเครือข่าย LAN ของวิทยาลัยออกสู่อินเทอร์เน็ต</div>
+              <label style="font-size:0.8rem; color:var(--text-muted);">เลือกอุปกรณ์หาเส้นทาง (Layer 3):</label>
+              <select id="lm-d3" class="px-input" style="margin:4px 0 8px;">
+                <option value="">-- เลือกอุปกรณ์ --</option>
+                <option value="router">Router (เชื่อมต่างเครือข่ายด้วย IP)</option>
+                <option value="nic">NIC (การ์ดแลนประจำเครื่อง)</option>
+                <option value="bridge">Bridge (เชื่อม LAN 2 ฝั่ง)</option>
+              </select>
+            </div>
+
+            <div class="pixel-box" style="padding:12px;">
+              <div style="font-weight:700; color:var(--amber); margin-bottom:6px;">ภารกิจ 4: เชื่อมสัญญาณไร้สายข้ามถนนระหว่างอาคาร (แนวสายตา LOS)</div>
+              <label style="font-size:0.8rem; color:var(--text-muted);">เลือกสื่อกลางไร้สายที่เหมาะสม:</label>
+              <select id="lm-w4" class="px-input" style="margin:4px 0 8px;">
+                <option value="">-- เลือกสื่อไร้สาย --</option>
+                <option value="bluetooth">Bluetooth (ระยะ 10 ม.)</option>
+                <option value="microwave">คลื่นไมโครเวฟ (Point-to-Point Microwave)</option>
+                <option value="ir">อินฟราเรดรีโมตทีวี</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="lab-media-log" style="margin-top:12px; font-size:0.86rem; color:var(--text-muted);">เลือกคำตอบให้ครบทั้ง 4 ภารกิจ แล้วกดปุ่มตรวจสอบด้านล่าง</div>
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="px-btn px-btn-emerald" onclick="App.checkLabMedia()">✔ ตรวจสเปกอุปกรณ์และสื่อนำสัญญาณ</button>
+          </div>
+        </div>
+      `;
+    },
+
+    checkLabMedia() {
+      const m1 = document.getElementById('lm-m1').value;
+      const c1 = document.getElementById('lm-c1').value;
+      const d2 = document.getElementById('lm-d2').value;
+      const c2 = document.getElementById('lm-c2').value;
+      const d3 = document.getElementById('lm-d3').value;
+      const w4 = document.getElementById('lm-w4').value;
+      const log = document.getElementById('lab-media-log');
+
+      const errs = [];
+      if (m1 !== 'fiber' || c1 !== 'sc_lc') errs.push('ภารกิจ 1: เดินสายข้ามตึก 500 ม. กัน EMI ต้องใช้ Fiber Optic + หัวต่อ SC/LC');
+      if (d2 !== 'switch' || c2 !== 'utp_rj45') errs.push('ภารกิจ 2: ห้องแล็บ 30 เครื่อง Full-Duplex ต้องใช้ Switch + สาย UTP Cat6 หัวต่อ RJ-45');
+      if (d3 !== 'router') errs.push('ภารกิจ 3: การเชื่อมต่างเครือข่ายออกอินเทอร์เน็ตต้องใช้ Router (Layer 3)');
+      if (w4 !== 'microwave') errs.push('ภารกิจ 4: เชื่อมไร้สายข้ามอาคารแนวสายตา (LOS) ใช้คลื่นไมโครเวฟแบบ Point-to-Point');
+
+      if (errs.length > 0) {
+        soundFX.playPlayerHurt();
+        log.innerHTML = `<div style="color:#fda4af;">❌ ยังมีจุดไม่ถูกต้อง:<br>• ${errs.join('<br>• ')}</div>`;
+        return;
+      }
+      soundFX.playPowerUp();
+      log.innerHTML = `<div style="color:#4ade80;">✔ ยอดเยี่ยม! เลือกอุปกรณ์ สื่อนำสัญญาณ และหัวต่อได้ถูกต้องครบทั้ง 4 สถานการณ์</div>`;
+      this.completeUnitLab(2, 'ผ่าน Lab 2 อุปกรณ์และสื่อนำสัญญาณ');
+    },
+
+    /* === LAB 6 (NEW): Windows Network, Static IP & File/Printer Sharing === */
+    initLabWindowsNet(el) {
+      el.innerHTML = `
+        <div class="pixel-box lab-panel">
+          <div class="lab-title-row">
+            <div>
+              <h3 style="color:#60a5fa;">🪟 Lab 6: ตั้งค่าเครือข่าย Windows และแชร์ไฟล์/เครื่องพิมพ์</h3>
+              <p style="font-size:0.86rem; color:var(--text-muted);">ตั้งค่าเครื่อง <b>LAB-PC01</b> ให้อยู่ใน Workgroup <code>ROOM301</code>, ตั้ง Static IPv4 วง <code>192.168.10.x/24</code> (Gateway <code>192.168.10.1</code>, DNS <code>8.8.8.8</code>), เปิดแชร์โฟลเดอร์ & เครื่องพิมพ์ แล้วทดสอบเข้าถึงด้วย UNC Path</p>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-top:12px;">
+            <div class="pixel-box" style="padding:12px;">
+              <div style="font-weight:700; color:var(--cyan); margin-bottom:8px;">1) System Properties (ชื่อเครื่อง &amp; เครือข่าย)</div>
+              <label style="font-size:0.8rem;">Computer Name:</label>
+              <input id="lw-name" class="px-input" value="LAB-PC01" style="margin:4px 0 8px;" />
+              <label style="font-size:0.8rem;">Workgroup Name (กำหนดเป็น ROOM301):</label>
+              <input id="lw-wg" class="px-input" value="WORKGROUP" style="margin-top:4px;" />
+            </div>
+
+            <div class="pixel-box" style="padding:12px;">
+              <div style="font-weight:700; color:var(--emerald); margin-bottom:8px;">2) TCP/IPv4 Properties (ncpa.cpl)</div>
+              <label style="font-size:0.8rem;">IPv4 Address (เช่น 192.168.10.20):</label>
+              <input id="lw-ip" class="px-input" value="192.168.10.20" style="margin:4px 0 6px;" />
+              <label style="font-size:0.8rem;">Subnet Mask:</label>
+              <input id="lw-mask" class="px-input" value="255.255.255.0" style="margin:4px 0 6px;" />
+              <label style="font-size:0.8rem;">Default Gateway:</label>
+              <input id="lw-gw" class="px-input" value="192.168.1.1" style="margin:4px 0 6px;" />
+              <label style="font-size:0.8rem;">Preferred DNS Server:</label>
+              <input id="lw-dns" class="px-input" value="" placeholder="เช่น 8.8.8.8" style="margin-top:4px;" />
+            </div>
+
+            <div class="pixel-box" style="padding:12px;">
+              <div style="font-weight:700; color:var(--amber); margin-bottom:8px;">3) File &amp; Printer Sharing + Run (Win+R)</div>
+              <label style="display:flex; gap:8px; align-items:center; font-size:0.84rem; margin-bottom:6px; cursor:pointer;">
+                <input type="checkbox" id="lw-disc" /> เปิด Network Discovery &amp; File Sharing
+              </label>
+              <label style="display:flex; gap:8px; align-items:center; font-size:0.84rem; margin-bottom:6px; cursor:pointer;">
+                <input type="checkbox" id="lw-folder" /> แชร์โฟลเดอร์ชื่อ <code>Homework</code> (สิทธิ์ Read/Change)
+              </label>
+              <label style="display:flex; gap:8px; align-items:center; font-size:0.84rem; margin-bottom:10px; cursor:pointer;">
+                <input type="checkbox" id="lw-printer" /> แชร์เครื่องพิมพ์ <code>LAB-LaserJet</code>
+              </label>
+              <label style="font-size:0.8rem;">ทดสอบพิมพ์ UNC Path เข้าถึงโฟลเดอร์ที่แชร์:</label>
+              <input id="lw-unc" class="px-input" placeholder="เช่น \\\\LAB-PC01\\Homework" style="margin-top:4px;" />
+            </div>
+          </div>
+
+          <div id="lab-win-log" style="margin-top:12px; font-size:0.86rem; color:var(--text-muted);">กรอกและติ๊กตั้งค่าให้ครบ แล้วกดปุ่ม "ทดสอบเชื่อมต่อเครือข่าย Windows"</div>
+          <div style="margin-top:12px;">
+            <button class="px-btn px-btn-emerald" onclick="App.checkLabWindowsNet()">✔ ทดสอบเชื่อมต่อเครือข่าย Windows</button>
+          </div>
+        </div>
+      `;
+    },
+
+    checkLabWindowsNet() {
+      const name = document.getElementById('lw-name').value.trim();
+      const wg = document.getElementById('lw-wg').value.trim().toUpperCase();
+      const ip = document.getElementById('lw-ip').value.trim();
+      const mask = document.getElementById('lw-mask').value.trim();
+      const gw = document.getElementById('lw-gw').value.trim();
+      const dns = document.getElementById('lw-dns').value.trim();
+      const disc = document.getElementById('lw-disc').checked;
+      const folder = document.getElementById('lw-folder').checked;
+      const printer = document.getElementById('lw-printer').checked;
+      const unc = document.getElementById('lw-unc').value.trim();
+      const log = document.getElementById('lab-win-log');
+
+      const errs = [];
+      if (!name) errs.push('กรุณาระบุชื่อเครื่อง (Computer Name)');
+      if (wg !== 'ROOM301') errs.push('Workgroup ต้องตั้งเป็น ROOM301 ตามโจทย์');
+      if (!/^192\.168\.10\.([2-9]|[1-9]\d|1\d\d|2[0-4]\d|25[0-4])$/.test(ip)) errs.push('IPv4 Address ต้องอยู่ในวง 192.168.10.2–254 (ห้ามซ้ำ Gateway .1)');
+      if (mask !== '255.255.255.0') errs.push('Subnet Mask สำหรับ /24 ต้องเป็น 255.255.255.0');
+      if (gw !== '192.168.10.1') errs.push('Default Gateway ต้องเป็น 192.168.10.1 (ตรงวงเดียวกับ IP)');
+      if (!dns) errs.push('กรุณาระบุ DNS Server (เช่น 8.8.8.8 หรือ 1.1.1.1)');
+      if (!disc || !folder || !printer) errs.push('กรุณาเปิด Network Discovery, แชร์โฟลเดอร์ Homework และแชร์เครื่องพิมพ์ให้ครบ');
+      const expectedUnc1 = `\\\\${name}\\Homework`.toLowerCase();
+      const expectedUnc2 = `\\\\${ip}\\Homework`.toLowerCase();
+      if (unc.toLowerCase() !== expectedUnc1 && unc.toLowerCase() !== expectedUnc2) {
+        errs.push(`UNC Path ไม่ถูกต้อง (ต้องเป็น \\\\${name}\\Homework หรือ \\\\${ip}\\Homework)`);
+      }
+
+      if (errs.length > 0) {
+        soundFX.playPlayerHurt();
+        log.innerHTML = `<div style="color:#fda4af;">❌ พบข้อผิดพลาดในการตั้งค่า Windows:<br>• ${errs.join('<br>• ')}</div>`;
+        return;
+      }
+      soundFX.playPowerUp();
+      log.innerHTML = `<div style="color:#4ade80;">✔ เชื่อมต่อ <code>${unc}</code> สำเร็จ! พบโฟลเดอร์แชร์ Homework และเครื่องพิมพ์ LAB-LaserJet ใน Workgroup ROOM301</div>`;
+      this.completeUnitLab(6, 'ผ่าน Lab 6 การใช้งานเครือข่ายใน Windows');
+    },
+
+    /* === LAB 7 (NEW): Virtual Server & NOS Deployment Lab === */
+    initLabNosVm(el) {
+      el.innerHTML = `
+        <div class="pixel-box lab-panel">
+          <div class="lab-title-row">
+            <div>
+              <h3 style="color:#818cf8;">🖥️ Lab 7: สร้างเครื่องจำลอง (VM) และติดตั้งระบบปฏิบัติการเครือข่าย (NOS)</h3>
+              <p style="font-size:0.86rem; color:var(--text-muted);">ตั้งค่า Virtual Machine สำหรับติดตั้ง <b>Network OS</b> ให้ผ่านสเปกขั้นต่ำ (vCPU ≥ 2, RAM ≥ 2048 MB, Disk ≥ 30 GB), ตั้งการ์ดแลน VM ให้รับ IP วง LAN จริง และ Mount ไฟล์ติดตั้ง .ISO</p>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:12px; margin-top:12px;">
+            <div class="pixel-box" style="padding:12px;">
+              <div style="font-weight:700; color:var(--cyan); margin-bottom:8px;">1) เลือก Hypervisor &amp; ระบบปฏิบัติการเครือข่าย</div>
+              <label style="font-size:0.8rem;">ซอฟต์แวร์จำลองเครื่อง (Hypervisor):</label>
+              <select id="l7-hv" class="px-input" style="margin:4px 0 8px;">
+                <option value="">-- เลือก Hypervisor --</option>
+                <option value="vbox">Oracle VirtualBox / VMware Workstation</option>
+                <option value="paint">Microsoft Paint</option>
+              </select>
+              <label style="font-size:0.8rem;">ระบบปฏิบัติการเครือข่าย (NOS):</label>
+              <select id="l7-nos" class="px-input" style="margin-top:4px;">
+                <option value="">-- เลือก NOS --</option>
+                <option value="winserver">Windows Server 2022 (Active Directory)</option>
+                <option value="ubuntu">Ubuntu Server 24.04 LTS (Open-Source)</option>
+                <option value="dos">MS-DOS 6.22</option>
+              </select>
+            </div>
+
+            <div class="pixel-box" style="padding:12px;">
+              <div style="font-weight:700; color:var(--emerald); margin-bottom:8px;">2) จัดสรรทรัพยากรฮาร์ดแวร์เสมือน</div>
+              <label style="font-size:0.8rem;">จำนวน vCPU (ขั้นต่ำ 2 Cores):</label>
+              <select id="l7-cpu" class="px-input" style="margin:4px 0 6px;">
+                <option value="1">1 vCPU</option>
+                <option value="2">2 vCPU</option>
+                <option value="4">4 vCPU</option>
+              </select>
+              <label style="font-size:0.8rem;">หน่วยความจำ RAM (ขั้นต่ำ 2048 MB):</label>
+              <select id="l7-ram" class="px-input" style="margin:4px 0 6px;">
+                <option value="512">512 MB</option>
+                <option value="2048">2048 MB (2 GB)</option>
+                <option value="4096">4096 MB (4 GB)</option>
+              </select>
+              <label style="font-size:0.8rem;">Virtual Hard Disk (ขั้นต่ำ 30 GB):</label>
+              <select id="l7-disk" class="px-input" style="margin-top:4px;">
+                <option value="10">10 GB</option>
+                <option value="40">40 GB (Dynamically Allocated)</option>
+                <option value="80">80 GB</option>
+              </select>
+            </div>
+
+            <div class="pixel-box" style="padding:12px;">
+              <div style="font-weight:700; color:var(--amber); margin-bottom:8px;">3) Virtual Network &amp; Optical Drive (.ISO)</div>
+              <label style="font-size:0.8rem;">โหมดการ์ดแลน VM (ให้เครื่องอื่นใน LAN เข้าถึงได้):</label>
+              <select id="l7-net" class="px-input" style="margin:4px 0 8px;">
+                <option value="nat">NAT (ซ่อนหลัง Host)</option>
+                <option value="bridged">Bridged Adapter (รับ IP วง LAN จริง)</option>
+                <option value="hostonly">Host-Only (คุยเฉพาะเครื่องแม่)</option>
+              </select>
+              <label style="font-size:0.8rem;">ไฟล์แผ่นติดตั้งระบบปฏิบัติการ:</label>
+              <select id="l7-iso" class="px-input" style="margin-top:4px;">
+                <option value="">-- ยังไม่ใส่แผ่น --</option>
+                <option value="iso">NOS_Server_Installer.iso</option>
+                <option value="txt">readme.txt</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="lab-nos-log" class="cli-terminal" style="margin-top:12px; min-height:76px; font-size:0.82rem; color:#94a3b8;">[Hypervisor Console] รอการตั้งค่า VM และกดปุ่ม "Power On &amp; ติดตั้ง NOS"...</div>
+          <div style="margin-top:12px;">
+            <button class="px-btn px-btn-emerald" onclick="App.deployLabNosVm()">🚀 Power On VM &amp; ติดตั้ง NOS</button>
+          </div>
+        </div>
+      `;
+    },
+
+    deployLabNosVm() {
+      const hv = document.getElementById('l7-hv').value;
+      const nos = document.getElementById('l7-nos').value;
+      const cpu = Number(document.getElementById('l7-cpu').value);
+      const ram = Number(document.getElementById('l7-ram').value);
+      const disk = Number(document.getElementById('l7-disk').value);
+      const net = document.getElementById('l7-net').value;
+      const iso = document.getElementById('l7-iso').value;
+      const log = document.getElementById('lab-nos-log');
+
+      const errs = [];
+      if (hv !== 'vbox') errs.push('กรุณาเลือกซอฟต์แวร์ Hypervisor (VirtualBox / VMware)');
+      if (nos !== 'winserver' && nos !== 'ubuntu') errs.push('กรุณาเลือกระบบปฏิบัติการเครือข่าย (Windows Server หรือ Ubuntu Server)');
+      if (cpu < 2 || ram < 2048 || disk < 30) errs.push('ทรัพยากร VM ไม่พอ! ต้องใช้ vCPU ≥ 2, RAM ≥ 2048 MB และ Disk ≥ 30 GB');
+      if (net !== 'bridged') errs.push('โหมด Virtual Network ต้องเป็น Bridged Adapter เพื่อให้เครื่องอื่นใน LAN เชื่อมต่อ Server ได้');
+      if (iso !== 'iso') errs.push('ยังไม่ได้ Mount ไฟล์แผ่นติดตั้ง .ISO ในไดรฟ์เสมือน');
+
+      if (errs.length > 0) {
+        soundFX.playPlayerHurt();
+        log.innerHTML = `<div style="color:#fda4af;">[BOOT FAILED]<br>• ${errs.join('<br>• ')}</div>`;
+        return;
+      }
+
+      const nosName = nos === 'winserver' ? 'Windows Server 2022' : 'Ubuntu Server 24.04 LTS';
+      const steps = [
+        `[BIOS] VT-x/AMD-V Enabled | ${cpu} vCPU | ${ram} MB RAM | ${disk} GB Virtual Disk`,
+        `[BOOT] Mounting NOS_Server_Installer.iso ... OK`,
+        `[INSTALL] Installing ${nosName} Core & Network Services ... 100%`,
+        `[NET] Bridged Adapter Active → Assigned LAN IP 192.168.10.5/24`,
+        `✔ [READY] ${nosName} บูตสำเร็จและพร้อมให้บริการในเครือข่ายแล้ว! (บันทึก Snapshot สำเร็จ)`
+      ];
+      log.innerHTML = '';
+      steps.forEach((line, idx) => {
+        setTimeout(() => {
+          soundFX.playTesterBeep(idx + 2);
+          log.innerHTML += `<div style="color:${idx === steps.length - 1 ? '#4ade80' : '#38bdf8'}">${line}</div>`;
+          if (idx === steps.length - 1) {
+            this.completeUnitLab(7, 'ผ่าน Lab 7 ติดตั้งระบบปฏิบัติการเครือข่ายบน VM');
+          }
+        }, idx * 240);
+      });
+    },
+
+    /* === LAB 10 (NEW): Windows User, Group & NTFS Permission Manager === */
+    initLabUserPerm(el) {
+      el.innerHTML = `
+        <div class="pixel-box lab-panel">
+          <div class="lab-title-row">
+            <div>
+              <h3 style="color:#facc15;">🔑 Lab 10: จัดการบัญชีผู้ใช้ กลุ่มผู้ใช้ และสิทธิ์โฟลเดอร์ (lusrmgr.msc + NTFS)</h3>
+              <p style="font-size:0.86rem; color:var(--text-muted);">สร้างบัญชีครู (<code>teacher01</code>) และนักศึกษา (<code>student01</code>), จัดเข้ากลุ่มให้ถูกต้อง และกำหนดสิทธิ์โฟลเดอร์ <code>Exam_Bank</code> ตามหลัก <b>Least Privilege</b> (ครูแก้ไขได้เต็มที่ แต่นักศึกษาอ่านได้อย่างเดียว ห้ามแก้ไข/ลบ)</p>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-top:12px;">
+            <div class="pixel-box" style="padding:12px;">
+              <div style="font-weight:700; color:var(--cyan); margin-bottom:8px;">1) สร้างบัญชีผู้ใช้ &amp; ระดับบัญชี</div>
+              <div style="font-size:0.82rem; margin-bottom:4px;">บัญชี <code>teacher01</code> — กลุ่มที่สังกัด:</div>
+              <select id="l10-tgroup" class="px-input" style="margin-bottom:10px;">
+                <option value="">-- เลือกกลุ่มผู้ใช้ --</option>
+                <option value="Teachers">Teachers (กลุ่มครูผู้สอน)</option>
+                <option value="Students">Students (กลุ่มนักศึกษา)</option>
+                <option value="Guests">Guests (ผู้ใช้ชั่วคราว)</option>
+              </select>
+
+              <div style="font-size:0.82rem; margin-bottom:4px;">บัญชี <code>student01</code> — ระดับบัญชี (Account Type):</div>
+              <select id="l10-stype" class="px-input" style="margin-bottom:8px;">
+                <option value="">-- เลือกระดับบัญชี --</option>
+                <option value="admin">Administrator (คุมเครื่องทั้งหมด)</option>
+                <option value="standard">Standard User (ใช้งานทั่วไป ปลอดภัย)</option>
+              </select>
+
+              <div style="font-size:0.82rem; margin-bottom:4px;">บัญชี <code>student01</code> — กลุ่มที่สังกัด:</div>
+              <select id="l10-sgroup" class="px-input">
+                <option value="">-- เลือกกลุ่มผู้ใช้ --</option>
+                <option value="Teachers">Teachers</option>
+                <option value="Students">Students</option>
+              </select>
+            </div>
+
+            <div class="pixel-box" style="padding:12px;">
+              <div style="font-weight:700; color:var(--amber); margin-bottom:8px;">2) NTFS Permissions โฟลเดอร์ <code>\\LAB-SRV\Exam_Bank</code></div>
+              <div style="font-size:0.82rem; margin-bottom:4px;">สิทธิ์ของกลุ่ม <b>Teachers</b>:</div>
+              <select id="l10-tperm" class="px-input" style="margin-bottom:10px;">
+                <option value="">-- กำหนดสิทธิ์ NTFS --</option>
+                <option value="full">Full Control / Modify (สร้าง/แก้ไข/ลบได้)</option>
+                <option value="read">Read Only (อ่านอย่างเดียว)</option>
+                <option value="deny">Deny All (ห้ามเข้าถึง)</option>
+              </select>
+
+              <div style="font-size:0.82rem; margin-bottom:4px;">สิทธิ์ของกลุ่ม <b>Students</b>:</div>
+              <select id="l10-sperm" class="px-input" style="margin-bottom:10px;">
+                <option value="">-- กำหนดสิทธิ์ NTFS --</option>
+                <option value="full">Full Control (แก้/ลบข้อสอบได้)</option>
+                <option value="read">Read &amp; Execute (อ่านได้อย่างเดียว ห้ามแก้ไข)</option>
+              </select>
+
+              <div style="font-size:0.82rem; margin-bottom:4px;">กฎความปลอดภัย: หากบัญชีถูกตั้งทั้ง <b>Allow Read</b> และ <b>Deny Read</b> ผลคือ:</div>
+              <select id="l10-rule" class="px-input">
+                <option value="">-- เลือกผลลัพธ์ --</option>
+                <option value="allow">Allow ชนะ (เปิดอ่านได้)</option>
+                <option value="deny">Explicit Deny ชนะ Allow เสมอ (ถูกปฏิเสธ)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="lab-u10-log" class="cli-terminal" style="margin-top:12px; min-height:70px; font-size:0.82rem; color:#94a3b8;">[Windows Security Audit] ตั้งค่าบัญชี กลุ่ม และสิทธิ์ NTFS ให้ครบ แล้วกด "ทดสอบ Sign-in และตรวจสิทธิ์"</div>
+          <div style="margin-top:12px;">
+            <button class="px-btn px-btn-emerald" onclick="App.checkLabUserPerm()">🔐 ทดสอบ Sign-in และตรวจสิทธิ์การเข้าถึง</button>
+          </div>
+        </div>
+      `;
+    },
+
+    checkLabUserPerm() {
+      const tgroup = document.getElementById('l10-tgroup').value;
+      const stype = document.getElementById('l10-stype').value;
+      const sgroup = document.getElementById('l10-sgroup').value;
+      const tperm = document.getElementById('l10-tperm').value;
+      const sperm = document.getElementById('l10-sperm').value;
+      const rule = document.getElementById('l10-rule').value;
+      const log = document.getElementById('lab-u10-log');
+
+      const errs = [];
+      if (tgroup !== 'Teachers') errs.push('teacher01 ต้องอยู่ในกลุ่ม Teachers');
+      if (stype !== 'standard') errs.push('student01 ควรเป็นบัญชี Standard User ตามหลัก Least Privilege (ไม่ควรให้สิทธิ์ Administrator)');
+      if (sgroup !== 'Students') errs.push('student01 ต้องอยู่ในกลุ่ม Students');
+      if (tperm !== 'full') errs.push('กลุ่ม Teachers ต้องได้รับสิทธิ์ Full Control / Modify ในโฟลเดอร์ Exam_Bank');
+      if (sperm !== 'read') errs.push('กลุ่ม Students ต้องได้รับสิทธิ์ Read & Execute (อ่านได้อย่างเดียว ห้ามแก้ไข/ลบ)');
+      if (rule !== 'deny') errs.push('กฎเหล็ก NTFS: Explicit Deny จะชนะ Allow เสมอ');
+
+      if (errs.length > 0) {
+        soundFX.playPlayerHurt();
+        log.innerHTML = `<div style="color:#fda4af;">❌ การตรวจสอบสิทธิ์ไม่ผ่าน:<br>• ${errs.join('<br>• ')}</div>`;
+        return;
+      }
+
+      soundFX.playPowerUp();
+      log.innerHTML = `
+        <div style="color:#38bdf8;">[TEST 1] Sign-in as <b>teacher01</b> (Group: Teachers) → เปิด/แก้ไข \\\\LAB-SRV\\Exam_Bank ✔ ALLOWED</div>
+        <div style="color:#facc15;">[TEST 2] Sign-in as <b>student01</b> (Standard User, Group: Students) → อ่านไฟล์ ✔ ALLOWED | ลบไฟล์ 🛡️ ACCESS DENIED</div>
+        <div style="color:#4ade80;">✔ ระบบบัญชีผู้ใช้ กลุ่ม และสิทธิ์ NTFS ผ่านมาตรฐาน Least Privilege 100%!</div>
+      `;
+      this.completeUnitLab(10, 'ผ่าน Lab 10 การสร้างบัญชีผู้ใช้ กลุ่ม และกำหนดสิทธิ์');
     },
 
     /* ---------------- TURN-BASED 16-BIT BOSS BATTLE ---------------- */
@@ -2348,7 +2775,7 @@
                 <td>${r.classRoom}</td>
                 <td>LV.${r.level}</td>
                 <td><b>${r.xp}</b></td>
-                <td>${r.unitsCleared}/6</td>
+                <td>${r.unitsCleared}/${GameData.UNITS.length}</td>
                 <td>🏅 ${r.badgeCount}</td>
               </tr>
             `).join('')}
@@ -2364,7 +2791,7 @@
         : fallback;
       const header = ['Rank', 'StudentID', 'Name', 'ClassRoom', 'Level', 'XP', 'UnitsCleared', 'Badges', 'UpdatedAt'];
       const rows = list.map((r, i) => [
-        i + 1, r.studentId, `"${r.name}"`, `"${r.classRoom}"`, r.level, r.xp, `${r.unitsCleared}/6`, r.badgeCount, r.updatedAt
+        i + 1, r.studentId, `"${r.name}"`, `"${r.classRoom}"`, r.level, r.xp, `${r.unitsCleared}/${GameData.UNITS.length}`, r.badgeCount, r.updatedAt
       ].join(','));
       const csv = '\uFEFF' + [header.join(','), ...rows].join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -2392,7 +2819,7 @@
           ${this.state.profile.name || 'ผู้เรียน'} (รหัส ${this.state.profile.studentId || '-'})
         </div>
         <div>ระดับชั้น: <b>${this.state.profile.classRoom || 'ปวช.'}</b> | อาชีพ: <b>${cls.thName}</b> | ยศ: <b>LV.${current.level} ${current.title}</b></div>
-        <div style="margin-top:8px;">คะแนนประสบการณ์รวม: <b>${this.state.xp} XP</b> | ผ่านภารกิจ: <b>${cleared}/6 หน่วย</b> | เหรียญตรา: <b>${this.state.badges.length}/12</b></div>
+        <div style="margin-top:8px;">คะแนนประสบการณ์รวม: <b>${this.state.xp} XP</b> | ผ่านภารกิจ: <b>${cleared}/${GameData.UNITS.length} หน่วย</b> | เหรียญตรา: <b>${this.state.badges.length}/${GameData.BADGES.length}</b></div>
 
         <table class="cert-table">
           <thead>
