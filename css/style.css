@@ -1152,3 +1152,20 @@ body.crt-active::after {
   outline: none;
   border-color: var(--cyan);
 }
+
+.teacher-badge {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+  color: #0b1020;
+  font-family: var(--font-pixel);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border: 2px solid #fef08a;
+}
+
+.teacher-lock-box {
+  background: rgba(245, 158, 11, 0.1);
+  border: 2px dashed var(--amber);
+  padding: 12px;
+  font-size: 0.86rem;
+}

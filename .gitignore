@@ -1,0 +1,9 @@
+serviceAccountKey.json
+scripts/serviceAccountKey.json
+*-firebase-adminsdk-*.json
+node_modules/
+scripts/node_modules/
+.env
+.firebase/
+firebase-debug.log
+firestore-debug.log

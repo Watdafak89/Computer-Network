@@ -3,8 +3,18 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ===============================================================
-    // Assumed Data Model
+    // Assumed Data Model & Authorization Roles
     // ===============================================================
+    //
+    // Roles:
+    //   - Student (default): authenticated user (request.auth != null) without
+    //     teacher claim; can read students/customQuestions and create/update
+    //     only their own students/{request.auth.uid} document.
+    //   - Teacher: authenticated user with Firebase Auth Custom Claim
+    //     `teacher: true` (checked via isTeacher() using
+    //     request.auth.token.teacher == true); can delete students/{userId}
+    //     (e.g., removing test accounts) and create/update/delete
+    //     customQuestions/{docId}.
     //
     // This security rules file assumes the following data structures:
     //
@@ -35,7 +45,8 @@ service cloud.firestore {
     //   - options: list of 4 strings (required, each 1..500 chars) - answer choices
     //   - ans: int (required, 0..3) - zero-based correct option index
     //   - exp: string (required, 0..500 chars) - explanation text
-    //   - createdAtServer: timestamp (required, must equal request.time)
+    //   - createdAtServer: timestamp (required, immutable on update; must equal
+    //     request.time on create)
     //
     // ===============================================================
 
@@ -46,6 +57,13 @@ service cloud.firestore {
     // Check if the user is authenticated
     function isAuthenticated() {
       return request.auth != null;
+    }
+
+    // Check if the user has the Firebase Auth custom claim `teacher: true`
+    function isTeacher() {
+      return isAuthenticated() &&
+        ('teacher' in request.auth.token) &&
+        request.auth.token.teacher == true;
     }
 
     // Check if authenticated user owns the document path by UID
@@ -242,8 +260,7 @@ service cloud.firestore {
         validString(data.options[3], 1, 500) &&
         validIntRange(data.ans, 0, 3) &&
         validString(data.exp, 0, 500) &&
-        data.createdAtServer is timestamp &&
-        data.createdAtServer == request.time;
+        data.createdAtServer is timestamp;
     }
 
     // ===============================================================
@@ -267,15 +284,19 @@ service cloud.firestore {
         isValidStudent(request.resource.data, userId) &&
         uidNotModified() &&
         areImmutableFieldsUnchanged(['uid', 'createdAtServer']);
-      allow delete: if false;
+      allow delete: if isTeacher();
     }
 
-    // Custom quiz questions added for unit boss battles (append-only)
+    // Custom quiz questions managed by teachers (`teacher: true`) and read by students
     match /customQuestions/{docId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() &&
-        isValidCustomQuestion(request.resource.data);
-      allow update, delete: if false;
+      allow create: if isTeacher() &&
+        isValidCustomQuestion(request.resource.data) &&
+        request.resource.data.createdAtServer == request.time;
+      allow update: if isTeacher() &&
+        isValidCustomQuestion(request.resource.data) &&
+        areImmutableFieldsUnchanged(['createdAtServer']);
+      allow delete: if isTeacher();
     }
   }
 }

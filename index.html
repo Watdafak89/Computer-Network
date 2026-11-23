@@ -21,6 +21,7 @@
         <div class="hud-name-row">
           <span id="hud-name" class="pixel-title" style="color: var(--cyan);">ผู้เล่นใหม่</span>
           <span id="hud-level" class="hud-badge-lv">LV.1</span>
+          <span id="hud-teacher-badge" class="teacher-badge hidden">👑 ครูผู้สอน</span>
           <span id="hud-class" style="font-size: 0.78rem; color: var(--amber);"></span>
         </div>
         <div style="font-size: 0.78rem; color: var(--text-muted);" id="hud-rank">เด็กฝึกหัดสายแลน</div>
@@ -169,8 +170,8 @@
       <div id="auth-pane-login">
         <div style="display:grid; gap:12px;">
           <div>
-            <label style="display:block; font-size:0.86rem; margin-bottom:4px;">รหัสนักศึกษา (Student ID) *</label>
-            <input id="auth-login-sid" class="px-input" placeholder="เช่น 6720901005" onkeydown="if(event.key==='Enter') App.submitLogin()" />
+            <label style="display:block; font-size:0.86rem; margin-bottom:4px;">รหัสนักศึกษา หรือ อีเมลครูผู้สอน *</label>
+            <input id="auth-login-sid" class="px-input" placeholder="เช่น 6720901005 หรือ wat.overclock@gmail.com" onkeydown="if(event.key==='Enter') App.submitLogin()" />
           </div>
           <div>
             <label style="display:block; font-size:0.86rem; margin-bottom:4px;">รหัสผ่าน / PIN (6 ตัวอักษรขึ้นไป) *</label>

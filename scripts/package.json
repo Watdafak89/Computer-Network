@@ -1,0 +1,10 @@
+{
+  "name": "netquest-admin-tools",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Admin CLI scripts to grant/revoke Firebase Auth teacher custom claims for NetQuest 16-Bit",
+  "dependencies": {
+    "firebase-admin": "^13.0.1"
+  }
+}

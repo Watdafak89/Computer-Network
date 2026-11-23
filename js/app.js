@@ -54,6 +54,7 @@
   const App = {
     state: createDefaultState(),
     currentUid: null,
+    isTeacher: false,
     cloudQuestions: [],
     currentUnitId: 1,
     currentTab: 'codex',
@@ -75,6 +76,7 @@
         FirebaseService.onAuthReady(async (session) => {
           if (!session) {
             this.currentUid = null;
+            this.isTeacher = false;
             this.state = createDefaultState();
             document.body.classList.remove('crt-active');
             this.renderHUD();
@@ -84,7 +86,9 @@
           }
 
           this.currentUid = session.uid;
+          this.isTeacher = Boolean(session.isTeacher);
           this.applyLoadedState(session.state, session.studentId);
+          this.ensureTeacherDefaultProfile(session.studentId);
           this.syncDailyReset();
           document.body.classList.toggle('crt-active', Boolean(this.state.crt));
           try {
@@ -106,6 +110,25 @@
         this.renderHUD();
         this.renderDashboard();
         if (!this.state.profile.created) this.openProfileModal(true);
+      }
+    },
+
+    ensureTeacherDefaultProfile(teacherId) {
+      if (this.isTeacher && !this.state.profile.created) {
+        const cleanLabel = teacherId || 'teacher';
+        const mage = this.getClassObj('mage');
+        this.state.profile = {
+          name: `ครูผู้สอน (${cleanLabel})`,
+          studentId: cleanLabel,
+          classRoom: 'ครูผู้สอน',
+          heroClass: 'mage',
+          created: true
+        };
+        this.state.hp = mage.baseHp;
+        if (!this.state.badges.includes('first_login')) {
+          this.state.badges.push('first_login');
+        }
+        this.saveState(true);
       }
     },
 
@@ -321,6 +344,8 @@
       document.getElementById('hud-avatar').innerHTML = PixelSprites.render(cls.sprite, 46);
       document.getElementById('hud-name').textContent = this.state.profile.name || 'ผู้เล่นใหม่';
       document.getElementById('hud-level').textContent = `LV.${current.level}`;
+      const teacherBadge = document.getElementById('hud-teacher-badge');
+      if (teacherBadge) teacherBadge.classList.toggle('hidden', !this.isTeacher);
       document.getElementById('hud-class').textContent = `[${cls.thName}]`;
       document.getElementById('hud-rank').textContent = `${current.title} (${this.state.profile.classRoom || 'ปวช.'})`;
 
@@ -462,7 +487,9 @@
       }
 
       this.currentUid = res.uid;
+      this.isTeacher = Boolean(res.isTeacher);
       this.applyLoadedState(res.state, res.studentId);
+      this.ensureTeacherDefaultProfile(res.studentId);
       this.syncDailyReset();
       try {
         this.cloudQuestions = await FirebaseService.fetchCustomQuestions();
@@ -471,7 +498,7 @@
       this.renderHUD();
       this.renderDashboard();
       soundFX.playPowerUp();
-      this.toast(`🔑 เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ ${this.state.profile.name || res.studentId}`);
+      this.toast(`🔑 เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ ${this.state.profile.name || res.studentId}${this.isTeacher ? ' [สิทธิ์ครูผู้สอน]' : ''}`);
     },
 
     async submitRegister() {
@@ -527,6 +554,7 @@
       }
 
       this.currentUid = res.uid;
+      this.isTeacher = false;
       this.applyLoadedState(res.state || fresh, res.studentId);
       this.saveState(true);
       this.closeModal('modal-auth');
@@ -566,6 +594,7 @@
         return;
       }
       this.currentUid = res.uid;
+      this.isTeacher = false;
       this.applyLoadedState(res.state, res.studentId);
       this.closeModal('modal-auth');
       this.renderHUD();
@@ -584,6 +613,7 @@
       this.saveState(true);
       await FirebaseService.logout();
       this.currentUid = null;
+      this.isTeacher = false;
       this.state = createDefaultState();
       this.closeModal('modal-profile');
       this.closeModal('modal-teacher');
@@ -2388,20 +2418,41 @@
       document.getElementById('modal-boss-gallery').classList.remove('hidden');
     },
 
-    openTeacherModal() {
+    async openTeacherModal() {
       soundFX.playSelect();
-      let customCount = (this.cloudQuestions || []).length;
-      if (customCount === 0) {
+      if (global.FirebaseService && FirebaseService.isCloud() && this.currentUid) {
         try {
-          customCount = JSON.parse(localStorage.getItem(CUSTOM_Q_KEY) || '[]').length;
-        } catch (e) { /* ignore */ }
+          this.cloudQuestions = await FirebaseService.fetchCustomQuestions();
+        } catch (e) { /* keep existing */ }
       }
+      const isCloud = global.FirebaseService && FirebaseService.isCloud();
+      const canManageQuestions = !isCloud || this.isTeacher;
+      const customList = isCloud
+        ? (this.cloudQuestions || [])
+        : (() => {
+            try { return JSON.parse(localStorage.getItem(CUSTOM_Q_KEY) || '[]'); } catch (e) { return []; }
+          })();
+
       const fbInfo = global.FirebaseService
         ? FirebaseService.getActiveConfigInfo()
         : { mode: 'local', projectId: '', source: 'none' };
 
       document.getElementById('teacher-body').innerHTML = `
         <div style="display:flex; flex-direction:column; gap:16px;">
+          <div class="pixel-box ${this.isTeacher ? 'pixel-box-gold' : ''}" style="padding:14px;">
+            <h4 style="color:var(--amber); margin-bottom:6px;">🔐 สถานะสิทธิ์บัญชี (Role &amp; Custom Claim)</h4>
+            <div style="font-size:0.88rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+              <div>
+                บัญชี: <b>${this.state.profile.studentId || 'ยังไม่เข้าสู่ระบบ'}</b> |
+                สิทธิ์: <b style="color:${this.isTeacher ? 'var(--emerald)' : 'var(--cyan)'};">
+                  ${this.isTeacher ? '👑 ครูผู้สอน (Custom Claim: teacher=true)' : (isCloud ? '🎓 นักเรียนทั่วไป (ไม่สามารถแก้ไขข้อสอบส่วนกลาง)' : '💾 โหมดเครื่องท้องถิ่น')}
+                </b>
+                ${this.currentUid ? `<div style="font-size:0.78rem; color:var(--text-muted); margin-top:3px;">UID: <code>${this.currentUid}</code></div>` : ''}
+              </div>
+              ${isCloud && this.currentUid ? `<button class="px-btn px-btn-sm" onclick="App.refreshTeacherClaimUI()">🔄 รีเฟรชสิทธิ์ครู</button>` : ''}
+            </div>
+          </div>
+
           <div class="pixel-box pixel-box-cyan" style="padding:14px;">
             <h4 style="color:var(--cyan); margin-bottom:8px;">☁️ ตั้งค่าฐานข้อมูล Firebase (Auth + Cloud Firestore)</h4>
             <div style="font-size:0.86rem; margin-bottom:8px;">
@@ -2422,27 +2473,49 @@
 
           <div class="pixel-box" style="padding:14px;">
             <h4 style="color:var(--amber); margin-bottom:8px;">➕ เพิ่มข้อสอบพิเศษเข้าคลังบอส (Custom Teacher Question)</h4>
-            <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:10px;">ข้อสอบพิเศษในระบบ: <b>${customCount} ข้อ</b></p>
-            <div style="display:grid; gap:8px;">
-              <select id="tq-unit" class="px-select">
-                ${GameData.UNITS.map((u) => `<option value="${u.id}">${u.code}: ${u.title}</option>`).join('')}
-              </select>
-              <input id="tq-q" class="px-input" placeholder="คำถาม..." />
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                <input id="tq-0" class="px-input" placeholder="ตัวเลือก ก" />
-                <input id="tq-1" class="px-input" placeholder="ตัวเลือก ข" />
-                <input id="tq-2" class="px-input" placeholder="ตัวเลือก ค" />
-                <input id="tq-3" class="px-input" placeholder="ตัวเลือก ง" />
+            <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:10px;">ข้อสอบพิเศษในระบบ: <b>${customList.length} ข้อ</b></p>
+            ${!canManageQuestions ? `
+              <div class="teacher-lock-box">
+                🔒 <b>ล็อกสิทธิ์สำหรับครูผู้สอนเท่านั้น</b> — ในโหมด Firebase Cloud เฉพาะบัญชีที่มี Custom Claim <code>teacher: true</code> (เช่น บัญชีครู <code>watdafak</code>) จึงจะเพิ่มหรือลบข้อสอบส่วนกลางได้
+                <div style="margin-top:6px; font-size:0.8rem; color:var(--text-muted);">
+                  หากเพิ่งตั้งสิทธิ์ครูให้บัญชีนี้ด้วยสคริปต์ <code>scripts/set-teacher-claim.mjs</code> กรุณากดปุ่ม <b>🔄 รีเฟรชสิทธิ์ครู</b> ด้านบน หรือออกจากระบบแล้วล็อกอินใหม่
+                </div>
               </div>
-              <select id="tq-ans" class="px-select">
-                <option value="0">เฉลย: ข้อ ก</option>
-                <option value="1">เฉลย: ข้อ ข</option>
-                <option value="2">เฉลย: ข้อ ค</option>
-                <option value="3">เฉลย: ข้อ ง</option>
-              </select>
-              <input id="tq-exp" class="px-input" placeholder="คำอธิบายเฉลยสั้นๆ..." />
-              <button class="px-btn px-btn-emerald" onclick="App.saveTeacherQuestion()">💾 บันทึกข้อสอบลงหน่วยที่เลือก</button>
-            </div>
+            ` : `
+              <div style="display:grid; gap:8px;">
+                <select id="tq-unit" class="px-select">
+                  ${GameData.UNITS.map((u) => `<option value="${u.id}">${u.code}: ${u.title}</option>`).join('')}
+                </select>
+                <input id="tq-q" class="px-input" placeholder="คำถาม..." />
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                  <input id="tq-0" class="px-input" placeholder="ตัวเลือก ก" />
+                  <input id="tq-1" class="px-input" placeholder="ตัวเลือก ข" />
+                  <input id="tq-2" class="px-input" placeholder="ตัวเลือก ค" />
+                  <input id="tq-3" class="px-input" placeholder="ตัวเลือก ง" />
+                </div>
+                <select id="tq-ans" class="px-select">
+                  <option value="0">เฉลย: ข้อ ก</option>
+                  <option value="1">เฉลย: ข้อ ข</option>
+                  <option value="2">เฉลย: ข้อ ค</option>
+                  <option value="3">เฉลย: ข้อ ง</option>
+                </select>
+                <input id="tq-exp" class="px-input" placeholder="คำอธิบายเฉลยสั้นๆ..." />
+                <button class="px-btn px-btn-emerald" onclick="App.saveTeacherQuestion()">💾 บันทึกข้อสอบลงหน่วยที่เลือก</button>
+              </div>
+            `}
+            ${customList.length > 0 ? `
+              <div style="margin-top:12px; border-top:2px dashed #334155; padding-top:10px;">
+                <div style="font-size:0.85rem; color:var(--cyan); font-weight:700; margin-bottom:6px;">📋 รายการข้อสอบพิเศษปัจจุบัน:</div>
+                <div style="display:flex; flex-direction:column; gap:6px; max-height:160px; overflow-y:auto;">
+                  ${customList.map((item, idx) => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; background:#0b1224; border:1px solid #334155; padding:6px 8px; font-size:0.82rem;">
+                      <span><b>[U${item.unitId}]</b> ${item.q}</span>
+                      ${canManageQuestions ? `<button class="px-btn px-btn-crimson px-btn-sm" onclick="App.deleteTeacherQuestion('${item.id || ''}', ${idx})">🗑️</button>` : ''}
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
           </div>
 
           <div class="pixel-box" style="padding:14px;">
@@ -2455,6 +2528,21 @@
         </div>
       `;
       document.getElementById('modal-teacher').classList.remove('hidden');
+    },
+
+    async refreshTeacherClaimUI() {
+      if (!global.FirebaseService) return;
+      const ok = await FirebaseService.refreshTeacherClaim();
+      this.isTeacher = ok;
+      this.renderHUD();
+      if (ok) {
+        soundFX.playPowerUp();
+        this.toast('👑 ยืนยันสิทธิ์ครูผู้สอน (teacher: true) สำเร็จ!');
+      } else {
+        soundFX.playSelect();
+        this.toast('ℹ️ บัญชีนี้ยังไม่มีสิทธิ์ teacher: true');
+      }
+      this.openTeacherModal();
     },
 
     saveFirebaseConfigUI() {
@@ -2491,12 +2579,40 @@
       const res = global.FirebaseService
         ? await FirebaseService.addCustomQuestion(qObj)
         : { ok: true, synced: false };
+
+      if (!res.ok) {
+        soundFX.playPlayerHurt();
+        alert(res.error || 'ไม่มีสิทธิ์เพิ่มข้อสอบส่วนกลาง');
+        return;
+      }
+
+      if (res.id) qObj.id = res.id;
       if (!this.cloudQuestions) this.cloudQuestions = [];
       this.cloudQuestions.push(qObj);
       soundFX.playPowerUp();
       this.toast(res.synced
         ? `✔ เพิ่มข้อสอบใหม่เข้าหน่วยที่ ${unitId} และซิงก์ขึ้น Cloud Firestore แล้ว!`
         : `✔ เพิ่มข้อสอบใหม่เข้าหน่วยที่ ${unitId} บนเครื่องนี้แล้ว!`);
+      this.openTeacherModal();
+    },
+
+    async deleteTeacherQuestion(docId, idx) {
+      if (!confirm('ต้องการลบข้อสอบพิเศษข้อนี้หรือไม่?')) return;
+      const res = global.FirebaseService
+        ? await FirebaseService.deleteCustomQuestion(docId, idx)
+        : { ok: false, error: 'ไม่พบบริการฐานข้อมูล' };
+      if (!res.ok) {
+        soundFX.playPlayerHurt();
+        alert(res.error || 'ลบข้อสอบไม่สำเร็จ');
+        return;
+      }
+      if (docId && this.cloudQuestions) {
+        this.cloudQuestions = this.cloudQuestions.filter((x) => x.id !== docId);
+      } else if (this.cloudQuestions && idx >= 0) {
+        this.cloudQuestions.splice(idx, 1);
+      }
+      soundFX.playSelect();
+      this.toast('🗑️ ลบข้อสอบพิเศษเรียบร้อยแล้ว');
       this.openTeacherModal();
     },
 

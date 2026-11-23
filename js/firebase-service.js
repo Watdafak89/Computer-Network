@@ -29,7 +29,11 @@
   }
 
   function studentIdToEmail(studentId) {
-    const clean = sanitizeStudentId(studentId);
+    const trimmed = String(studentId || '').trim();
+    if (trimmed.includes('@') && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      return trimmed.toLowerCase();
+    }
+    const clean = sanitizeStudentId(trimmed);
     if (clean.length < 4) return null;
     return `${clean.toLowerCase()}@student.netquest.local`;
   }
@@ -79,7 +83,7 @@
       return 'ยังไม่ได้เปิดใช้งาน Email/Password ใน Firebase Authentication (กรุณาแจ้งครูผู้สอน)';
     }
     if (code.includes('permission-denied')) {
-      return 'ไม่มีสิทธิ์เข้าถึง Firestore (กรุณาตรวจสอบ Security Rules ใน Firebase Console)';
+      return 'ไม่มีสิทธิ์ดำเนินการใน Cloud Firestore (การจัดการข้อสอบส่วนกลางต้องใช้บัญชีครูผู้สอนที่มีสิทธิ์ teacher: true)';
     }
     if (code.includes('network-request-failed')) {
       return 'เชื่อมต่ออินเทอร์เน็ตหรือเซิร์ฟเวอร์ Firebase ไม่สำเร็จ';
@@ -193,6 +197,17 @@
             return;
           }
           const emailPrefix = (user.email || '').split('@')[0];
+          let isTeacher = false;
+          try {
+            const tokenRes = await user.getIdTokenResult(true);
+            isTeacher = Boolean(tokenRes && tokenRes.claims && tokenRes.claims.teacher === true);
+          } catch (e) {
+            try {
+              const cachedRes = await user.getIdTokenResult(false);
+              isTeacher = Boolean(cachedRes && cachedRes.claims && cachedRes.claims.teacher === true);
+            } catch (e2) { /* ignore */ }
+          }
+
           try {
             const snap = await this.db.collection('students').doc(user.uid).get();
             if (snap.exists) {
@@ -200,6 +215,7 @@
               callback({
                 uid: user.uid,
                 studentId: doc.studentId || emailPrefix,
+                isTeacher,
                 state: doc.state || null
               });
               return;
@@ -218,6 +234,7 @@
           callback({
             uid: user.uid,
             studentId: emailPrefix,
+            isTeacher,
             state: backupState
           });
         });
@@ -234,6 +251,7 @@
             callback({
               uid: acc.uid,
               studentId: acc.studentId,
+              isTeacher: sid.startsWith('teacher'),
               state: acc.state || null
             });
             return;
@@ -241,6 +259,16 @@
         }
       } catch (e) { /* ignore */ }
       callback(null);
+    },
+
+    async refreshTeacherClaim() {
+      if (!this.isCloud() || !this.auth.currentUser) return false;
+      try {
+        const tokenRes = await this.auth.currentUser.getIdTokenResult(true);
+        return Boolean(tokenRes && tokenRes.claims && tokenRes.claims.teacher === true);
+      } catch (e) {
+        return false;
+      }
     },
 
     async registerStudent({ studentId, password, name, classRoom, heroClass, initialState }) {
@@ -307,10 +335,11 @@
     },
 
     async loginStudent({ studentId, password }) {
-      const cleanId = sanitizeStudentId(studentId);
-      const email = studentIdToEmail(cleanId);
+      const rawInput = String(studentId || '').trim();
+      const email = studentIdToEmail(rawInput);
+      const cleanId = rawInput.includes('@') ? rawInput.split('@')[0] : sanitizeStudentId(rawInput);
       if (!email) {
-        return { ok: false, error: 'กรุณากรอกรหัสนักศึกษาให้ถูกต้อง (อย่างน้อย 4 หลัก)' };
+        return { ok: false, error: 'กรุณากรอกรหัสนักศึกษาหรืออีเมลครูผู้สอนให้ถูกต้อง' };
       }
       if (!password) {
         return { ok: false, error: 'กรุณากรอกรหัสผ่าน' };
@@ -320,6 +349,11 @@
         try {
           const cred = await this.auth.signInWithEmailAndPassword(email, password);
           const uid = cred.user.uid;
+          let isTeacher = false;
+          try {
+            const tokenRes = await cred.user.getIdTokenResult(true);
+            isTeacher = Boolean(tokenRes && tokenRes.claims && tokenRes.claims.teacher === true);
+          } catch (e) { /* ignore */ }
           let docData = null;
           try {
             const snap = await this.db.collection('students').doc(uid).get();
@@ -329,6 +363,7 @@
             ok: true,
             uid,
             studentId: (docData && docData.studentId) || cleanId,
+            isTeacher,
             state: (docData && docData.state) || null
           };
         } catch (err) {
@@ -347,7 +382,7 @@
         return { ok: false, error: 'รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง' };
       }
       localStorage.setItem(LOCAL_SESSION_KEY, key);
-      return { ok: true, uid: acc.uid, studentId: acc.studentId, state: acc.state };
+      return { ok: true, uid: acc.uid, studentId: acc.studentId, isTeacher: key.startsWith('teacher'), state: acc.state };
     },
 
     async logout() {
@@ -460,34 +495,60 @@
         const cloudList = [];
         snap.forEach((doc) => {
           const d = doc.data();
-          if (d && d.q && Array.isArray(d.options)) cloudList.push(d);
+          if (d && d.q && Array.isArray(d.options)) {
+            cloudList.push({ id: doc.id, ...d });
+          }
         });
-        return cloudList.length > 0 ? cloudList : localList;
+        return cloudList;
       } catch (err) {
         return localList;
       }
     },
 
     async addCustomQuestion(qObj) {
+      if (this.isCloud()) {
+        try {
+          const docRef = await this.db.collection('customQuestions').add({
+            unitId: Number(qObj.unitId),
+            q: String(qObj.q || ''),
+            options: Array.isArray(qObj.options) ? qObj.options.map(String) : [],
+            ans: Number(qObj.ans),
+            exp: String(qObj.exp || ''),
+            createdAtServer: global.firebase.firestore.FieldValue.serverTimestamp()
+          });
+          return { ok: true, synced: true, id: docRef.id };
+        } catch (err) {
+          return { ok: false, synced: false, error: translateFirebaseError(err) };
+        }
+      }
+
       let localList = [];
       try {
         localList = JSON.parse(localStorage.getItem(CUSTOM_Q_KEY) || '[]');
       } catch (e) { localList = []; }
       localList.push(qObj);
       localStorage.setItem(CUSTOM_Q_KEY, JSON.stringify(localList));
+      return { ok: true, synced: false };
+    },
 
+    async deleteCustomQuestion(docId, idxFallback = -1) {
       if (this.isCloud()) {
         try {
-          await this.db.collection('customQuestions').add({
-            ...qObj,
-            createdAtServer: global.firebase.firestore.FieldValue.serverTimestamp()
-          });
-          return { ok: true, synced: true };
+          await this.db.collection('customQuestions').doc(docId).delete();
+          return { ok: true };
         } catch (err) {
-          return { ok: true, synced: false, error: translateFirebaseError(err) };
+          return { ok: false, error: translateFirebaseError(err) };
         }
       }
-      return { ok: true, synced: false };
+      if (idxFallback >= 0) {
+        try {
+          const localList = JSON.parse(localStorage.getItem(CUSTOM_Q_KEY) || '[]');
+          localList.splice(idxFallback, 1);
+          localStorage.setItem(CUSTOM_Q_KEY, JSON.stringify(localList));
+          return { ok: true };
+        } catch (e) { /* ignore */ }
+      }
+      return { ok: false, error: 'ไม่สามารถลบข้อสอบได้' };
     }
   };
 
