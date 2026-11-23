@@ -871,6 +871,130 @@
       }
       try { localStorage.setItem(LOCAL_LOCK_KEY, JSON.stringify(normalized)); } catch (e) { /* ignore */ }
       return { ok: true, lockedUnits: normalized };
+    },
+
+    /* ---------------- SKILL SUBMISSIONS & TEACHER GRADING ---------------- */
+    getLocalSkillSubmissions() {
+      try {
+        const raw = localStorage.getItem('netquest_skill_submissions_v1');
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        return {};
+      }
+    },
+
+    saveLocalSkillSubmissions(mapObj) {
+      try { localStorage.setItem('netquest_skill_submissions_v1', JSON.stringify(mapObj)); } catch (e) { /* ignore */ }
+    },
+
+    async submitSkillExercise(payload) {
+      const uid = String(payload.uid || 'local_guest');
+      const unitId = Number(payload.unitId);
+      const docId = `${uid}_u${unitId}`;
+      const nowStr = new Date().toISOString().slice(0, 16).replace('T', ' ');
+      const docObj = {
+        uid,
+        unitId,
+        studentId: String(payload.studentId || 'guest').slice(0, 40),
+        name: String(payload.name || 'ผู้เรียน').slice(0, 120),
+        classRoom: String(payload.classRoom || 'ปวช.').slice(0, 40),
+        answers: payload.answers || {},
+        autoScore: Math.max(0, Math.min(100, Math.round(Number(payload.autoScore || 0)))),
+        part2Score: Math.max(0, Math.min(20, Math.round(Number(payload.part2Score || 0)))),
+        part2Total: Math.max(0, Math.min(20, Math.round(Number(payload.part2Total || 0)))),
+        status: 'submitted',
+        teacherScore: -1,
+        teacherComment: '',
+        submittedAt: nowStr
+      };
+
+      if (this.isCloud() && this.auth && this.auth.currentUser) {
+        try {
+          await this.db.collection('skillSubmissions').doc(docId).set({
+            ...docObj,
+            updatedAtServer: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          const localMap = this.getLocalSkillSubmissions();
+          localMap[docId] = { id: docId, ...docObj };
+          this.saveLocalSkillSubmissions(localMap);
+          return { ok: true, submission: { id: docId, ...docObj } };
+        } catch (err) {
+          return { ok: false, error: translateFirebaseError(err) };
+        }
+      }
+
+      const localMap = this.getLocalSkillSubmissions();
+      localMap[docId] = { id: docId, ...docObj };
+      this.saveLocalSkillSubmissions(localMap);
+      return { ok: true, submission: { id: docId, ...docObj } };
+    },
+
+    async fetchStudentSkillSubmission(uid, unitId) {
+      if (!uid) return null;
+      const docId = `${uid}_u${Number(unitId)}`;
+      if (this.isCloud() && this.auth && this.auth.currentUser) {
+        try {
+          const snap = await this.db.collection('skillSubmissions').doc(docId).get();
+          if (snap.exists) {
+            return { id: snap.id, ...snap.data() };
+          }
+          return null;
+        } catch (err) {
+          console.warn('[NetQuest] fetchStudentSkillSubmission fallback:', err);
+        }
+      }
+      const localMap = this.getLocalSkillSubmissions();
+      return localMap[docId] || null;
+    },
+
+    async fetchAllSkillSubmissionsForTeacher() {
+      if (this.isCloud() && this.auth && this.auth.currentUser) {
+        try {
+          const snap = await this.db.collection('skillSubmissions').limit(300).get();
+          const list = [];
+          snap.forEach((doc) => {
+            list.push({ id: doc.id, ...doc.data() });
+          });
+          return list.sort((a, b) => String(b.submittedAt || '').localeCompare(String(a.submittedAt || '')));
+        } catch (err) {
+          console.warn('[NetQuest] fetchAllSkillSubmissionsForTeacher error:', err);
+          return [];
+        }
+      }
+      const localMap = this.getLocalSkillSubmissions();
+      return Object.values(localMap).sort((a, b) => String(b.submittedAt || '').localeCompare(String(a.submittedAt || '')));
+    },
+
+    async gradeSkillSubmission(docId, { teacherScore, teacherComment }) {
+      const cleanScore = Math.max(0, Math.min(10, Math.round(Number(teacherScore || 0))));
+      const cleanComment = String(teacherComment || '').trim().slice(0, 500);
+      if (this.isCloud()) {
+        const user = this.auth && this.auth.currentUser;
+        if (!user) return { ok: false, error: 'กรุณาเข้าสู่ระบบด้วยบัญชีครูผู้สอนก่อน' };
+        try {
+          const tokenRes = await user.getIdTokenResult();
+          if (!tokenRes || !tokenRes.claims || tokenRes.claims.teacher !== true) {
+            return { ok: false, error: 'เฉพาะบัญชีครูผู้สอนที่มีสิทธิ์ teacher: true เท่านั้นที่ตรวจให้คะแนนได้' };
+          }
+          await this.db.collection('skillSubmissions').doc(docId).update({
+            status: 'graded',
+            teacherScore: cleanScore,
+            teacherComment: cleanComment,
+            updatedAtServer: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          return { ok: true, teacherScore: cleanScore, teacherComment: cleanComment };
+        } catch (err) {
+          return { ok: false, error: translateFirebaseError(err) };
+        }
+      }
+
+      const localMap = this.getLocalSkillSubmissions();
+      if (!localMap[docId]) return { ok: false, error: 'ไม่พบใบงานนี้' };
+      localMap[docId].status = 'graded';
+      localMap[docId].teacherScore = cleanScore;
+      localMap[docId].teacherComment = cleanComment;
+      this.saveLocalSkillSubmissions(localMap);
+      return { ok: true, teacherScore: cleanScore, teacherComment: cleanComment };
     }
   };
 

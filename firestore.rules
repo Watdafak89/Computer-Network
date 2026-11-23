@@ -9,15 +9,19 @@ service cloud.firestore {
     // Roles:
     //   - Student (default): authenticated user (request.auth != null) without
     //     teacher claim; can read students, customQuestions, and
-    //     courseSettings/unitLocks, and create/update only their own
-    //     students/{request.auth.uid} document.
+    //     courseSettings/unitLocks, create/update only their own
+    //     students/{request.auth.uid} document, and read/create/update only
+    //     their own skillSubmissions/{uid}_u{unitId} documents (restricted to
+    //     ungraded state: status == 'submitted', teacherScore == -1,
+    //     teacherComment == '').
     //   - Teacher: authenticated user with Firebase Auth Custom Claim
     //     `teacher: true` (checked via isTeacher() using
     //     request.auth.token.teacher == true); can update (e.g., reset
     //     EXP/progress) and delete (e.g., removing test accounts)
     //     students/{userId} while all schema & immutability checks remain
-    //     enforced, can create/update/delete customQuestions/{docId}, and can
-    //     create/update/delete courseSettings/unitLocks to lock/unlock units.
+    //     enforced, can create/update/delete customQuestions/{docId}, can
+    //     create/update/delete courseSettings/unitLocks to lock/unlock units,
+    //     and can read, grade (update), and delete skillSubmissions/{docId}.
     //
     // This security rules file assumes the following data structures:
     //
@@ -56,6 +60,24 @@ service cloud.firestore {
     // Fields:
     //   - lockedUnits: list of int (required, max 10 items, values in 1..10) -
     //     learning unit IDs currently locked by the teacher
+    //   - updatedAtServer: timestamp (required, must equal request.time)
+    //
+    // Collection: skillSubmissions
+    // Document ID: {uid}_u{unitId} (e.g., abc123_u1)
+    // Fields:
+    //   - uid: string (required, immutable, 1..128 chars, must equal student auth UID)
+    //   - unitId: int (required, immutable, 1..10) - curriculum unit ID
+    //   - studentId: string (required, 4..40 chars) - student ID code
+    //   - name: string (required, 1..120 chars) - student display name
+    //   - classRoom: string (required, 0..40 chars) - classroom label
+    //   - answers: map (required, size <= 40) - submitted skill exercise answers
+    //   - autoScore: int (required, 0..100) - auto-graded score percentage/points
+    //   - part2Score: int (required, 0..20) - part 2 score
+    //   - part2Total: int (required, 0..20) - part 2 max score
+    //   - status: string (required, enum: 'submitted'|'graded') - grading status
+    //   - teacherScore: int (required, -1..10; -1 means not yet graded)
+    //   - teacherComment: string (required, 0..500 chars) - teacher feedback
+    //   - submittedAt: string (required, 0..30 chars) - display submission timestamp
     //   - updatedAtServer: timestamp (required, must equal request.time)
     //
     // ===============================================================
@@ -108,12 +130,12 @@ service cloud.firestore {
       return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
     }
 
-    // Validate string type and inclusive length bounds (used by customQuestions)
+    // Validate string type and inclusive length bounds
     function validString(val, minLen, maxLen) {
       return val is string && val.size() >= minLen && val.size() <= maxLen;
     }
 
-    // Validate integer type and inclusive range bounds (used by customQuestions)
+    // Validate integer type and inclusive range bounds
     function validIntRange(val, minVal, maxVal) {
       return val is int && val >= minVal && val <= maxVal;
     }
@@ -221,6 +243,34 @@ service cloud.firestore {
         data.updatedAtServer == request.time;
     }
 
+    function isValidSkillSubmission(data) {
+      return hasRequiredFields([
+          'uid', 'unitId', 'studentId', 'name', 'classRoom', 'answers',
+          'autoScore', 'part2Score', 'part2Total', 'status',
+          'teacherScore', 'teacherComment', 'submittedAt', 'updatedAtServer'
+        ]) &&
+        hasOnlyAllowedFields([
+          'uid', 'unitId', 'studentId', 'name', 'classRoom', 'answers',
+          'autoScore', 'part2Score', 'part2Total', 'status',
+          'teacherScore', 'teacherComment', 'submittedAt', 'updatedAtServer'
+        ]) &&
+        validString(data.uid, 1, 128) &&
+        validIntRange(data.unitId, 1, 10) &&
+        validString(data.studentId, 4, 40) &&
+        validString(data.name, 1, 120) &&
+        validString(data.classRoom, 0, 40) &&
+        data.answers is map && data.answers.size() <= 40 &&
+        validIntRange(data.autoScore, 0, 100) &&
+        validIntRange(data.part2Score, 0, 20) &&
+        validIntRange(data.part2Total, 0, 20) &&
+        data.status in ['submitted', 'graded'] &&
+        validIntRange(data.teacherScore, -1, 10) &&
+        validString(data.teacherComment, 0, 500) &&
+        validString(data.submittedAt, 0, 30) &&
+        data.updatedAtServer is timestamp &&
+        data.updatedAtServer == request.time;
+    }
+
     // ===============================================================
     // Collection Rules
     // ===============================================================
@@ -261,6 +311,30 @@ service cloud.firestore {
     match /courseSettings/unitLocks {
       allow read: if isAuthenticated();
       allow create, update: if isTeacher() && isValidUnitLocks(request.resource.data);
+      allow delete: if isTeacher();
+    }
+
+    // Student Skill Exercise submissions (Units 1-10) graded by teachers (`teacher: true`)
+    match /skillSubmissions/{docId} {
+      allow read: if isTeacher() ||
+        (isAuthenticated() &&
+          (docId.matches('^' + request.auth.uid + '_u[0-9]+$') ||
+            (resource != null && resource.data.uid == request.auth.uid)));
+      allow create: if isAuthenticated() &&
+        isValidSkillSubmission(request.resource.data) &&
+        docId == (request.auth.uid + '_u' + string(request.resource.data.unitId)) &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.status == 'submitted' &&
+        request.resource.data.teacherScore == -1 &&
+        request.resource.data.teacherComment == '';
+      allow update: if isValidSkillSubmission(request.resource.data) &&
+        areImmutableFieldsUnchanged(['uid', 'unitId']) &&
+        (isTeacher() ||
+          (isAuthenticated() &&
+            resource.data.uid == request.auth.uid &&
+            request.resource.data.status == 'submitted' &&
+            request.resource.data.teacherScore == -1 &&
+            request.resource.data.teacherComment == ''));
       allow delete: if isTeacher();
     }
   }

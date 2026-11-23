@@ -62,6 +62,11 @@
     cloudQuestions: [],
     lockedUnits: [],
     teacherStudentsList: [],
+    teacherSkillSubmissions: [],
+    teacherSkillFilterUnit: 'all',
+    teacherSkillFilterStatus: 'all',
+    teacherSkillSearch: '',
+    activeGradingDocId: null,
     teacherStudentFilter: '',
     currentUnitId: 1,
     currentTab: 'codex',
@@ -936,6 +941,7 @@
             </span>
           </div>
 
+          <div id="skill-teacher-grade-banner" class="hidden" style="margin-bottom:12px;"></div>
           <div style="display:flex; flex-direction:column; gap:14px; margin-top:14px;">
             ${ex.connectorPart ? '<h4 style="color:var(--amber); border-bottom:2px solid var(--border-dim); padding-bottom:6px;">ตอนที่ 1 ให้นักเรียนตอบคำถามต่อไปนี้</h4>' : ''}
             ${ex.writtenSections.map((sec) => `
@@ -1005,12 +1011,169 @@
 
           <div id="skill-feedback-box" style="margin-top:14px; font-size:0.88rem; color:var(--text-muted);"></div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
-            <button class="px-btn px-btn-emerald" onclick="App.submitSkillExercise(${unit.id})">✔ ตรวจคำตอบและบันทึก</button>
+            <button class="px-btn px-btn-emerald" onclick="App.submitSkillExercise(${unit.id})">✔ ส่งงานให้ครูและตรวจคำตอบ</button>
+            <button class="px-btn px-btn-cyan" onclick="App.printSkillWorksheet(${unit.id})">🖨️ พิมพ์ใบงาน / บันทึก PDF</button>
             <button class="px-btn px-btn-amber" onclick="App.toggleSkillModelAnswers()">💡 เปิด/ซ่อนแนวคำตอบ (เฉลย)</button>
             <button class="px-btn px-btn-sm" onclick="App.clearSkillAnswers(${unit.id})">🧹 ล้างคำตอบ</button>
           </div>
         </div>
       `;
+      this.hydrateStudentSkillCloudStatus(unit.id);
+    },
+
+    evaluateSkillAnswers(unitId, answersMap) {
+      const ex = GameData.SKILL_EXERCISES && GameData.SKILL_EXERCISES[unitId];
+      if (!ex) return { itemResults: {}, writtenMatched: 0, writtenTotal: 0, part2Correct: 0, part2Total: 0, autoPct: 0, suggestedScore10: 0 };
+      const ans = answersMap || {};
+      const itemResults = {};
+      let writtenMatched = 0;
+      let writtenTotal = 0;
+
+      ex.writtenSections.forEach((sec) => {
+        sec.items.forEach((it) => {
+          writtenTotal++;
+          const text = String(ans[it.id] || '').trim().toLowerCase();
+          const kws = Array.isArray(it.keywords) ? it.keywords : [];
+          const hit = text.length > 0 && (kws.length === 0 || kws.some((k) => text.includes(k.toLowerCase())));
+          if (hit) writtenMatched++;
+          itemResults[it.id] = { filled: text.length > 0, matched: hit };
+        });
+      });
+
+      let part2Correct = 0;
+      let part2Total = 0;
+      if (ex.connectorPart) {
+        part2Total = ex.connectorPart.rows.length;
+        ex.connectorPart.rows.forEach((row) => {
+          const nVal = ans[`u2_p2_n_${row.no}`] || '';
+          const cVal = ans[`u2_p2_c_${row.no}`] || '';
+          if (nVal === row.ansName && cVal === row.ansCable) part2Correct++;
+        });
+      }
+
+      const writtenRatio = writtenTotal > 0 ? writtenMatched / writtenTotal : 1;
+      const part2Ratio = part2Total > 0 ? part2Correct / part2Total : 1;
+      const combined = part2Total > 0 ? (writtenRatio * 0.6 + part2Ratio * 0.4) : writtenRatio;
+      const autoPct = Math.round(combined * 100);
+      const suggestedScore10 = Math.max(0, Math.min(10, Math.round(combined * 10)));
+      return { itemResults, writtenMatched, writtenTotal, part2Correct, part2Total, autoPct, suggestedScore10 };
+    },
+
+    async hydrateStudentSkillCloudStatus(unitId) {
+      if (!global.FirebaseService || !this.currentUid) return;
+      const sub = await FirebaseService.fetchStudentSkillSubmission(this.currentUid, unitId);
+      const banner = document.getElementById('skill-teacher-grade-banner');
+      const pill = document.getElementById('skill-status-pill');
+      if (!sub || !banner) return;
+
+      if (sub.status === 'graded' && typeof sub.teacherScore === 'number' && sub.teacherScore >= 0) {
+        banner.classList.remove('hidden');
+        banner.innerHTML = `
+          <div style="padding:12px 14px; background:rgba(16,185,129,0.16); border:2px solid var(--emerald); font-size:0.88rem;">
+            <b style="color:#4ade80;">✅ ครูผู้สอนตรวจแบบฝึกทักษะนี้แล้ว! คะแนนที่ได้: ${sub.teacherScore} / 10 คะแนน</b>
+            ${sub.teacherComment ? `<div style="margin-top:4px; color:#e2e8f0;">💬 ความเห็นครู: ${sub.teacherComment}</div>` : ''}
+          </div>
+        `;
+        if (pill) {
+          pill.textContent = `✅ ครูตรวจแล้ว (${sub.teacherScore}/10)`;
+          pill.style.color = 'var(--emerald)';
+        }
+      } else {
+        banner.classList.remove('hidden');
+        banner.innerHTML = `
+          <div style="padding:10px 14px; background:rgba(56,189,248,0.12); border:2px solid var(--cyan); font-size:0.84rem; color:#bae6fd;">
+            ☁️ ส่งงานให้ครูเรียบร้อยแล้วเมื่อ <b>${sub.submittedAt || '-'}</b> (คะแนนแนะนำเบื้องต้น: <b>${Math.round((sub.autoScore || 0) / 10)}/10</b> — รอครูยืนยันคะแนน)
+          </div>
+        `;
+        if (pill) {
+          pill.textContent = '☁️ ส่งงานแล้ว (รอครูตรวจ)';
+          pill.style.color = 'var(--cyan)';
+        }
+      }
+    },
+
+    printSkillWorksheet(unitId, customSubmission = null) {
+      const ex = GameData.SKILL_EXERCISES && GameData.SKILL_EXERCISES[unitId];
+      if (!ex) return;
+      const saved = this.loadSkillAnswers(unitId);
+      const ans = customSubmission ? (customSubmission.answers || {}) : (saved.answers || {});
+      const studentName = customSubmission ? customSubmission.name : (this.state.profile.name || 'ผู้เรียน');
+      const studentId = customSubmission ? customSubmission.studentId : (this.state.profile.studentId || '-');
+      const classRoom = customSubmission ? customSubmission.classRoom : (this.state.profile.classRoom || 'ปวช.');
+      const tScore = customSubmission && customSubmission.status === 'graded' && customSubmission.teacherScore >= 0
+        ? `${customSubmission.teacherScore} / 10` : '________ / 10';
+      const tComment = customSubmission && customSubmission.teacherComment ? customSubmission.teacherComment : '........................................................................';
+      const esc = (v) => String(v || '-').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/\n/g, '<br/>');
+
+      const printEl = document.getElementById('skill-print-area');
+      if (!printEl) return;
+      printEl.innerHTML = `
+        <div style="border:2px solid #0f172a; padding:18px; color:#0f172a; background:#fff;">
+          <div style="text-align:center; border-bottom:2px solid #0f172a; padding-bottom:10px; margin-bottom:12px;">
+            <div style="font-size:0.9rem; font-weight:700;">รายวิชาระบบเครือข่ายคอมพิวเตอร์ (ปวช.) — วิทยาลัยเทคนิคจันทบุรี</div>
+            <h2 style="margin:6px 0 4px; font-size:1.25rem;">${ex.title}</h2>
+            <div style="font-size:0.88rem;">
+              ชื่อ-นามสกุล: <b>${esc(studentName)}</b> &nbsp;|&nbsp; รหัสนักศึกษา: <b>${esc(studentId)}</b> &nbsp;|&nbsp; ห้อง: <b>${esc(classRoom)}</b> &nbsp;|&nbsp; วันที่พิมพ์: <b>${todayKey()}</b>
+            </div>
+          </div>
+
+          ${ex.writtenSections.map((sec) => `
+            <div style="margin-bottom:12px;">
+              <div style="font-weight:700; margin-bottom:4px;">${sec.no}. ${sec.prompt}</div>
+              ${sec.items.map((it) => `
+                <div style="margin-left:14px; margin-bottom:5px; font-size:0.9rem;">
+                  <b>${it.label}</b> ${esc(ans[it.id] || '(ยังไม่ได้ตอบ)')}
+                </div>
+              `).join('')}
+            </div>
+          `).join('')}
+
+          ${ex.connectorPart ? `
+            <div style="margin-top:14px;">
+              <div style="font-weight:700; margin-bottom:6px;">${ex.connectorPart.title}</div>
+              <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
+                <thead>
+                  <tr style="background:#e2e8f0;">
+                    <th style="border:1px solid #0f172a; padding:6px;">ข้อ</th>
+                    <th style="border:1px solid #0f172a; padding:6px;">รูปภาพ</th>
+                    <th style="border:1px solid #0f172a; padding:6px;">ชื่อหัวต่อ</th>
+                    <th style="border:1px solid #0f172a; padding:6px;">สายที่ใช้</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${ex.connectorPart.rows.map((row) => `
+                    <tr>
+                      <td style="border:1px solid #0f172a; padding:6px; text-align:center;">${row.no}</td>
+                      <td style="border:1px solid #0f172a; padding:4px; text-align:center;">${row.svg}</td>
+                      <td style="border:1px solid #0f172a; padding:6px;">${esc(ans[`u2_p2_n_${row.no}`] || '-')}</td>
+                      <td style="border:1px solid #0f172a; padding:6px;">${esc(ans[`u2_p2_c_${row.no}`] || '-')}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
+
+          <div style="margin-top:18px; border-top:2px dashed #334155; padding-top:12px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:0.9rem;">
+            <div>
+              <div><b>ผลการตรวจของครูผู้สอน:</b> คะแนนที่ได้ <b>${tScore}</b></div>
+              <div style="margin-top:4px;"><b>ความเห็นครู:</b> ${esc(tComment)}</div>
+            </div>
+            <div style="text-align:center; min-width:220px;">
+              <div>ลงชื่อ .................................................... ครูผู้ตรวจ</div>
+              <div style="margin-top:4px;">( นายวัชรพงษ์  สุขแช่ม )</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.classList.add('printing-skill');
+      setTimeout(() => {
+        window.print();
+        setTimeout(() => {
+          document.body.classList.remove('printing-skill');
+        }, 400);
+      }, 100);
     },
 
     toggleSkillModelAnswers() {
@@ -1030,7 +1193,7 @@
       this.toast('🧹 ล้างคำตอบเรียบร้อยแล้ว');
     },
 
-    submitSkillExercise(unitId) {
+    async submitSkillExercise(unitId) {
       const ex = GameData.SKILL_EXERCISES && GameData.SKILL_EXERCISES[unitId];
       if (!ex) return;
       const saved = this.loadSkillAnswers(unitId);
@@ -1077,22 +1240,50 @@
         return;
       }
 
+      const evalRes = this.evaluateSkillAnswers(unitId, saved.answers);
       const firstComplete = !saved.completed;
       saved.completed = true;
       try { localStorage.setItem(this.getSkillStorageKey(unitId), JSON.stringify(saved)); } catch (e) { /* ignore */ }
+
+      let cloudMsg = '';
+      if (global.FirebaseService && this.currentUid) {
+        const res = await FirebaseService.submitSkillExercise({
+          uid: this.currentUid,
+          unitId,
+          studentId: this.state.profile.studentId || 'guest',
+          name: this.state.profile.name || 'ผู้เรียน',
+          classRoom: this.state.profile.classRoom || 'ปวช.',
+          answers: saved.answers,
+          autoScore: evalRes.autoPct,
+          part2Score: connCorrect,
+          part2Total: connTotal
+        });
+        if (res.ok) {
+          cloudMsg = ' | ☁️ ส่งใบงานขึ้นระบบให้ครูตรวจเรียบร้อยแล้ว!';
+        } else {
+          cloudMsg = ` | ⚠️ ส่งขึ้น Cloud ไม่สำเร็จ (${res.error || 'ตรวจสอบอินเทอร์เน็ต'}) แต่บันทึกไว้ในเครื่องแล้ว`;
+        }
+      }
+
       const pill = document.getElementById('skill-status-pill');
       if (pill) {
-        pill.textContent = '✔ บันทึกและตรวจแล้ว';
-        pill.style.color = 'var(--emerald)';
+        pill.textContent = '☁️ ส่งงานแล้ว (รอครูตรวจ)';
+        pill.style.color = 'var(--cyan)';
       }
 
       soundFX.playPowerUp();
-      fb.innerHTML = `<div style="color:#4ade80;">✅ บันทึกแบบฝึกทักษะบทเรียนที่ ${unitId} ครบถ้วนสมบูรณ์! ${ex.connectorPart ? `(ตอนที่ 2 ได้เต็ม ${connCorrect}/${connTotal} คะแนน)` : ''} สามารถกดปุ่ม "เปิด/ซ่อนแนวคำตอบ" เพื่อทบทวนเพิ่มเติมได้</div>`;
+      fb.innerHTML = `
+        <div style="color:#4ade80;">
+          ✅ ส่งแบบฝึกทักษะบทเรียนที่ ${unitId} สำเร็จ!${cloudMsg}<br/>
+          🤖 <b>ผลตรวจคำสำคัญเบื้องต้น (Auto-Check):</b> ตรงประเด็น ${evalRes.writtenMatched}/${evalRes.writtenTotal} ช่อง${connTotal > 0 ? ` | ตอนที่ 2 ได้ ${connCorrect}/${connTotal}` : ''} → คะแนนแนะนำเบื้องต้น <b>${evalRes.suggestedScore10}/10</b>
+        </div>
+      `;
       if (firstComplete) {
-        this.addRewards(60, 20, `ทำแบบฝึกทักษะบทที่ ${unitId} สำเร็จ`);
+        this.addRewards(60, 20, `ส่งแบบฝึกทักษะบทที่ ${unitId}`);
       } else {
-        this.toast(`💾 บันทึกคำตอบแบบฝึกทักษะบทที่ ${unitId} เรียบร้อยแล้ว`);
+        this.toast(`☁️ อัปเดตและส่งแบบฝึกทักษะบทที่ ${unitId} ให้ครูเรียบร้อย!`);
       }
+      this.hydrateStudentSkillCloudStatus(unitId);
     },
 
     renderCodex(unit) {
@@ -3519,9 +3710,14 @@
       if (global.FirebaseService && canManageQuestions) {
         try {
           this.teacherStudentsList = await FirebaseService.fetchAllStudentsForTeacher();
-        } catch (e) { this.teacherStudentsList = []; }
+          this.teacherSkillSubmissions = await FirebaseService.fetchAllSkillSubmissionsForTeacher();
+        } catch (e) {
+          this.teacherStudentsList = [];
+          this.teacherSkillSubmissions = [];
+        }
       } else {
         this.teacherStudentsList = [];
+        this.teacherSkillSubmissions = [];
       }
       const customList = isCloud
         ? (this.cloudQuestions || [])
@@ -3547,6 +3743,39 @@
               </div>
               ${isCloud && this.currentUid ? `<button class="px-btn px-btn-sm" onclick="App.refreshTeacherClaimUI()">🔄 รีเฟรชสิทธิ์ครู</button>` : ''}
             </div>
+          </div>
+
+          <div class="pixel-box pixel-box-cyan" style="padding:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+              <h4 style="color:var(--emerald); margin:0;">📋 ตรวจแบบฝึกทักษะนักศึกษา (Cloud + Auto-Check + PDF/CSV)</h4>
+              ${canManageQuestions ? `
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                  <button class="px-btn px-btn-sm" onclick="App.reloadTeacherSkillsUI()">🔄 โหลดใบงาน</button>
+                  <button class="px-btn px-btn-emerald px-btn-sm" onclick="App.exportSkillScoresCSV()">📥 ส่งออกคะแนนแบบฝึก (.CSV)</button>
+                </div>
+              ` : ''}
+            </div>
+            ${!canManageQuestions ? `
+              <div class="teacher-lock-box">
+                🔒 <b>ล็อกสิทธิ์สำหรับครูผู้สอนเท่านั้น</b> — เฉพาะบัญชีครูที่มี Custom Claim <code>teacher: true</code> จึงจะตรวจและให้คะแนนแบบฝึกทักษะนักศึกษาได้
+              </div>
+            ` : `
+              <div style="display:grid; grid-template-columns:1fr 140px 140px; gap:8px; margin-bottom:10px;">
+                <input id="teacher-skill-search" class="px-input" value="${this.teacherSkillSearch || ''}" placeholder="🔍 ค้นหา รหัส / ชื่อ / ห้อง..." oninput="App.filterTeacherSkills()" />
+                <select id="teacher-skill-unit" class="px-select" onchange="App.filterTeacherSkills()">
+                  <option value="all" ${this.teacherSkillFilterUnit === 'all' ? 'selected' : ''}>ทุกบทเรียน</option>
+                  <option value="1" ${this.teacherSkillFilterUnit === '1' ? 'selected' : ''}>บทที่ 1</option>
+                  <option value="2" ${this.teacherSkillFilterUnit === '2' ? 'selected' : ''}>บทที่ 2</option>
+                </select>
+                <select id="teacher-skill-status" class="px-select" onchange="App.filterTeacherSkills()">
+                  <option value="all" ${this.teacherSkillFilterStatus === 'all' ? 'selected' : ''}>ทุกสถานะ</option>
+                  <option value="submitted" ${this.teacherSkillFilterStatus === 'submitted' ? 'selected' : ''}>รอครูตรวจ</option>
+                  <option value="graded" ${this.teacherSkillFilterStatus === 'graded' ? 'selected' : ''}>ตรวจแล้ว</option>
+                </select>
+              </div>
+              <div id="teacher-skills-table-wrap" style="max-height:220px; overflow:auto;"></div>
+              <div id="teacher-skill-grader" class="hidden" style="margin-top:12px;"></div>
+            `}
           </div>
 
           <div class="pixel-box pixel-box-cyan" style="padding:14px;">
@@ -3664,10 +3893,197 @@
         </div>
       `;
       if (canManageQuestions) {
+        this.renderTeacherSkillsTable();
         this.renderTeacherUnitLocks();
         this.renderTeacherStudentsTable();
       }
       document.getElementById('modal-teacher').classList.remove('hidden');
+    },
+
+    filterTeacherSkills() {
+      this.teacherSkillSearch = document.getElementById('teacher-skill-search')?.value || '';
+      this.teacherSkillFilterUnit = document.getElementById('teacher-skill-unit')?.value || 'all';
+      this.teacherSkillFilterStatus = document.getElementById('teacher-skill-status')?.value || 'all';
+      this.renderTeacherSkillsTable();
+    },
+
+    async reloadTeacherSkillsUI() {
+      soundFX.playSelect();
+      if (global.FirebaseService) {
+        this.teacherSkillSubmissions = await FirebaseService.fetchAllSkillSubmissionsForTeacher();
+        this.renderTeacherSkillsTable();
+        this.toast('🔄 โหลดใบงานแบบฝึกทักษะล่าสุดแล้ว');
+      }
+    },
+
+    renderTeacherSkillsTable() {
+      const wrap = document.getElementById('teacher-skills-table-wrap');
+      if (!wrap) return;
+      const q = (this.teacherSkillSearch || '').trim().toLowerCase();
+      const uFilter = this.teacherSkillFilterUnit || 'all';
+      const sFilter = this.teacherSkillFilterStatus || 'all';
+      const filtered = (this.teacherSkillSubmissions || []).filter((s) => {
+        if (uFilter !== 'all' && String(s.unitId) !== String(uFilter)) return false;
+        if (sFilter !== 'all' && s.status !== sFilter) return false;
+        if (q) {
+          return String(s.studentId || '').toLowerCase().includes(q)
+            || String(s.name || '').toLowerCase().includes(q)
+            || String(s.classRoom || '').toLowerCase().includes(q);
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        wrap.innerHTML = `<div style="padding:12px; text-align:center; color:var(--text-muted); font-size:0.84rem;">ยังไม่มีใบงานแบบฝึกทักษะที่ส่งเข้ามาตามเงื่อนไขนี้</div>`;
+        return;
+      }
+
+      wrap.innerHTML = `
+        <table class="pixel-table" style="font-size:0.8rem;">
+          <thead>
+            <tr><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>ห้อง</th><th>บท</th><th>Auto (แนะนำ)</th><th>คะแนนครู</th><th>สถานะ</th><th>ตรวจ</th></tr>
+          </thead>
+          <tbody>
+            ${filtered.map((s) => {
+              const auto10 = Math.round((s.autoScore || 0) / 10);
+              const graded = s.status === 'graded' && s.teacherScore >= 0;
+              return `
+                <tr>
+                  <td><code>${s.studentId}</code></td>
+                  <td>${s.name}</td>
+                  <td>${s.classRoom}</td>
+                  <td><b>U${s.unitId}</b></td>
+                  <td><span style="color:var(--cyan);">${auto10}/10 (${s.autoScore || 0}%)</span></td>
+                  <td><b>${graded ? `${s.teacherScore}/10` : '-'}</b></td>
+                  <td>${graded ? '<span style="color:#4ade80;">✔ ตรวจแล้ว</span>' : '<span style="color:#facc15;">⏳ รอตรวจ</span>'}</td>
+                  <td><button class="px-btn px-btn-cyan px-btn-sm" onclick="App.openTeacherSkillGrader('${s.id}')">📝 ตรวจงาน</button></td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    },
+
+    openTeacherSkillGrader(docId) {
+      soundFX.playSelect();
+      const sub = (this.teacherSkillSubmissions || []).find((x) => x.id === docId);
+      const box = document.getElementById('teacher-skill-grader');
+      if (!sub || !box) return;
+      this.activeGradingDocId = docId;
+      const ex = GameData.SKILL_EXERCISES && GameData.SKILL_EXERCISES[sub.unitId];
+      if (!ex) return;
+
+      const evalRes = this.evaluateSkillAnswers(sub.unitId, sub.answers);
+      const defaultScore = sub.status === 'graded' && sub.teacherScore >= 0 ? sub.teacherScore : evalRes.suggestedScore10;
+      const esc = (v) => String(v || '-').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+      box.classList.remove('hidden');
+      box.innerHTML = `
+        <div class="pixel-box pixel-box-gold" style="padding:14px; background:#070d1d;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+            <div>
+              <b style="color:var(--amber);">📝 ตรวจใบงานบทที่ ${sub.unitId}: ${esc(sub.name)} (${esc(sub.studentId)} / ${esc(sub.classRoom)})</b>
+              <div style="font-size:0.78rem; color:var(--text-muted);">ส่งเมื่อ: ${esc(sub.submittedAt)} | 🤖 Auto-Check ตรงคำสำคัญ ${evalRes.writtenMatched}/${evalRes.writtenTotal} ช่อง → แนะนำ <b>${evalRes.suggestedScore10}/10</b></div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button class="px-btn px-btn-cyan px-btn-sm" onclick="App.printTeacherSubmissionPDF('${sub.id}')">🖨️ พิมพ์ใบงาน (PDF)</button>
+              <button class="px-btn px-btn-sm" onclick="document.getElementById('teacher-skill-grader').classList.add('hidden')">✖ ปิดหน้าตรวจ</button>
+            </div>
+          </div>
+
+          <div style="max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
+            ${ex.writtenSections.map((sec) => `
+              <div style="padding:8px 10px; background:#0f172a; border:1px solid #334155; font-size:0.82rem;">
+                <b style="color:var(--cyan);">${sec.no}. ${sec.prompt}</b>
+                ${sec.items.map((it) => {
+                  const ir = evalRes.itemResults[it.id] || { matched: false };
+                  return `
+                    <div style="margin-top:6px; padding-left:8px; border-left:3px solid ${ir.matched ? '#22c55e' : '#f59e0b'};">
+                      <div><b>${it.label}</b> ${esc(sub.answers[it.id] || '(ว่าง)')} <span style="font-size:0.74rem; color:${ir.matched ? '#4ade80' : '#facc15'};">${ir.matched ? '🟢 ตรงคำสำคัญ' : '🟡 ควรตรวจเพิ่ม'}</span></div>
+                      <div style="font-size:0.75rem; color:#94a3b8;">💡 เฉลย: ${it.model}</div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `).join('')}
+            ${ex.connectorPart ? `
+              <div style="padding:8px 10px; background:#0f172a; border:1px solid #334155; font-size:0.82rem;">
+                <b style="color:var(--amber);">ตอนที่ 2 (รูปภาพหัวต่อ 6 ข้อ): ถูก ${evalRes.part2Correct}/${evalRes.part2Total}</b>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:6px; margin-top:6px;">
+                  ${ex.connectorPart.rows.map((row) => {
+                    const nVal = sub.answers[`u2_p2_n_${row.no}`] || '-';
+                    const cVal = sub.answers[`u2_p2_c_${row.no}`] || '-';
+                    const ok = nVal === row.ansName && cVal === row.ansCable;
+                    return `<div style="padding:4px 6px; border:1px solid ${ok ? '#22c55e' : '#ef4444'};">${ok ? '✔' : '✖'} ข้อ ${row.no}: ${esc(nVal)} / ${esc(cVal)}</div>`;
+                  }).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+
+          <div style="display:grid; grid-template-columns:130px 1fr auto; gap:8px; align-items:end;">
+            <div>
+              <label style="font-size:0.78rem; color:var(--amber);">คะแนนครู (0–10):</label>
+              <input id="tg-score" type="number" min="0" max="10" class="px-input" value="${defaultScore}" />
+            </div>
+            <div>
+              <label style="font-size:0.78rem; color:var(--cyan);">ความเห็นครูผู้สอน (ส่งกลับนักศึกษา):</label>
+              <input id="tg-comment" class="px-input" value="${esc(sub.teacherComment || '')}" placeholder="เช่น ตอบครบถ้วนดีมาก / ทบทวนข้อ 4 เพิ่มเติม..." />
+            </div>
+            <button class="px-btn px-btn-emerald" onclick="App.saveTeacherSkillGrade('${sub.id}')">✅ บันทึกคะแนน</button>
+          </div>
+        </div>
+      `;
+    },
+
+    printTeacherSubmissionPDF(docId) {
+      const sub = (this.teacherSkillSubmissions || []).find((x) => x.id === docId);
+      if (sub) this.printSkillWorksheet(sub.unitId, sub);
+    },
+
+    async saveTeacherSkillGrade(docId) {
+      const score = Number(document.getElementById('tg-score')?.value || 0);
+      const comment = document.getElementById('tg-comment')?.value || '';
+      const res = await FirebaseService.gradeSkillSubmission(docId, { teacherScore: score, teacherComment: comment });
+      if (!res.ok) {
+        soundFX.playPlayerHurt();
+        alert(res.error || 'ไม่สามารถบันทึกคะแนนได้');
+        return;
+      }
+      const idx = (this.teacherSkillSubmissions || []).findIndex((x) => x.id === docId);
+      if (idx >= 0) {
+        this.teacherSkillSubmissions[idx].status = 'graded';
+        this.teacherSkillSubmissions[idx].teacherScore = res.teacherScore;
+        this.teacherSkillSubmissions[idx].teacherComment = res.teacherComment;
+      }
+      this.renderTeacherSkillsTable();
+      soundFX.playPowerUp();
+      this.toast(`✅ บันทึกคะแนน ${res.teacherScore}/10 เรียบร้อยและส่งกลับหน้าแบบฝึกทักษะนักศึกษาแล้ว!`);
+    },
+
+    exportSkillScoresCSV() {
+      const list = this.teacherSkillSubmissions || [];
+      if (list.length === 0) {
+        alert('ยังไม่มีข้อมูลใบงานแบบฝึกทักษะสำหรับส่งออก');
+        return;
+      }
+      const header = ['StudentID', 'Name', 'ClassRoom', 'Unit', 'AutoScorePct', 'Part2Score', 'TeacherScore', 'Status', 'TeacherComment', 'SubmittedAt'];
+      const rows = list.map((s) => [
+        s.studentId, `"${s.name || ''}"`, `"${s.classRoom || ''}"`, `UNIT ${s.unitId}`,
+        `${s.autoScore || 0}%`, s.part2Total ? `${s.part2Score}/${s.part2Total}` : '-',
+        s.status === 'graded' && s.teacherScore >= 0 ? `${s.teacherScore}/10` : 'รอตรวจ',
+        s.status, `"${String(s.teacherComment || '').replace(/"/g, '""')}"`, s.submittedAt || ''
+      ].join(','));
+      const csv = '\uFEFF' + [header.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `NetQuest_SkillExercises_${todayKey()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      this.toast('📥 ดาวน์โหลดคะแนนแบบฝึกทักษะ (.CSV) เรียบร้อย!');
     },
 
     renderTeacherUnitLocks() {

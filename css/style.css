@@ -1057,15 +1057,31 @@ body.crt-active::after {
   body * {
     visibility: hidden;
   }
-  #certificate-print-area, #certificate-print-area * {
+  body:not(.printing-skill) #certificate-print-area,
+  body:not(.printing-skill) #certificate-print-area * {
     visibility: visible;
   }
-  #certificate-print-area {
+  body:not(.printing-skill) #certificate-print-area {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
     border: 6px double #b45309 !important;
+  }
+  body.printing-skill #skill-print-area,
+  body.printing-skill #skill-print-area * {
+    visibility: visible;
+  }
+  body.printing-skill #skill-print-area {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 20px 24px;
+    font-family: var(--font-ui), sans-serif;
   }
   .site-footer {
     display: none !important;
