@@ -3865,6 +3865,7 @@
                   <option value="1" ${this.teacherSkillFilterUnit === '1' ? 'selected' : ''}>บทที่ 1</option>
                   <option value="2" ${this.teacherSkillFilterUnit === '2' ? 'selected' : ''}>บทที่ 2</option>
                   <option value="3" ${this.teacherSkillFilterUnit === '3' ? 'selected' : ''}>บทที่ 3</option>
+                  <option value="4" ${this.teacherSkillFilterUnit === '4' ? 'selected' : ''}>บทที่ 4</option>
                 </select>
                 <select id="teacher-skill-status" class="px-select" onchange="App.filterTeacherSkills()">
                   <option value="all" ${this.teacherSkillFilterStatus === 'all' ? 'selected' : ''}>ทุกสถานะ</option>

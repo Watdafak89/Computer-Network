@@ -922,6 +922,10 @@
       const unitId = Number(payload.unitId);
       const docId = `${uid}_u${unitId}`;
       const nowStr = new Date().toISOString().slice(0, 16).replace('T', ' ');
+      const rawP2Total = Math.max(0, Math.round(Number(payload.part2Total || 0)));
+      const rawP2Score = Math.max(0, Math.round(Number(payload.part2Score || 0)));
+      const scaledP2Total = rawP2Total > 20 ? 20 : rawP2Total;
+      const scaledP2Score = rawP2Total > 20 ? Math.round((rawP2Score / rawP2Total) * 20) : Math.min(20, rawP2Score);
       const docObj = {
         uid,
         unitId,
@@ -930,8 +934,8 @@
         classRoom: String(payload.classRoom || 'ปวช.').slice(0, 40),
         answers: payload.answers || {},
         autoScore: Math.max(0, Math.min(100, Math.round(Number(payload.autoScore || 0)))),
-        part2Score: Math.max(0, Math.min(20, Math.round(Number(payload.part2Score || 0)))),
-        part2Total: Math.max(0, Math.min(20, Math.round(Number(payload.part2Total || 0)))),
+        part2Score: scaledP2Score,
+        part2Total: scaledP2Total,
         status: 'submitted',
         teacherScore: -1,
         teacherComment: '',

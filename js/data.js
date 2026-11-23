@@ -1546,6 +1546,106 @@
           ]
         }
       ]
+    },
+    4: {
+      title: 'แบบฝึกทักษะบทเรียนที่ 4: เครือข่าย LAN แบบใช้สาย',
+      instruction: 'ทำครบทั้ง 3 ตอน: ตอนที่ 1 ตอบคำถาม 5 ข้อ, ตอนที่ 2 เรียงสีสาย UTP มาตรฐาน TIA-568A & TIA-568B (16 ช่อง) และตอนที่ 3 เรียงลำดับขั้นตอนการเข้าหัวสาย RJ-45 (8 ขั้นตอน)',
+      writtenSections: [
+        {
+          no: 1,
+          prompt: 'ตอนที่ 1 ให้นักเรียนตอบคำถามต่อไปนี้',
+          items: [
+            { id: 'u4_q1', label: '1. การรับส่งข้อมูลแบบอีเทอร์เน็ต (Ethernet) มีลักษณะอย่างไร', multiline: true, keywords: ['802.3', 'csma', 'cd', 'ชน', 'ตรวจ', 'สาย', 'ว่าง', 'full-duplex', 'switch'], placeholder: 'อธิบายหลักการทำงานของ Ethernet (IEEE 802.3 / CSMA/CD)...', model: 'ทำงานตามมาตรฐาน IEEE 802.3 ใช้กลไก CSMA/CD ตรวจสอบว่าสายสัญญาณว่างก่อนส่งข้อมูล หากเกิดการชนกันจะหยุดรอแล้วสุ่มเวลาส่งใหม่ (ปัจจุบันผ่าน Switch แบบ Full-Duplex)' },
+            { id: 'u4_q2', label: '2. การรับส่งข้อมูลแบบโทเค็นพาส (Token Pass) มีลักษณะอย่างไร', multiline: true, keywords: ['token', 'โทเค็น', 'สิทธิ์', 'วน', 'วงแหวน', 'ring', 'ชน'], placeholder: 'อธิบายหลักการส่งผ่าน Token...', model: 'ส่งรหัสสิทธิ์ (Token) วนไปตามลำดับในเครือข่าย (เช่น Ring Topology) เฉพาะเครื่องที่ถือ Token จึงมีสิทธิ์ส่งข้อมูลได้ ช่วยป้องกันการชนกันของข้อมูล' },
+            { id: 'u4_q3_1', label: '3. ชื่ออุปกรณ์ที่ใช้กับเครือข่ายอีเทอร์เน็ตแบบใช้สาย — 1)', keywords: ['switch', 'สวิตช์', 'hub', 'ฮับ', 'nic', 'การ์ด', 'utp', 'rj-45', 'rj45', 'patch', 'router'], placeholder: 'เช่น Switch (สวิตช์เครือข่าย)...', model: 'Switch (สวิตช์เครือข่าย)' },
+            { id: 'u4_q3_2', label: '3. ชื่ออุปกรณ์ที่ใช้กับเครือข่ายอีเทอร์เน็ตแบบใช้สาย — 2)', keywords: ['switch', 'สวิตช์', 'hub', 'ฮับ', 'nic', 'การ์ด', 'utp', 'rj-45', 'rj45', 'patch', 'router'], placeholder: 'เช่น การ์ดแลน (NIC) / สาย UTP...', model: 'การ์ดแลน (NIC) และสาย UTP พร้อมหัวต่อ RJ-45' },
+            { id: 'u4_q3_3', label: '3. ชื่ออุปกรณ์ที่ใช้กับเครือข่ายอีเทอร์เน็ตแบบใช้สาย — 3)', keywords: ['switch', 'สวิตช์', 'hub', 'ฮับ', 'nic', 'การ์ด', 'utp', 'rj-45', 'rj45', 'patch', 'router'], placeholder: 'เช่น Patch Panel / Router / Hub...', model: 'Patch Panel หรือ Router / Hub' },
+            { id: 'u4_q4_1', label: '4.1) 10BASE-T — ระบุมาตรฐาน IEEE / สายที่ใช้ / แบบ:', keywords: ['802.3', 'utp', 'baseband'], placeholder: 'เช่น IEEE 802.3i / สาย UTP / แบบ Baseband', model: 'IEEE 802.3i | ใช้กับสาย UTP (Cat3/Cat5) | แบบ Baseband (10 Mbps)' },
+            { id: 'u4_q4_2', label: '4.2) 100BASE-TX — ระบุมาตรฐาน IEEE / สายที่ใช้ / แบบ:', keywords: ['802.3u', '802.3', 'utp', 'baseband'], placeholder: 'เช่น IEEE 802.3u / สาย UTP / แบบ Baseband', model: 'IEEE 802.3u | ใช้กับสาย UTP (Cat5/Cat5e) | แบบ Baseband (100 Mbps)' },
+            { id: 'u4_q4_3', label: '4.3) 100BASE-FX — ระบุมาตรฐาน IEEE / สายที่ใช้ / แบบ:', keywords: ['802.3u', '802.3', 'fiber', 'ใยแก้ว', 'baseband'], placeholder: 'เช่น IEEE 802.3u / สาย Fiber Optic / แบบ Baseband', model: 'IEEE 802.3u | ใช้กับสาย Fiber Optic (Multi-Mode) | แบบ Baseband (100 Mbps)' },
+            { id: 'u4_q4_4', label: '4.4) 1000Base-SX — ระบุมาตรฐาน IEEE / สายที่ใช้ / แบบ:', keywords: ['802.3z', '802.3', 'fiber', 'ใยแก้ว', 'multi', 'baseband'], placeholder: 'เช่น IEEE 802.3z / สาย Fiber Optic (Multi-Mode) / แบบ Baseband', model: 'IEEE 802.3z | ใช้กับสาย Fiber Optic (Multi-Mode คลื่นสั้น) | แบบ Baseband (1 Gbps)' },
+            { id: 'u4_q4_5', label: '4.5) 1000Base-LX — ระบุมาตรฐาน IEEE / สายที่ใช้ / แบบ:', keywords: ['802.3z', '802.3', 'fiber', 'ใยแก้ว', 'single', 'baseband'], placeholder: 'เช่น IEEE 802.3z / สาย Fiber Optic (Single/Multi-Mode) / แบบ Baseband', model: 'IEEE 802.3z | ใช้กับสาย Fiber Optic (Single/Multi-Mode คลื่นยาว) | แบบ Baseband (1 Gbps)' },
+            { id: 'u4_q4_6', label: '4.6) 1000Base-T — ระบุมาตรฐาน IEEE / สายที่ใช้ / แบบ:', keywords: ['802.3ab', '802.3', 'utp', 'cat5e', 'cat6', 'baseband'], placeholder: 'เช่น IEEE 802.3ab / สาย UTP Cat5e-Cat6 / แบบ Baseband', model: 'IEEE 802.3ab | ใช้กับสาย UTP (Cat5e/Cat6) | แบบ Baseband (1 Gbps)' },
+            { id: 'u4_q4_7', label: '4.7) 1000Base-LX10 — ระบุมาตรฐาน IEEE / สายที่ใช้ / แบบ:', keywords: ['802.3ah', '802.3', 'fiber', 'ใยแก้ว', 'single', '10', 'baseband'], placeholder: 'เช่น IEEE 802.3ah / สาย Fiber Optic Single-Mode / แบบ Baseband', model: 'IEEE 802.3ah | ใช้กับสาย Fiber Optic (Single-Mode ระยะ 10 กม.) | แบบ Baseband (1 Gbps)' },
+            { id: 'u4_q5', label: '5. จงบอกรายละเอียดมาตรฐานการจัดเรียงสาย UTP และลักษณะการเข้าสาย', multiline: true, keywords: ['568a', '568b', 'ตรง', 'ไขว้', 'straight', 'cross'], placeholder: 'อธิบายมาตรฐาน TIA-568A/568B และสายตรง (Straight-Through) กับสายไขว้ (Crossover)...', model: 'มาตรฐานการจัดเรียงสีสายมี 2 แบบคือ TIA-568A และ TIA-568B โดยลักษณะการเข้าสายแบ่งเป็น สายตรง (Straight-Through: เข้าหัวเหมือนกันทั้งสองข้าง ต่ออุปกรณ์ต่างชนิด เช่น PC–Switch) และสายไขว้ (Crossover: เข้าหัว A–B ต่ออุปกรณ์ชนิดเดียวกัน เช่น PC–PC)' }
+          ]
+        }
+      ],
+      connectorPart: null,
+      matchingParts: [
+        {
+          id: 'u4_p2a',
+          title: 'ตอนที่ 2 (ซ้าย) ลำดับการจัดเรียงสาย UTP ตามมาตรฐาน TIA-568A (ลำดับที่ 1 – 8)',
+          options: [
+            { value: 'ขาว-เขียว', label: 'ขาว-เขียว' },
+            { value: 'เขียว', label: 'เขียว' },
+            { value: 'ขาว-ส้ม', label: 'ขาว-ส้ม' },
+            { value: 'ส้ม', label: 'ส้ม' },
+            { value: 'น้ำเงิน', label: 'น้ำเงิน' },
+            { value: 'ขาว-น้ำเงิน', label: 'ขาว-น้ำเงิน' },
+            { value: 'ขาว-น้ำตาล', label: 'ขาว-น้ำตาล' },
+            { value: 'น้ำตาล', label: 'น้ำตาล' }
+          ],
+          rows: [
+            { id: 'u4_568a_1', no: 1, prompt: 'TIA-568A ลำดับที่ 1', ans: 'ขาว-เขียว' },
+            { id: 'u4_568a_2', no: 2, prompt: 'TIA-568A ลำดับที่ 2', ans: 'เขียว' },
+            { id: 'u4_568a_3', no: 3, prompt: 'TIA-568A ลำดับที่ 3', ans: 'ขาว-ส้ม' },
+            { id: 'u4_568a_4', no: 4, prompt: 'TIA-568A ลำดับที่ 4', ans: 'น้ำเงิน' },
+            { id: 'u4_568a_5', no: 5, prompt: 'TIA-568A ลำดับที่ 5', ans: 'ขาว-น้ำเงิน' },
+            { id: 'u4_568a_6', no: 6, prompt: 'TIA-568A ลำดับที่ 6', ans: 'ส้ม' },
+            { id: 'u4_568a_7', no: 7, prompt: 'TIA-568A ลำดับที่ 7', ans: 'ขาว-น้ำตาล' },
+            { id: 'u4_568a_8', no: 8, prompt: 'TIA-568A ลำดับที่ 8', ans: 'น้ำตาล' }
+          ]
+        },
+        {
+          id: 'u4_p2b',
+          title: 'ตอนที่ 2 (ขวา) ลำดับการจัดเรียงสาย UTP ตามมาตรฐาน TIA-568B (ลำดับที่ 1 – 8)',
+          options: [
+            { value: 'ขาว-ส้ม', label: 'ขาว-ส้ม' },
+            { value: 'ส้ม', label: 'ส้ม' },
+            { value: 'ขาว-เขียว', label: 'ขาว-เขียว' },
+            { value: 'เขียว', label: 'เขียว' },
+            { value: 'น้ำเงิน', label: 'น้ำเงิน' },
+            { value: 'ขาว-น้ำเงิน', label: 'ขาว-น้ำเงิน' },
+            { value: 'ขาว-น้ำตาล', label: 'ขาว-น้ำตาล' },
+            { value: 'น้ำตาล', label: 'น้ำตาล' }
+          ],
+          rows: [
+            { id: 'u4_568b_1', no: 1, prompt: 'TIA-568B ลำดับที่ 1', ans: 'ขาว-ส้ม' },
+            { id: 'u4_568b_2', no: 2, prompt: 'TIA-568B ลำดับที่ 2', ans: 'ส้ม' },
+            { id: 'u4_568b_3', no: 3, prompt: 'TIA-568B ลำดับที่ 3', ans: 'ขาว-เขียว' },
+            { id: 'u4_568b_4', no: 4, prompt: 'TIA-568B ลำดับที่ 4', ans: 'น้ำเงิน' },
+            { id: 'u4_568b_5', no: 5, prompt: 'TIA-568B ลำดับที่ 5', ans: 'ขาว-น้ำเงิน' },
+            { id: 'u4_568b_6', no: 6, prompt: 'TIA-568B ลำดับที่ 6', ans: 'เขียว' },
+            { id: 'u4_568b_7', no: 7, prompt: 'TIA-568B ลำดับที่ 7', ans: 'ขาว-น้ำตาล' },
+            { id: 'u4_568b_8', no: 8, prompt: 'TIA-568B ลำดับที่ 8', ans: 'น้ำตาล' }
+          ]
+        },
+        {
+          id: 'u4_p3',
+          title: 'ตอนที่ 3 ให้นักเรียนเรียงลำดับการเข้าสาย UTP CAT5e กับหัวต่อ RJ-45 ให้ถูกต้อง (ลำดับที่ 1 – 8)',
+          options: [
+            { value: 'ปอกเปลือกหุ้มสาย', label: 'ปอกเปลือกหุ้มสาย' },
+            { value: 'คลี่สายออกมา', label: 'คลี่สายออกมา' },
+            { value: 'จัดเรียงสายตามมาตรฐาน', label: 'จัดเรียงสายตามมาตรฐาน' },
+            { value: 'จัดสายให้เรียงชิดกัน', label: 'จัดสายให้เรียงชิดกัน' },
+            { value: 'ตัดปลายสายเป็นแนวตรง', label: 'ตัดปลายสายเป็นแนวตรง' },
+            { value: 'สอดเข้าไปในหัวต่อ', label: 'สอดเข้าไปในหัวต่อ' },
+            { value: 'ใช้คีมบีบหัวต่อที่เข้าสายให้แน่น', label: 'ใช้คีมบีบหัวต่อที่เข้าสายให้แน่น' },
+            { value: 'ใช้เครื่องมือตรวจสอบการเข้าสาย', label: 'ใช้เครื่องมือตรวจสอบการเข้าสาย' }
+          ],
+          rows: [
+            { id: 'u4_p3_1', no: 1, prompt: 'ขั้นตอนลำดับที่ 1', ans: 'ปอกเปลือกหุ้มสาย' },
+            { id: 'u4_p3_2', no: 2, prompt: 'ขั้นตอนลำดับที่ 2', ans: 'คลี่สายออกมา' },
+            { id: 'u4_p3_3', no: 3, prompt: 'ขั้นตอนลำดับที่ 3', ans: 'จัดเรียงสายตามมาตรฐาน' },
+            { id: 'u4_p3_4', no: 4, prompt: 'ขั้นตอนลำดับที่ 4', ans: 'จัดสายให้เรียงชิดกัน' },
+            { id: 'u4_p3_5', no: 5, prompt: 'ขั้นตอนลำดับที่ 5', ans: 'ตัดปลายสายเป็นแนวตรง' },
+            { id: 'u4_p3_6', no: 6, prompt: 'ขั้นตอนลำดับที่ 6', ans: 'สอดเข้าไปในหัวต่อ' },
+            { id: 'u4_p3_7', no: 7, prompt: 'ขั้นตอนลำดับที่ 7', ans: 'ใช้คีมบีบหัวต่อที่เข้าสายให้แน่น' },
+            { id: 'u4_p3_8', no: 8, prompt: 'ขั้นตอนลำดับที่ 8', ans: 'ใช้เครื่องมือตรวจสอบการเข้าสาย' }
+          ]
+        }
+      ]
     }
   };
 
