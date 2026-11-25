@@ -374,7 +374,7 @@
 
       if (banner) {
         if (isCloud) {
-          banner.innerHTML = `<b style="color:var(--emerald);">☁️ เชื่อมต่อ Firebase Cloud สำเร็จ (${info.projectId})</b> — นักเรียนล็อกอินด้วยรหัสนักศึกษาเพื่อเซฟข้อมูลข้ามเครื่องและอัปเดต Leaderboard Real-time`;
+          banner.innerHTML = `<b style="color:var(--emerald);">☁️ ระบบออนไลน์พร้อมใช้งาน</b> — ⚔️ พร้อมลุยอาณาจักรเครือข่ายคอมพิวเตอร์ 10 บทเรียน! ผจญภัยทำแล็บ ฝึกทักษะ ปราบบอส 16-Bit และสะสมเหรียญตราเกียรติยศสู่ตำนานไซเบอร์ ปวช.`;
         } else {
           banner.innerHTML = `<b style="color:var(--amber);">💾 กำลังทำงานในโหมดเครื่องท้องถิ่น (Local Mode)</b> — ยังไม่ได้ตั้งค่า Firebase Config แต่สามารถลงทะเบียน/ล็อกอินด้วยรหัสนักศึกษาบนเครื่องนี้ได้ทันที (ครูใส่ค่าได้ที่ปุ่ม ⚙️ ตั้งค่า Firebase)`;
         }

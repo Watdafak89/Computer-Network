@@ -2032,3 +2032,31 @@ body.light-mode .bc-tank-pip {
     height: min(360px, 84vw);
   }
 }
+
+#bc-modal-box:fullscreen,
+#bc-modal-box:-webkit-full-screen {
+  max-width: 100vw !important;
+  width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  border-radius: 0;
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: auto;
+}
+
+#bc-modal-box:fullscreen .bc-layout,
+#bc-modal-box:-webkit-full-screen .bc-layout {
+  max-width: 1180px;
+  margin: 0 auto;
+  width: 100%;
+  align-items: center;
+}
+
+#bc-modal-box:fullscreen #bc-canvas,
+#bc-modal-box:-webkit-full-screen #bc-canvas {
+  width: min(76vh, 62vw);
+  height: min(76vh, 62vw);
+}

@@ -143,10 +143,10 @@
   ];
 
   const ENEMY_SPECS = {
-    basic: { hp: 1, speed: 1.15, bulletSpeed: 3.4, fireRate: 110, score: 100, body: '#cbd5e1', accent: '#64748b' },
-    fast:  { hp: 1, speed: 1.85, bulletSpeed: 4.0, fireRate: 95,  score: 200, body: '#38bdf8', accent: '#0369a1' },
-    power: { hp: 1, speed: 1.35, bulletSpeed: 5.2, fireRate: 75,  score: 300, body: '#4ade80', accent: '#15803d' },
-    armor: { hp: 4, speed: 1.05, bulletSpeed: 4.2, fireRate: 85,  score: 400, body: '#facc15', accent: '#a16207' }
+    basic: { hp: 1, speed: 0.78, bulletSpeed: 2.6, fireRate: 145, score: 100, body: '#cbd5e1', accent: '#64748b' },
+    fast:  { hp: 1, speed: 1.25, bulletSpeed: 3.1, fireRate: 120, score: 200, body: '#38bdf8', accent: '#0369a1' },
+    power: { hp: 1, speed: 0.95, bulletSpeed: 3.9, fireRate: 100, score: 300, body: '#4ade80', accent: '#15803d' },
+    armor: { hp: 4, speed: 0.75, bulletSpeed: 3.2, fireRate: 115, score: 400, body: '#facc15', accent: '#a16207' }
   };
 
   // Retro Web Audio SFX (independent & lightweight)
@@ -252,19 +252,25 @@
       this.unbindInputs();
       this.boundKeyDown = (e) => {
         if (!this.running) return;
-        const k = e.key.toLowerCase();
-        if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'w', 'a', 's', 'd', 'p'].includes(k)) {
+        const k = (e.key || '').toLowerCase();
+        const code = e.code || '';
+        const gameCodes = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyP', 'KeyJ', 'KeyZ'];
+        const gameKeys = ['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'w', 'a', 's', 'd', 'p'];
+        if (gameCodes.includes(code) || gameKeys.includes(k)) {
           e.preventDefault();
         }
-        if (k === 'p') {
+        if (code === 'KeyP' || k === 'p') {
           this.togglePause();
           return;
         }
-        this.keys[k] = true;
+        if (k) this.keys[k] = true;
+        if (code) this.keys[code] = true;
       };
       this.boundKeyUp = (e) => {
-        const k = e.key.toLowerCase();
-        this.keys[k] = false;
+        const k = (e.key || '').toLowerCase();
+        const code = e.code || '';
+        if (k) this.keys[k] = false;
+        if (code) this.keys[code] = false;
       };
       window.addEventListener('keydown', this.boundKeyDown);
       window.addEventListener('keyup', this.boundKeyUp);
@@ -368,9 +374,9 @@
         w: TANK_SIZE,
         h: TANK_SIZE,
         dir: 0,
-        speed: 1.9,
+        speed: 1.65,
         cooldown: 0,
-        shieldTimer: initialShield ? 210 : 0, // 3.5s spawn protection
+        shieldTimer: initialShield ? 240 : 0, // 4s spawn protection
         slideFrames: 0,
         alive: true,
         respawnTimer: 0
@@ -397,7 +403,30 @@
       }
     },
 
+    toggleFullscreen() {
+      const box = document.getElementById('bc-modal-box');
+      if (!box) return;
+      const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+      if (!fsEl) {
+        const fn = box.requestFullscreen || box.webkitRequestFullscreen;
+        if (fn) fn.call(box).catch?.(() => {});
+      } else {
+        const fn = document.exitFullscreen || document.webkitExitFullscreen;
+        if (fn) fn.call(document).catch?.(() => {});
+      }
+      setTimeout(() => {
+        const btn = document.getElementById('bc-btn-fs');
+        const active = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+        if (btn) btn.textContent = active ? '🗗 ย่อจอ' : '⛶ เต็มจอ';
+      }, 120);
+    },
+
     destroy() {
+      const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+      if (fsEl) {
+        const fn = document.exitFullscreen || document.webkitExitFullscreen;
+        if (fn) fn.call(document).catch?.(() => {});
+      }
       this.stopLoop();
       this.unbindInputs();
     },
@@ -415,7 +444,8 @@
     },
 
     spawnEnemy() {
-      if (this.spawnQueue.length === 0 || this.enemies.length >= 4) return;
+      const maxSimultaneous = this.stage === 1 ? 3 : 4;
+      if (this.spawnQueue.length === 0 || this.enemies.length >= maxSimultaneous) return;
       const spots = [0, 6, 12];
       const spotCol = spots[this.spawnIdx % 3];
       const sx = spotCol * TILE + 2;
@@ -425,7 +455,7 @@
       const blocked = this.enemies.some((e) => this.rectsOverlap(sx, sy, TANK_SIZE, TANK_SIZE, e.x, e.y, e.w, e.h))
         || (this.player && this.player.alive && this.rectsOverlap(sx, sy, TANK_SIZE, TANK_SIZE, this.player.x, this.player.y, this.player.w, this.player.h));
       if (blocked) {
-        this.spawnTimer = 30;
+        this.spawnTimer = 35;
         return;
       }
 
@@ -434,6 +464,7 @@
       const spec = ENEMY_SPECS[type] || ENEMY_SPECS.basic;
       // Classic Battle City: 4th, 8th, 12th, 15th enemy tanks flash red & drop Power-Ups!
       const isBonus = [4, 8, 12, 15].includes(this.spawnIdx);
+      const stageSpeedScale = this.stage === 1 ? 0.86 : (this.stage === 2 ? 0.96 : 1 + Math.min(0.45, (this.stage - 2) * 0.08));
 
       this.enemies.push({
         x: sx,
@@ -444,16 +475,16 @@
         type,
         hp: spec.hp,
         maxHp: spec.hp,
-        speed: spec.speed + Math.min(0.45, (this.stage - 1) * 0.06),
-        bulletSpeed: spec.bulletSpeed,
-        fireRate: Math.max(45, spec.fireRate - (this.stage - 1) * 4),
-        fireCooldown: 40 + Math.floor(Math.random() * 50),
-        aiTimer: 35 + Math.floor(Math.random() * 55),
+        speed: spec.speed * stageSpeedScale,
+        bulletSpeed: spec.bulletSpeed + Math.min(1.0, (this.stage - 1) * 0.15),
+        fireRate: Math.max(55, spec.fireRate - (this.stage - 1) * 6),
+        fireCooldown: 65 + Math.floor(Math.random() * 65),
+        aiTimer: 45 + Math.floor(Math.random() * 60),
         score: spec.score,
         isBonus,
         bonusDropped: false
       });
-      this.spawnTimer = Math.max(70, 130 - this.stage * 8);
+      this.spawnTimer = Math.max(85, 175 - (this.stage - 1) * 18);
       this.updateSidebarUI();
     },
 
@@ -604,10 +635,10 @@
 
       let moveDir = null;
       if (this.touchDir !== null) moveDir = this.touchDir;
-      else if (this.keys['arrowup'] || this.keys['w']) moveDir = 0;
-      else if (this.keys['arrowright'] || this.keys['d']) moveDir = 1;
-      else if (this.keys['arrowdown'] || this.keys['s']) moveDir = 2;
-      else if (this.keys['arrowleft'] || this.keys['a']) moveDir = 3;
+      else if (this.keys['ArrowUp'] || this.keys['KeyW'] || this.keys['arrowup'] || this.keys['w']) moveDir = 0;
+      else if (this.keys['ArrowRight'] || this.keys['KeyD'] || this.keys['arrowright'] || this.keys['d']) moveDir = 1;
+      else if (this.keys['ArrowDown'] || this.keys['KeyS'] || this.keys['arrowdown'] || this.keys['s']) moveDir = 2;
+      else if (this.keys['ArrowLeft'] || this.keys['KeyA'] || this.keys['arrowleft'] || this.keys['a']) moveDir = 3;
 
       const onIce = this.isTankOnTile(p, T_ICE);
       if (moveDir !== null) {
@@ -620,7 +651,7 @@
         this.tryMoveTank(p, DX[p.dir] * 1.1, DY[p.dir] * 1.1, null);
       }
 
-      const firing = this.touchFire || this.keys[' '] || this.keys['j'] || this.keys['z'];
+      const firing = this.touchFire || this.keys['Space'] || this.keys[' '] || this.keys['KeyJ'] || this.keys['KeyZ'] || this.keys['j'] || this.keys['z'];
       if (firing && p.cooldown <= 0) {
         const maxBullets = this.starLevel >= 2 ? 2 : 1;
         const activePlayerBullets = this.bullets.filter((b) => b.owner === 'player').length;
