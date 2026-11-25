@@ -4196,8 +4196,14 @@
 
           <div class="pixel-box pixel-box-gold" style="padding:14px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
-              <h4 style="color:var(--amber); margin:0;">👥 จัดการและรีเซ็ตข้อมูล EXP นักเรียนรายบุคคล</h4>
-              ${canManageQuestions ? `<button class="px-btn px-btn-sm" onclick="App.reloadTeacherStudentsUI()">🔄 โหลดรายชื่อใหม่</button>` : ''}
+              <h4 style="color:var(--amber); margin:0;">👥 จัดการและรีเซ็ตข้อมูล EXP / เหรียญนักเรียน</h4>
+              ${canManageQuestions ? `
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                  <button class="px-btn px-btn-amber px-btn-sm" onclick="App.resetAllStudentsUI('exp')" title="รีเซ็ต EXP นักศึกษาทั้งหมด (ตามรายการที่กรอง ไม่รวมบัญชีครู)">🔄 รีเซ็ต EXP ทั้งหมด</button>
+                  <button class="px-btn px-btn-crimson px-btn-sm" onclick="App.resetAllStudentsUI('coins')" title="รีเซ็ตเหรียญ BitCoins นักศึกษาทั้งหมด (ตามรายการที่กรอง ไม่รวมบัญชีครู)">🪙 รีเซ็ตเหรียญทั้งหมด</button>
+                  <button class="px-btn px-btn-sm" onclick="App.reloadTeacherStudentsUI()">🔄 โหลดรายชื่อใหม่</button>
+                </div>
+              ` : ''}
             </div>
             ${!canManageQuestions ? `
               <div class="teacher-lock-box">
@@ -4205,7 +4211,7 @@
               </div>
             ` : `
               <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:8px;">
-                กด <b>🔄 รีเซ็ต EXP</b> เพื่อล้างค่า EXP เป็น 0 (LV.1) โดยเก็บชื่อ-นามสกุล ห้อง และด่านที่ผ่านไว้ หรือกด <b>🧹 รีเซ็ตทั้งหมด</b> เพื่อเริ่มใหม่ทั้งโปรไฟล์ (ชื่อและห้องยังอยู่ครบ)
+                กด <b>🔄 รีเซ็ต EXP ทั้งหมด</b> หรือ <b>🪙 รีเซ็ตเหรียญทั้งหมด</b> เพื่อล้างค่าให้นักเรียนทุกคนพร้อมกัน (หากพิมพ์ชื่อห้องในช่องค้นหา จะรีเซ็ตเฉพาะห้องนั้น และจะข้ามบัญชีครูโดยอัตโนมัติ) หรือกดรีเซ็ตรายบุคคลในตารางด้านล่าง
               </p>
               <input id="teacher-student-search" class="px-input" style="margin-bottom:10px;" value="${this.teacherStudentFilter || ''}" placeholder="🔍 ค้นหาด้วย รหัสนักศึกษา, ชื่อ หรือ ห้อง..." oninput="App.filterTeacherStudents(this.value)" />
               <div id="teacher-students-table-wrap" style="max-height:240px; overflow:auto;"></div>
@@ -4583,24 +4589,28 @@
               <th>รหัส</th>
               <th>ชื่อ-นามสกุล</th>
               <th>ห้อง</th>
-              <th>LV / XP</th>
+              <th>LV / XP / เหรียญ</th>
               <th>จัดการ</th>
             </tr>
           </thead>
           <tbody>
-            ${filtered.map((s) => `
+            ${filtered.map((s) => {
+              const coins = (s.state && typeof s.state.coins === 'number') ? s.state.coins : 0;
+              return `
               <tr>
                 <td><code>${s.studentId}</code></td>
                 <td>${s.name}</td>
                 <td>${s.classRoom}</td>
-                <td><b>LV.${s.level || 1}</b> (${s.xp || 0} XP)</td>
+                <td><b>LV.${s.level || 1}</b> (${s.xp || 0} XP) • <span style="color:var(--amber);">🪙 ${coins}</span></td>
                 <td style="white-space:nowrap;">
-                  <button class="px-btn px-btn-amber px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'exp')" title="รีเซ็ตเฉพาะ EXP เป็น 0">🔄 รีเซ็ต EXP</button>
-                  <button class="px-btn px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'full')" title="รีเซ็ต EXP + หน่วย + เหรียญตราทั้งหมด">🧹 ทั้งหมด</button>
+                  <button class="px-btn px-btn-amber px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'exp')" title="รีเซ็ตเฉพาะ EXP เป็น 0">🔄 EXP</button>
+                  <button class="px-btn px-btn-cyan px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'coins')" title="รีเซ็ตเฉพาะเหรียญ BitCoins เป็น 0">🪙 เหรียญ</button>
+                  <button class="px-btn px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'full')" title="รีเซ็ต EXP + เหรียญ + หน่วย + เหรียญตราทั้งหมด">🧹 ทั้งหมด</button>
                   ${s.uid !== this.currentUid ? `<button class="px-btn px-btn-crimson px-btn-sm" onclick="App.deleteStudentRecordUI('${s.uid}', '${s.studentId}')" title="ลบบัญชีนี้ออกจากตาราง">🗑️</button>` : ''}
                 </td>
               </tr>
-            `).join('')}
+              `;
+            }).join('')}
           </tbody>
         </table>
       `;
@@ -4618,9 +4628,12 @@
     async resetStudentExpUI(uid, mode = 'exp') {
       const target = (this.teacherStudentsList || []).find((s) => s.uid === uid);
       if (!target) return;
+      const curCoins = (target.state && typeof target.state.coins === 'number') ? target.state.coins : 0;
       const label = mode === 'full'
-        ? `รีเซ็ตข้อมูลการเล่นทั้งหมด (EXP, ด่านที่ผ่าน, เหรียญตรา) ของ "${target.name}" (${target.studentId})?\n(ชื่อและห้องเรียนจะยังคงอยู่)`
-        : `รีเซ็ต EXP ของ "${target.name}" (${target.studentId}) จาก ${target.xp || 0} XP ให้กลับเป็น 0 XP (LV.1) หรือไม่?`;
+        ? `รีเซ็ตข้อมูลการเล่นทั้งหมด (EXP, เหรียญ, ด่านที่ผ่าน, เหรียญตรา) ของ "${target.name}" (${target.studentId})?\n(ชื่อและห้องเรียนจะยังคงอยู่)`
+        : (mode === 'coins'
+          ? `รีเซ็ตเหรียญ BitCoins ของ "${target.name}" (${target.studentId}) จาก ${curCoins} 🪙 ให้กลับเป็น 0 🪙 หรือไม่?`
+          : `รีเซ็ต EXP ของ "${target.name}" (${target.studentId}) จาก ${target.xp || 0} XP ให้กลับเป็น 0 XP (LV.1) หรือไม่?`);
       if (!confirm(label)) return;
 
       const res = await FirebaseService.resetStudentProgress(target, mode, createDefaultState());
@@ -4641,8 +4654,52 @@
       this.renderTeacherStudentsTable();
       soundFX.playPowerUp();
       this.toast(mode === 'full'
-        ? `🧹 รีเซ็ตข้อมูลทั้งหมดของ ${target.name} (${target.studentId}) เป็น 0 XP เรียบร้อย!`
-        : `🔄 รีเซ็ต EXP ของ ${target.name} (${target.studentId}) เป็น 0 XP (LV.1) เรียบร้อย!`);
+        ? `🧹 รีเซ็ตข้อมูลทั้งหมดของ ${target.name} (${target.studentId}) เรียบร้อย!`
+        : (mode === 'coins'
+          ? `🪙 รีเซ็ตเหรียญของ ${target.name} (${target.studentId}) เป็น 0 🪙 เรียบร้อย!`
+          : `🔄 รีเซ็ต EXP ของ ${target.name} (${target.studentId}) เป็น 0 XP (LV.1) เรียบร้อย!`));
+    },
+
+    async resetAllStudentsUI(mode = 'exp') {
+      const q = (this.teacherStudentFilter || '').trim().toLowerCase();
+      const targets = (this.teacherStudentsList || []).filter((s) => {
+        // Always skip current teacher account & known teacher ID to prevent accidental self-wipe
+        if (s.uid === this.currentUid || String(s.studentId || '').toLowerCase() === 'watdafak') return false;
+        if (!q) return true;
+        return String(s.studentId || '').toLowerCase().includes(q)
+          || String(s.name || '').toLowerCase().includes(q)
+          || String(s.classRoom || '').toLowerCase().includes(q);
+      });
+
+      if (targets.length === 0) {
+        alert('ไม่พบรายชื่อนักศึกษาที่จะรีเซ็ต (ระบบข้ามบัญชีครูโดยอัตโนมัติ)');
+        return;
+      }
+
+      const scopeText = q ? `ที่ตรงกับคำค้นหา "${this.teacherStudentFilter.trim()}"` : 'ทั้งหมดในระบบ';
+      const actionText = mode === 'coins'
+        ? 'รีเซ็ตเหรียญ BitCoins เป็น 0 🪙'
+        : 'รีเซ็ต EXP เป็น 0 XP (LV.1)';
+
+      if (!confirm(`⚠️ ยืนยันการ${actionText}\nสำหรับนักศึกษา${scopeText} จำนวน ${targets.length} คน หรือไม่?\n(ไม่รวมบัญชีครูผู้สอน)`)) {
+        return;
+      }
+      if (!confirm(`⚠️ ยืนยันครั้งที่ 2: การ${actionText} ให้ทั้ง ${targets.length} คน ไม่สามารถย้อนกลับได้ กด "ตกลง" เพื่อดำเนินการ`)) {
+        return;
+      }
+
+      this.toast(`⏳ กำลัง${actionText} ให้นักศึกษา ${targets.length} คน...`);
+      const res = await FirebaseService.resetAllStudentsProgress(targets, mode, () => createDefaultState());
+      this.teacherStudentsList = (this.teacherStudentsList || []).map((s) => res.updatedMap[s.uid] || s);
+      this.renderTeacherStudentsTable();
+
+      if (res.failCount === 0) {
+        soundFX.playPowerUp();
+        this.toast(`✅ ${actionText} เรียบร้อยแล้ว ${res.successCount}/${targets.length} คน!`);
+      } else {
+        soundFX.playPlayerHurt();
+        alert(`ดำเนินการสำเร็จ ${res.successCount} คน, ไม่สำเร็จ ${res.failCount} คน กรุณากดโหลดรายชื่อใหม่แล้วลองอีกครั้ง`);
+      }
     },
 
     async deleteStudentRecordUI(uid, studentId) {

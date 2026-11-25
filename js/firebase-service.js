@@ -742,6 +742,31 @@
           arcadeHighScore: 0,
           updatedAt: new Date().toISOString().slice(0, 10)
         };
+      } else if (mode === 'coins') {
+        // mode === 'coins' -> Reset only BitCoins to 0 while keeping XP, level, units, badges intact
+        const keepXp = typeof oldState.xp === 'number' ? oldState.xp : Number(targetDoc.xp || 0);
+        updatedState = {
+          ...base,
+          xp: keepXp,
+          coins: 0,
+          hp: typeof oldState.hp === 'number' ? oldState.hp : freshDefaultState.hp,
+          equipment: Array.isArray(oldState.equipment) ? [...oldState.equipment] : [],
+          badges: Array.isArray(oldState.badges) ? [...oldState.badges] : ['first_login'],
+          arcadeHighScore: typeof oldState.arcadeHighScore === 'number' ? oldState.arcadeHighScore : 0,
+          crt: Boolean(oldState.crt)
+        };
+        updatedSummary = {
+          studentId: preservedProfile.studentId,
+          name: preservedProfile.name,
+          classRoom: preservedProfile.classRoom,
+          heroClass: preservedProfile.heroClass,
+          level: Number(targetDoc.level || 1),
+          xp: keepXp,
+          unitsCleared: Number(targetDoc.unitsCleared || 0),
+          badgeCount: Array.isArray(updatedState.badges) ? updatedState.badges.length : Number(targetDoc.badgeCount || 0),
+          arcadeHighScore: updatedState.arcadeHighScore,
+          updatedAt: new Date().toISOString().slice(0, 10)
+        };
       } else {
         // mode === 'exp' -> Reset only EXP & Level while keeping profile, units, coins, badges intact
         updatedState = {
@@ -794,6 +819,29 @@
       this.saveLocalAccounts(accounts);
       localStorage.setItem(LOCAL_BACKUP_PREFIX + uid, JSON.stringify(updatedState));
       return { ok: true, updatedDoc: { uid, ...updatedSummary, state: updatedState } };
+    },
+
+    async resetAllStudentsProgress(studentDocs, mode, createFreshStateFn) {
+      const list = Array.isArray(studentDocs) ? studentDocs : [];
+      let successCount = 0;
+      let failCount = 0;
+      const updatedMap = {};
+      const chunkSize = 5;
+      for (let i = 0; i < list.length; i += chunkSize) {
+        const chunk = list.slice(i, i + chunkSize);
+        const results = await Promise.all(
+          chunk.map((doc) => this.resetStudentProgress(doc, mode, createFreshStateFn()))
+        );
+        results.forEach((res) => {
+          if (res.ok && res.updatedDoc) {
+            successCount++;
+            updatedMap[res.updatedDoc.uid] = res.updatedDoc;
+          } else {
+            failCount++;
+          }
+        });
+      }
+      return { ok: failCount === 0, successCount, failCount, updatedMap };
     },
 
     async deleteStudentRecord(uid, studentId) {
