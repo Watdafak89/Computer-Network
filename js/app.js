@@ -1861,7 +1861,7 @@
                     <option value="coax">สาย Coaxial</option>
                   </select>
                 </div>
-                <button class="px-btn px-btn-emerald" onclick="App.lab2VerifyAll()">✔ ส่งงาน Lab หน่วยที่ 2</button>
+                <button class="px-btn px-btn-emerald" onclick="App.lab2VerifyAll()">✔ ส่งงาน Lab หน่วยที่ 4</button>
               </div>
             </div>
           </div>
@@ -3087,7 +3087,7 @@
             </div>
 
             <div class="pixel-box" style="padding:12px;">
-              <div style="font-weight:700; color:var(--amber); margin-bottom:8px;">2) NTFS Permissions โฟลเดอร์ <code>\\LAB-SRV\Exam_Bank</code></div>
+              <div style="font-weight:700; color:var(--amber); margin-bottom:8px;">2) NTFS Permissions โฟลเดอร์ <code>\\\\LAB-SRV\\Exam_Bank</code></div>
               <div style="font-size:0.82rem; margin-bottom:4px;">สิทธิ์ของกลุ่ม <b>Teachers</b>:</div>
               <select id="l10-tperm" class="px-input" style="margin-bottom:10px;" onchange="App.renderLabU10SVG()">
                 <option value="">-- กำหนดสิทธิ์ NTFS --</option>
@@ -4374,10 +4374,10 @@
       wrap.innerHTML = GameData.UNITS.map((u) => {
         const locked = this.isUnitLocked(u.id);
         return `
-          <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 10px; background:#0b1224; border:2px solid ${locked ? 'var(--crimson)' : '#1e3a8a'};">
-            <div style="font-size:0.8rem; line-height:1.3;">
-              <b style="color:${locked ? '#fca5a5' : 'var(--cyan)'};">${u.code}</b>: ${u.title}
-              <div style="font-size:0.74rem; color:${locked ? '#f87171' : '#4ade80'};">${locked ? '🔒 ล็อกอยู่ (นักศึกษาเข้าไม่ได้)' : '🔓 เปิดให้เรียนปกติ'}</div>
+          <div class="teacher-unit-lock-card ${locked ? 'is-locked' : ''}">
+            <div class="tul-info">
+              <b class="tul-code">${u.code}</b>: <span class="tul-title">${u.title}</span>
+              <div class="tul-status">${locked ? '🔒 ล็อกอยู่ (นักศึกษาเข้าไม่ได้)' : '🔓 เปิดให้เรียนปกติ'}</div>
             </div>
             <button class="px-btn ${locked ? 'px-btn-emerald' : 'px-btn-crimson'} px-btn-sm" style="white-space:nowrap;" onclick="App.toggleUnitLockUI(${u.id})">
               ${locked ? '🔓 ปลดล็อก' : '🔒 ล็อก'}
