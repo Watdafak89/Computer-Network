@@ -143,10 +143,10 @@
   ];
 
   const ENEMY_SPECS = {
-    basic: { hp: 1, speed: 0.52, bulletSpeed: 2.0, fireRate: 185, score: 100, body: '#cbd5e1', accent: '#64748b' },
-    fast:  { hp: 1, speed: 0.88, bulletSpeed: 2.4, fireRate: 155, score: 200, body: '#38bdf8', accent: '#0369a1' },
-    power: { hp: 1, speed: 0.68, bulletSpeed: 3.0, fireRate: 130, score: 300, body: '#4ade80', accent: '#15803d' },
-    armor: { hp: 4, speed: 0.52, bulletSpeed: 2.5, fireRate: 145, score: 400, body: '#facc15', accent: '#a16207' }
+    basic: { hp: 1, speed: 0.55, bulletSpeed: 2.2, fireRate: 170, score: 100, body: '#cbd5e1', accent: '#64748b' },
+    fast:  { hp: 1, speed: 1.05, bulletSpeed: 2.6, fireRate: 145, score: 200, body: '#38bdf8', accent: '#0369a1' },
+    power: { hp: 1, speed: 0.72, bulletSpeed: 3.4, fireRate: 120, score: 300, body: '#4ade80', accent: '#15803d' },
+    armor: { hp: 4, speed: 0.58, bulletSpeed: 2.6, fireRate: 135, score: 400, body: '#facc15', accent: '#a16207' }
   };
 
   // Retro Web Audio SFX (independent & lightweight)
@@ -374,7 +374,7 @@
         w: TANK_SIZE,
         h: TANK_SIZE,
         dir: 0,
-        speed: 1.15,
+        speed: 0.92,
         cooldown: 0,
         shieldTimer: initialShield ? 240 : 0, // 4s spawn protection
         slideFrames: 0,
@@ -386,9 +386,20 @@
     startLoop() {
       this.stopLoop();
       this.running = true;
-      const tick = () => {
+      const STEP_MS = 1000 / 60; // Authentic 60Hz NES timestep regardless of 120Hz/144Hz monitors
+      let lastTime = performance.now();
+      let acc = 0;
+      const tick = (now) => {
         if (!this.running) return;
-        if (!this.paused) this.update();
+        const dt = Math.min(50, Math.max(0, now - lastTime));
+        lastTime = now;
+        if (!this.paused) {
+          acc += dt;
+          while (acc >= STEP_MS) {
+            this.update();
+            acc -= STEP_MS;
+          }
+        }
         this.render();
         this.rafId = requestAnimationFrame(tick);
       };
@@ -643,12 +654,12 @@
       const onIce = this.isTankOnTile(p, T_ICE);
       if (moveDir !== null) {
         p.dir = moveDir;
-        const spd = p.speed + (this.starLevel >= 1 ? 0.15 : 0);
+        const spd = p.speed + (this.starLevel >= 1 ? 0.10 : 0);
         this.tryMoveTank(p, DX[p.dir] * spd, DY[p.dir] * spd, null);
         if (onIce) p.slideFrames = 14;
       } else if (p.slideFrames > 0 && onIce) {
         p.slideFrames -= 1;
-        this.tryMoveTank(p, DX[p.dir] * 0.75, DY[p.dir] * 0.75, null);
+        this.tryMoveTank(p, DX[p.dir] * 0.6, DY[p.dir] * 0.6, null);
       }
 
       const firing = this.touchFire || this.keys['Space'] || this.keys[' '] || this.keys['KeyJ'] || this.keys['KeyZ'] || this.keys['j'] || this.keys['z'];
@@ -656,9 +667,9 @@
         const maxBullets = this.starLevel >= 2 ? 2 : 1;
         const activePlayerBullets = this.bullets.filter((b) => b.owner === 'player').length;
         if (activePlayerBullets < maxBullets) {
-          const bSpeed = this.starLevel >= 1 ? 5.8 : 4.2;
+          const bSpeed = this.starLevel >= 1 ? 4.4 : 3.2;
           this.fireBullet(p, 'player', bSpeed, this.starLevel >= 3);
-          p.cooldown = this.starLevel >= 2 ? 12 : 18;
+          p.cooldown = this.starLevel >= 2 ? 14 : 20;
           bcAudio.shoot();
         }
       }
