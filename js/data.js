@@ -1,5 +1,5 @@
 /**
- * NetQuest 16-Bit: Comprehensive Computer Network Curriculum & Game Data (ปวช.)
+ * NetQuest 16-Bit: Comprehensive Computer Network Curriculum & Game Data
  * Covers all 10 vocational textbook units, 60+ boss quiz items, 16 badges,
  * classes, shop items, and custom pixel infographics.
  */
@@ -16,7 +16,7 @@
     { level: 7, minXp: 3400, title: 'ผู้เชี่ยวชาญโครงข่ายไร้สาย (Wi-Fi Master)', titleShort: 'Wi-Fi Master' },
     { level: 8, minXp: 4200, title: 'ผู้บัญชาการไฟร์วอลล์ (Firewall Commander)', titleShort: 'Commander' },
     { level: 9, minXp: 5050, title: 'ปรมาจารย์สถาปัตยกรรม (Cyber Architect)', titleShort: 'Architect' },
-    { level: 10, minXp: 6000, title: 'ตำนานแห่งไซเบอร์ ปวช. (Grand Net Legend)', titleShort: 'Grand Legend' }
+    { level: 10, minXp: 6000, title: 'ตำนานแห่งไซเบอร์ (Grand Net Legend)', titleShort: 'Grand Legend' }
   ];
 
   const CLASSES = [
@@ -169,7 +169,7 @@
     { id: 'perfect_crimper', name: 'มือทองเข้าหัว RJ-45', desc: 'ผ่าน Lab 4 เข้าหัวสาย UTP (T568B) ในครั้งแรก', icon: '🔧', color: '#fbbf24' },
     { id: 'shopaholic', name: 'นักช้อปอุปกรณ์เทพ', desc: 'ซื้อไอเทมหรืออุปกรณ์จาก Pixel Shop', icon: '🛒', color: '#ec4899' },
     { id: 'arcade_hero', name: 'ราชาตู้อาร์เคด', desc: 'ทำคะแนนโหมด Endless Arcade ตั้งแต่ 500 ขึ้นไป', icon: '🕹️', color: '#8b5cf6' },
-    { id: 'grand_champion', name: 'บัณฑิตเครือข่าย ปวช.', desc: 'พิชิตครบทั้ง 10 บทเรียนในแผนที่อาณาจักรเครือข่าย!', icon: '👑', color: '#f59e0b' },
+    { id: 'grand_champion', name: 'บัณฑิตเครือข่าย', desc: 'พิชิตครบทั้ง 10 บทเรียนในแผนที่อาณาจักรเครือข่าย!', icon: '👑', color: '#f59e0b' },
     /* === Special Badges (เหรียญตราพิเศษ) === */
     { id: 'skill_submitter', name: 'นักปฏิบัติการตัวจริง', desc: 'ส่งแบบฝึกทักษะขึ้นระบบ Cloud อย่างน้อย 1 หน่วย', icon: '📝', color: '#14b8a6', special: true, rarity: 'RARE' },
     { id: 'skill_master', name: 'นักเรียนดีเด่นแบบฝึกทักษะ', desc: 'ได้รับคะแนนแบบฝึกทักษะจากครูตั้งแต่ 8/10 ขึ้นไป', icon: '🌟', color: '#f59e0b', special: true, rarity: 'EPIC' },
@@ -1695,10 +1695,10 @@
   ];
 
   const INITIAL_LEADERBOARD = [
-    { name: 'ธนกฤต วงศ์เครือข่าย', studentId: '6720901001', classRoom: 'ปวช.2/1', heroClass: 'paladin', level: 8, xp: 4120, unitsCleared: 10, badgeCount: 14, arcadeHighScore: 1250, updatedAt: '2026-11-19' },
-    { name: 'กัญญาณัฐ ไฟเบอร์ออปติก', studentId: '6720901014', classRoom: 'ปวช.2/1', heroClass: 'mage', level: 7, xp: 3380, unitsCleared: 8, badgeCount: 11, arcadeHighScore: 950, updatedAt: '2026-11-19' },
-    { name: 'ภานุพงศ์ แพ็กเก็ตมาสเตอร์', studentId: '6720901022', classRoom: 'ปวช.2/2', heroClass: 'ninja', level: 6, xp: 2490, unitsCleared: 6, badgeCount: 8, arcadeHighScore: 725, updatedAt: '2026-11-18' },
-    { name: 'สุพิชชา เราเตอร์เรนเจอร์', studentId: '6720901035', classRoom: 'ปวช.1/1', heroClass: 'ranger', level: 4, xp: 1320, unitsCleared: 3, badgeCount: 5, arcadeHighScore: 450, updatedAt: '2026-11-18' }
+    { name: 'ธนกฤต วงศ์เครือข่าย', studentId: '6720901001', classRoom: 'ห้อง 2/1', heroClass: 'paladin', level: 8, xp: 4120, unitsCleared: 10, badgeCount: 14, arcadeHighScore: 1250, updatedAt: '2026-11-19' },
+    { name: 'กัญญาณัฐ ไฟเบอร์ออปติก', studentId: '6720901014', classRoom: 'ห้อง 2/1', heroClass: 'mage', level: 7, xp: 3380, unitsCleared: 8, badgeCount: 11, arcadeHighScore: 950, updatedAt: '2026-11-19' },
+    { name: 'ภานุพงศ์ แพ็กเก็ตมาสเตอร์', studentId: '6720901022', classRoom: 'ห้อง 2/2', heroClass: 'ninja', level: 6, xp: 2490, unitsCleared: 6, badgeCount: 8, arcadeHighScore: 725, updatedAt: '2026-11-18' },
+    { name: 'สุพิชชา เราเตอร์เรนเจอร์', studentId: '6720901035', classRoom: 'ห้อง 1/1', heroClass: 'ranger', level: 4, xp: 1320, unitsCleared: 3, badgeCount: 5, arcadeHighScore: 450, updatedAt: '2026-11-18' }
   ];
 
   const ENCYCLOPEDIA_PORTS = [

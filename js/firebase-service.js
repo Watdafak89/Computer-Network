@@ -103,7 +103,7 @@
       : {};
     const resolvedName = String(rawProf.name || (docData && docData.name) || (user && user.displayName) || '').trim();
     const resolvedSid = String(rawProf.studentId || (docData && docData.studentId) || fallbackStudentId || '').trim();
-    const resolvedRoom = String(rawProf.classRoom || (docData && docData.classRoom) || 'ปวช.2/1').trim();
+    const resolvedRoom = String(rawProf.classRoom || (docData && docData.classRoom) || 'ห้อง 2/1').trim();
     const resolvedClass = String(rawProf.heroClass || (docData && docData.heroClass) || 'paladin');
     const isCreated = Boolean(rawProf.created || resolvedName.length > 0);
 
@@ -329,7 +329,7 @@
       }
 
       const cleanName = name.trim();
-      const cleanRoom = (classRoom || 'ปวช.2/1').trim();
+      const cleanRoom = (classRoom || 'ห้อง 2/1').trim();
       const stateToSave = {
         ...initialState,
         profile: {
@@ -563,7 +563,7 @@
               list.push({
                 name: d.name || d.studentId,
                 studentId: d.studentId,
-                classRoom: d.classRoom || 'ปวช.',
+                classRoom: d.classRoom || '-',
                 heroClass: d.heroClass || 'paladin',
                 level: d.level || 1,
                 xp: d.xp || 0,
@@ -679,7 +679,7 @@
                 uid: doc.id,
                 studentId: d.studentId || doc.id,
                 name: d.name || d.studentId || '-',
-                classRoom: d.classRoom || 'ปวช.',
+                classRoom: d.classRoom || '-',
                 heroClass: d.heroClass || 'paladin',
                 level: d.level || 1,
                 xp: d.xp || 0,
@@ -721,7 +721,7 @@
       const preservedProfile = {
         name: String(oldProf.name || targetDoc.name || targetDoc.studentId || 'ผู้เรียน'),
         studentId: String(oldProf.studentId || targetDoc.studentId || ''),
-        classRoom: String(oldProf.classRoom || targetDoc.classRoom || 'ปวช.'),
+        classRoom: String(oldProf.classRoom || targetDoc.classRoom || '-'),
         heroClass: String(oldProf.heroClass || targetDoc.heroClass || 'paladin'),
         created: true
       };
@@ -992,7 +992,7 @@
         unitId,
         studentId: String(payload.studentId || 'guest').slice(0, 40),
         name: String(payload.name || 'ผู้เรียน').slice(0, 120),
-        classRoom: String(payload.classRoom || 'ปวช.').slice(0, 40),
+        classRoom: String(payload.classRoom || '-').slice(0, 40),
         answers: payload.answers || {},
         autoScore: Math.max(0, Math.min(100, Math.round(Number(payload.autoScore || 0)))),
         part2Score: scaledP2Score,

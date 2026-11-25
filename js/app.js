@@ -15,7 +15,7 @@
       profile: {
         name: '',
         studentId: '',
-        classRoom: 'ปวช.2/1',
+        classRoom: 'ห้อง 2/1',
         heroClass: 'paladin',
         created: false
       },
@@ -328,7 +328,7 @@
       return {
         name: this.state.profile.name || this.state.profile.studentId || 'ผู้เรียน',
         studentId: this.state.profile.studentId || '',
-        classRoom: this.state.profile.classRoom || 'ปวช.',
+        classRoom: this.state.profile.classRoom || '-',
         heroClass: this.state.profile.heroClass || 'paladin',
         level: current.level,
         xp: this.state.xp,
@@ -579,7 +579,7 @@
       const isCloud = global.FirebaseService && FirebaseService.isCloud();
       if (teacherMenuBtn) teacherMenuBtn.classList.toggle('hidden', isCloud ? !this.isTeacher : false);
       document.getElementById('hud-class').textContent = `[${cls.thName}]`;
-      document.getElementById('hud-rank').textContent = `${current.title} (${this.state.profile.classRoom || 'ปวช.'})`;
+      document.getElementById('hud-rank').textContent = `${current.title} (${this.state.profile.classRoom || '-'})`;
 
       const hpPct = Math.max(0, Math.min(100, Math.round((this.state.hp / stats.maxHp) * 100)));
       document.getElementById('hud-hp-fill').style.width = `${hpPct}%`;
@@ -623,7 +623,7 @@
       this.renderDashboard();
       document.getElementById('inp-name').value = this.state.profile.name || '';
       document.getElementById('inp-sid').value = this.state.profile.studentId || '';
-      document.getElementById('inp-room').value = this.state.profile.classRoom || 'ปวช.2/1';
+      document.getElementById('inp-room').value = this.state.profile.classRoom || 'ห้อง 2/1';
       this.selectedClassTemp = this.state.profile.heroClass || 'paladin';
 
       const closeBtn = document.getElementById('btn-close-profile');
@@ -823,7 +823,7 @@
     async submitRegister() {
       const sid = document.getElementById('auth-reg-sid').value.trim();
       const name = document.getElementById('auth-reg-name').value.trim();
-      const room = document.getElementById('auth-reg-room').value.trim() || 'ปวช.2/1';
+      const room = document.getElementById('auth-reg-room').value.trim() || 'ห้อง 2/1';
       const pass = document.getElementById('auth-reg-pass').value;
       const pass2 = document.getElementById('auth-reg-pass2').value;
       const btn = document.getElementById('btn-reg-submit');
@@ -946,13 +946,13 @@
     fillDemoStudent() {
       soundFX.playSelect();
       document.getElementById('inp-name').value = 'นายณัฐวุฒิ นักเครือข่าย';
-      document.getElementById('inp-room').value = 'ปวช.2/1';
+      document.getElementById('inp-room').value = 'ห้อง 2/1';
     },
 
     saveProfile() {
       const name = document.getElementById('inp-name').value.trim();
       const sid = this.state.profile.studentId || document.getElementById('inp-sid').value.trim();
-      const room = document.getElementById('inp-room').value.trim() || 'ปวช.2/1';
+      const room = document.getElementById('inp-room').value.trim() || 'ห้อง 2/1';
       if (!name || !sid) {
         alert('กรุณากรอกชื่อ-นามสกุลก่อนบันทึก');
         return;
@@ -1541,7 +1541,7 @@
       const ans = customSubmission ? (customSubmission.answers || {}) : (saved.answers || {});
       const studentName = customSubmission ? customSubmission.name : (this.state.profile.name || 'ผู้เรียน');
       const studentId = customSubmission ? customSubmission.studentId : (this.state.profile.studentId || '-');
-      const classRoom = customSubmission ? customSubmission.classRoom : (this.state.profile.classRoom || 'ปวช.');
+      const classRoom = customSubmission ? customSubmission.classRoom : (this.state.profile.classRoom || '-');
       const tScore = customSubmission && customSubmission.status === 'graded' && customSubmission.teacherScore >= 0
         ? `${customSubmission.teacherScore} / 10` : '________ / 10';
       const tComment = customSubmission && customSubmission.teacherComment ? customSubmission.teacherComment : '........................................................................';
@@ -1552,7 +1552,7 @@
       printEl.innerHTML = `
         <div style="border:2px solid #0f172a; padding:18px; color:#0f172a; background:#fff;">
           <div style="text-align:center; border-bottom:2px solid #0f172a; padding-bottom:10px; margin-bottom:12px;">
-            <div style="font-size:0.9rem; font-weight:700;">รายวิชาระบบเครือข่ายคอมพิวเตอร์ (ปวช.) — วิทยาลัยเทคนิคจันทบุรี</div>
+            <div style="font-size:0.9rem; font-weight:700;">รายวิชาระบบเครือข่ายคอมพิวเตอร์ — วิทยาลัยเทคนิคจันทบุรี</div>
             <h2 style="margin:6px 0 4px; font-size:1.25rem;">${ex.title}</h2>
             <div style="font-size:0.88rem;">
               ชื่อ-นามสกุล: <b>${esc(studentName)}</b> &nbsp;|&nbsp; รหัสนักศึกษา: <b>${esc(studentId)}</b> &nbsp;|&nbsp; ห้อง: <b>${esc(classRoom)}</b> &nbsp;|&nbsp; วันที่พิมพ์: <b>${todayKey()}</b>
@@ -1746,7 +1746,7 @@
           unitId,
           studentId: this.state.profile.studentId || 'guest',
           name: this.state.profile.name || 'ผู้เรียน',
-          classRoom: this.state.profile.classRoom || 'ปวช.',
+          classRoom: this.state.profile.classRoom || '-',
           answers: saved.answers,
           autoScore: evalRes.autoPct,
           part2Score: connCorrect,
@@ -4226,13 +4226,13 @@
       const cls = this.getClassObj();
 
       document.getElementById('certificate-print-area').innerHTML = `
-        <div style="font-size:0.9rem; color:#92400e; font-weight:700;">NETQUEST 16-BIT — CYBER NETWORK ACADEMY (ปวช.)</div>
+        <div style="font-size:0.9rem; color:#92400e; font-weight:700;">NETQUEST 16-BIT — CYBER NETWORK ACADEMY</div>
         <h2>เกียรติบัตรและใบรายงานผลการเรียนรู้รายวิชาระบบเครือข่ายคอมพิวเตอร์</h2>
         <p>ขอมอบเกียรติบัตรฉบับนี้เพื่อแสดงว่า</p>
         <div style="font-size:1.5rem; font-weight:700; color:#1e3a8a; margin:8px 0;">
           ${this.state.profile.name || 'ผู้เรียน'} (รหัส ${this.state.profile.studentId || '-'})
         </div>
-        <div>ระดับชั้น: <b>${this.state.profile.classRoom || 'ปวช.'}</b> | อาชีพ: <b>${cls.thName}</b> | ยศ: <b>LV.${current.level} ${current.title}</b></div>
+        <div>ระดับชั้น: <b>${this.state.profile.classRoom || '-'}</b> | อาชีพ: <b>${cls.thName}</b> | ยศ: <b>LV.${current.level} ${current.title}</b></div>
         <div style="margin-top:8px;">คะแนนประสบการณ์รวม: <b>${this.state.xp} XP</b> | ผ่านภารกิจ: <b>${cleared}/${GameData.UNITS.length} หน่วย</b> | เหรียญตรา: <b>${this.state.badges.length}/${GameData.BADGES.length}</b></div>
 
         <table class="cert-table">
