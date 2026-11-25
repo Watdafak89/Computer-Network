@@ -187,8 +187,9 @@ body.crt-active::after {
 }
 
 .hud-avatar-frame {
-  width: 56px;
-  height: 56px;
+  position: relative;
+  width: 58px;
+  height: 58px;
   background: #0b1224;
   border: 3px solid var(--cyan);
   display: flex;
@@ -196,6 +197,194 @@ body.crt-active::after {
   justify-content: center;
   flex-shrink: 0;
   animation: pixelBob 1.6s steps(2, end) infinite;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.avatar-frame-crest {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.78rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.85));
+  pointer-events: none;
+  z-index: 3;
+}
+
+.avatar-teacher-ribbon {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #b91c1c, #d97706, #b91c1c);
+  color: #fef08a;
+  font-family: var(--font-pixel);
+  font-size: 0.46rem;
+  letter-spacing: 0.6px;
+  padding: 1px 5px;
+  border: 1px solid #facc15;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Mini Avatar Frame (Leaderboards) */
+.mini-avatar-frame {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #0b1224;
+  border: 2px solid #64748b;
+  flex-shrink: 0;
+}
+
+.mini-frame-crest {
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  font-size: 0.62rem;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.8));
+  pointer-events: none;
+}
+
+/* Level-Based Avatar Frame Tiers */
+/* Tier 1: LV.1-2 Bronze Novice */
+.hud-avatar-frame.frame-tier-1,
+.mini-avatar-frame.frame-tier-1 {
+  border-color: #94a3b8;
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  box-shadow: inset 0 0 0 2px rgba(148, 163, 184, 0.25);
+}
+
+/* Tier 2: LV.3-4 Emerald Link */
+.hud-avatar-frame.frame-tier-2,
+.mini-avatar-frame.frame-tier-2 {
+  border-color: #10b981;
+  background: linear-gradient(145deg, #062118, #0f2e24);
+  box-shadow: inset 0 0 0 2px rgba(52, 211, 153, 0.35), 0 0 10px rgba(16, 185, 129, 0.38);
+}
+
+/* Tier 3: LV.5-6 Sapphire Cyber */
+.hud-avatar-frame.frame-tier-3,
+.mini-avatar-frame.frame-tier-3 {
+  border-color: #38bdf8;
+  background: linear-gradient(145deg, #08203a, #0c3559);
+  box-shadow: inset 0 0 0 2px rgba(125, 211, 252, 0.45), 0 0 12px rgba(56, 189, 248, 0.55);
+}
+
+/* Tier 4: LV.7-8 Amethyst Commander */
+.hud-avatar-frame.frame-tier-4,
+.mini-avatar-frame.frame-tier-4 {
+  border-color: #c084fc;
+  background: linear-gradient(145deg, #220b3a, #3b1261);
+  box-shadow: inset 0 0 0 2px rgba(232, 121, 249, 0.45), 0 0 14px rgba(168, 85, 247, 0.65);
+  animation: pixelBob 1.6s steps(2, end) infinite, framePulsePurple 2.2s ease-in-out infinite;
+}
+
+.mini-avatar-frame.frame-tier-4 {
+  animation: framePulsePurple 2.2s ease-in-out infinite;
+}
+
+/* Tier 5: LV.9 Golden Architect */
+.hud-avatar-frame.frame-tier-5,
+.mini-avatar-frame.frame-tier-5 {
+  border-color: #facc15;
+  background: linear-gradient(145deg, #2d1f04, #4d3206);
+  box-shadow: inset 0 0 0 2px #fde047, 0 0 0 2px #b45309, 0 0 16px rgba(250, 204, 21, 0.72);
+  animation: pixelBob 1.6s steps(2, end) infinite, framePulseGold 2s ease-in-out infinite;
+}
+
+.mini-avatar-frame.frame-tier-5 {
+  animation: framePulseGold 2s ease-in-out infinite;
+}
+
+/* Tier 6: LV.10 MAX Prismatic Grand Legend */
+.hud-avatar-frame.frame-tier-6,
+.mini-avatar-frame.frame-tier-6 {
+  border-color: #38bdf8;
+  background: linear-gradient(135deg, #1e1b4b, #0f172a 50%, #3b0764);
+  box-shadow: inset 0 0 0 2px #facc15, 0 0 0 2px #ec4899, 0 0 18px rgba(56, 189, 248, 0.8);
+  animation: pixelBob 1.6s steps(2, end) infinite, frameRainbow 3.2s linear infinite;
+}
+
+.mini-avatar-frame.frame-tier-6 {
+  animation: frameRainbow 3.2s linear infinite;
+}
+
+/* Exclusive Teacher Royal Grandmaster Frame */
+.hud-avatar-frame.frame-teacher,
+.mini-avatar-frame.frame-teacher {
+  border: 3px solid #facc15;
+  background: radial-gradient(circle at 50% 35%, #451a03 0%, #1c0b2e 65%, #090d1f 100%);
+  box-shadow:
+    inset 0 0 0 2px #fef08a,
+    inset 0 0 10px rgba(250, 204, 21, 0.55),
+    0 0 0 2px #dc2626,
+    0 0 0 4px #f59e0b,
+    0 0 22px rgba(250, 204, 21, 0.85);
+  animation: pixelBob 1.6s steps(2, end) infinite, teacherFrameAura 2.4s ease-in-out infinite;
+}
+
+.mini-avatar-frame.frame-teacher {
+  border-width: 2px;
+  box-shadow:
+    inset 0 0 0 1px #fef08a,
+    0 0 0 2px #dc2626,
+    0 0 12px rgba(250, 204, 21, 0.8);
+  animation: teacherFrameAura 2.4s ease-in-out infinite;
+}
+
+.hud-avatar-frame.frame-teacher .avatar-frame-crest {
+  top: -14px;
+  font-size: 1rem;
+  animation: crownFloat 1.8s ease-in-out infinite;
+}
+
+@keyframes framePulsePurple {
+  0%, 100% { box-shadow: inset 0 0 0 2px rgba(232, 121, 249, 0.45), 0 0 10px rgba(168, 85, 247, 0.55); }
+  50% { box-shadow: inset 0 0 0 2px rgba(232, 121, 249, 0.75), 0 0 18px rgba(192, 132, 252, 0.9); }
+}
+
+@keyframes framePulseGold {
+  0%, 100% { box-shadow: inset 0 0 0 2px #fde047, 0 0 0 2px #b45309, 0 0 12px rgba(250, 204, 21, 0.6); }
+  50% { box-shadow: inset 0 0 0 2px #fef08a, 0 0 0 2px #d97706, 0 0 22px rgba(250, 204, 21, 0.95); }
+}
+
+@keyframes frameRainbow {
+  0%   { border-color: #38bdf8; box-shadow: inset 0 0 0 2px #facc15, 0 0 0 2px #ec4899, 0 0 16px rgba(56, 189, 248, 0.8); }
+  33%  { border-color: #a855f7; box-shadow: inset 0 0 0 2px #38bdf8, 0 0 0 2px #facc15, 0 0 18px rgba(168, 85, 247, 0.85); }
+  66%  { border-color: #facc15; box-shadow: inset 0 0 0 2px #34d399, 0 0 0 2px #38bdf8, 0 0 18px rgba(250, 204, 21, 0.85); }
+  100% { border-color: #38bdf8; box-shadow: inset 0 0 0 2px #facc15, 0 0 0 2px #ec4899, 0 0 16px rgba(56, 189, 248, 0.8); }
+}
+
+@keyframes teacherFrameAura {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 2px #fef08a,
+      inset 0 0 8px rgba(250, 204, 21, 0.45),
+      0 0 0 2px #dc2626,
+      0 0 0 4px #f59e0b,
+      0 0 16px rgba(250, 204, 21, 0.7);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 2px #ffffff,
+      inset 0 0 14px rgba(250, 204, 21, 0.8),
+      0 0 0 2px #ef4444,
+      0 0 0 4px #fde047,
+      0 0 26px rgba(250, 204, 21, 1);
+  }
+}
+
+@keyframes crownFloat {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-2px); }
 }
 
 @keyframes pixelBob {
@@ -1265,9 +1454,46 @@ body.light-mode .top-hud {
   color: #0f172a;
 }
 
-body.light-mode .hud-avatar-frame {
-  background: #e2e8f0;
+body.light-mode .hud-avatar-frame.frame-tier-1,
+body.light-mode .mini-avatar-frame.frame-tier-1 {
+  background: linear-gradient(145deg, #f1f5f9, #e2e8f0);
+  border-color: #64748b;
+  box-shadow: inset 0 0 0 2px rgba(100, 116, 139, 0.25);
+}
+
+body.light-mode .hud-avatar-frame.frame-tier-2,
+body.light-mode .mini-avatar-frame.frame-tier-2 {
+  background: linear-gradient(145deg, #ecfdf5, #d1fae5);
+  border-color: #059669;
+}
+
+body.light-mode .hud-avatar-frame.frame-tier-3,
+body.light-mode .mini-avatar-frame.frame-tier-3 {
+  background: linear-gradient(145deg, #f0f9ff, #bae6fd);
   border-color: #0284c7;
+}
+
+body.light-mode .hud-avatar-frame.frame-tier-4,
+body.light-mode .mini-avatar-frame.frame-tier-4 {
+  background: linear-gradient(145deg, #faf5ff, #e9d5ff);
+  border-color: #7c3aed;
+}
+
+body.light-mode .hud-avatar-frame.frame-tier-5,
+body.light-mode .mini-avatar-frame.frame-tier-5 {
+  background: linear-gradient(145deg, #fefce8, #fef08a);
+  border-color: #ca8a04;
+}
+
+body.light-mode .hud-avatar-frame.frame-tier-6,
+body.light-mode .mini-avatar-frame.frame-tier-6 {
+  background: linear-gradient(135deg, #eff6ff, #f5f3ff 50%, #fdf2f8);
+}
+
+body.light-mode .hud-avatar-frame.frame-teacher,
+body.light-mode .mini-avatar-frame.frame-teacher {
+  background: radial-gradient(circle at 50% 35%, #fef3c7 0%, #fde68a 60%, #fca5a5 100%);
+  border-color: #b45309;
 }
 
 body.light-mode .hud-bar-track {

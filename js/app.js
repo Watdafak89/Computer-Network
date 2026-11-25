@@ -406,6 +406,23 @@
       this.toast(isLight ? '☀️ เปลี่ยนเป็นโหมดสว่าง (Light Mode) แล้ว' : '🌙 เปลี่ยนเป็นโหมดมืด (Dark Mode) แล้ว');
     },
 
+    getAvatarFrameMeta(level, isTeacher = false) {
+      if (isTeacher) {
+        return {
+          cls: 'frame-teacher',
+          name: '👑 กรอบแกรนด์มาสเตอร์ครูผู้สอน (Teacher Royal Frame)',
+          badge: '👑'
+        };
+      }
+      const lv = Number(level) || 1;
+      if (lv >= 10) return { cls: 'frame-tier-6', name: '💎 กรอบรุ้งตำนานไซเบอร์ (LV.10 MAX)', badge: '💎' };
+      if (lv >= 9) return { cls: 'frame-tier-5', name: '⭐ กรอบทองคำสถาปนิก (LV.9)', badge: '⭐' };
+      if (lv >= 7) return { cls: 'frame-tier-4', name: '🔮 กรอบอเมทิสต์ผู้บัญชาการ (LV.7–8)', badge: '✦' };
+      if (lv >= 5) return { cls: 'frame-tier-3', name: '⚡ กรอบไพลินไซเบอร์ (LV.5–6)', badge: '' };
+      if (lv >= 3) return { cls: 'frame-tier-2', name: '🛡️ กรอบมรกตเครือข่าย (LV.3–4)', badge: '' };
+      return { cls: 'frame-tier-1', name: '🔩 กรอบทองแดงฝึกหัด (LV.1–2)', badge: '' };
+    },
+
     renderHUD() {
       const cls = this.getClassObj();
       const stats = this.getPlayerStats();
@@ -413,7 +430,15 @@
       const { current, next } = this.getRankInfo(this.state.xp);
       const clearedUnits = Object.values(this.state.unitProgress).filter((u) => u.bossCleared).length;
 
-      document.getElementById('hud-avatar').innerHTML = PixelSprites.render(cls.sprite, 46);
+      const frameMeta = this.getAvatarFrameMeta(current.level, this.isTeacher);
+      const avatarEl = document.getElementById('hud-avatar');
+      avatarEl.className = `hud-avatar-frame ${frameMeta.cls}`;
+      avatarEl.title = frameMeta.name;
+      avatarEl.innerHTML = `
+        ${PixelSprites.render(cls.sprite, 46)}
+        ${frameMeta.badge ? `<span class="avatar-frame-crest" aria-hidden="true">${frameMeta.badge}</span>` : ''}
+        ${this.isTeacher ? '<span class="avatar-teacher-ribbon" aria-hidden="true">MASTER</span>' : ''}
+      `;
       document.getElementById('hud-name').textContent = this.state.profile.name || 'ผู้เล่นใหม่';
       document.getElementById('hud-level').textContent = `LV.${current.level}`;
       const teacherBadge = document.getElementById('hud-teacher-badge');
@@ -3647,12 +3672,18 @@
             ${list.map((r, i) => {
               const heroKey = r.heroClass || 'paladin';
               const clsObj = this.getClassObj(heroKey);
+              const isRowTeacher = Boolean(r.isTeacher || r.role === 'teacher' || String(r.studentId || '').toLowerCase() === 'watdafak' || (r.studentId === this.state.profile.studentId && this.isTeacher));
+              const rowLv = r.level || this.getRankInfo(r.xp || 0).current.level;
+              const fm = this.getAvatarFrameMeta(rowLv, isRowTeacher);
               return `
                 <tr style="${r.studentId === this.state.profile.studentId ? 'background:rgba(168,85,247,0.18);' : ''}">
                   <td>
                     <div style="display:inline-flex; align-items:center; gap:8px;">
                       <b>#${i + 1}</b>
-                      <span title="${clsObj.thName}" style="display:inline-flex; align-items:center;">${PixelSprites.render(heroKey, 28)}</span>
+                      <span class="mini-avatar-frame ${fm.cls}" title="${clsObj.thName} • ${fm.name}">
+                        ${PixelSprites.render(heroKey, 26)}
+                        ${fm.badge ? `<span class="mini-frame-crest" aria-hidden="true">${fm.badge}</span>` : ''}
+                      </span>
                     </div>
                   </td>
                   <td>${r.studentId}</td>
@@ -3840,12 +3871,17 @@
             ${list.map((r, i) => {
               const heroKey = r.heroClass || 'paladin';
               const clsObj = this.getClassObj(heroKey);
+              const isRowTeacher = Boolean(r.isTeacher || r.role === 'teacher' || String(r.studentId || '').toLowerCase() === 'watdafak' || (r.studentId === this.state.profile.studentId && this.isTeacher));
+              const fm = this.getAvatarFrameMeta(r.level || 1, isRowTeacher);
               return `
                 <tr style="${r.studentId === this.state.profile.studentId ? 'background:rgba(56,189,248,0.16);' : ''}">
                   <td>
                     <div style="display:inline-flex; align-items:center; gap:8px;">
                       <b>#${i + 1}</b>
-                      <span title="${clsObj.thName}" style="display:inline-flex; align-items:center;">${PixelSprites.render(heroKey, 28)}</span>
+                      <span class="mini-avatar-frame ${fm.cls}" title="${clsObj.thName} • ${fm.name}">
+                        ${PixelSprites.render(heroKey, 26)}
+                        ${fm.badge ? `<span class="mini-frame-crest" aria-hidden="true">${fm.badge}</span>` : ''}
+                      </span>
                     </div>
                   </td>
                   <td>${r.studentId}</td>
