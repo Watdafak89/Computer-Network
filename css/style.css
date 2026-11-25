@@ -1771,3 +1771,148 @@ body.light-mode .teacher-unit-lock-card.is-locked .tul-status {
   color: #b91c1c;
   font-weight: 600;
 }
+
+/* =========================================================
+   PERSONAL PROFILE BANNER & SPECIAL BADGES SHOWCASE
+   ========================================================= */
+.profile-hero-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #0b132b, #162246);
+  border: 2px solid var(--cyan);
+  margin-bottom: 14px;
+}
+
+.profile-hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.profile-stat-chip {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid #334155;
+  color: var(--text);
+}
+
+.profile-special-wrap {
+  padding: 12px 14px;
+  background: rgba(15, 23, 42, 0.65);
+  border: 2px solid #f59e0b;
+}
+
+.profile-special-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.special-badge-card {
+  position: relative;
+  padding: 10px 12px;
+  background: #0b1224;
+  border: 2px solid #334155;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  opacity: 0.58;
+  filter: grayscale(0.75);
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.special-badge-card.unlocked {
+  opacity: 1;
+  filter: none;
+  border-color: var(--sb-color, #facc15);
+  background: linear-gradient(145deg, #0f172a, #1e1b4b);
+  box-shadow: 0 0 12px rgba(250, 204, 21, 0.25);
+}
+
+.special-badge-card.unlocked.is-mythic {
+  border-color: #facc15;
+  background: linear-gradient(145deg, #2d1404, #3b0764);
+  box-shadow: inset 0 0 0 1px #fef08a, 0 0 16px rgba(250, 204, 21, 0.48);
+}
+
+.special-badge-icon {
+  font-size: 1.65rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.special-badge-rarity {
+  display: inline-block;
+  font-family: var(--font-pixel);
+  font-size: 0.5rem;
+  letter-spacing: 0.5px;
+  padding: 1px 5px;
+  border: 1px solid currentColor;
+  margin-bottom: 3px;
+}
+
+.rarity-RARE { color: #38bdf8; }
+.rarity-EPIC { color: #e879f9; }
+.rarity-LEGENDARY { color: #facc15; }
+.rarity-MYTHIC { color: #fde047; background: rgba(185, 28, 28, 0.55); }
+
+.badge-slot.badge-special.unlocked {
+  border-color: #facc15 !important;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.45);
+  background: linear-gradient(145deg, #1e1b4b, #312e81);
+}
+
+body.light-mode .profile-hero-banner {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border-color: #0284c7;
+  color: #0f172a;
+}
+
+body.light-mode .profile-stat-chip {
+  background: #ffffff;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+body.light-mode .profile-special-wrap {
+  background: #fffbeb;
+  border-color: #d97706;
+  color: #0f172a;
+}
+
+body.light-mode .special-badge-card {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+body.light-mode .special-badge-card.unlocked {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 2px 10px rgba(217, 119, 6, 0.22);
+}
+
+body.light-mode .special-badge-card.unlocked.is-mythic {
+  background: linear-gradient(145deg, #fef3c7, #fde68a);
+  border-color: #b45309;
+  color: #0f172a;
+}
+
+body.light-mode .rarity-RARE { color: #0369a1; }
+body.light-mode .rarity-EPIC { color: #9333ea; }
+body.light-mode .rarity-LEGENDARY { color: #b45309; }
+body.light-mode .rarity-MYTHIC { color: #991b1b; background: #fef08a; }
+
+body.light-mode .badge-slot.badge-special.unlocked {
+  background: #fef9c3;
+  border-color: #ca8a04 !important;
+  color: #0f172a;
+}

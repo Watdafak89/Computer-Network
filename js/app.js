@@ -365,15 +365,22 @@
       if (this.state.profile.created) this.unlockBadge('first_login');
       const totalUnits = GameData.UNITS.length;
       let clearedCount = 0;
+      let labCount = 0;
       for (let i = 1; i <= totalUnits; i++) {
         const up = this.state.unitProgress[i];
         if (up && up.bossCleared) {
           clearedCount++;
           this.unlockBadge(`unit${i}_clear`);
         }
+        if (up && up.labCleared) labCount++;
       }
       if (clearedCount >= totalUnits) this.unlockBadge('grand_champion');
       if (this.state.arcadeHighScore >= 500) this.unlockBadge('arcade_hero');
+      // Special Badges auto-checks
+      if (labCount >= 5) this.unlockBadge('lab_scientist');
+      if ((this.state.equipment || []).length >= 4) this.unlockBadge('full_equip');
+      if (this.getRankInfo(this.state.xp).current.level >= 10) this.unlockBadge('max_level_legend');
+      if (this.isTeacher) this.unlockBadge('teacher_grandmaster');
     },
 
     toast(msg) {
@@ -477,6 +484,13 @@
 
     openProfileModal(firstTime = false) {
       soundFX.playSelect();
+      const beforeBadges = this.state.badges.length;
+      this.checkBadges();
+      if (this.state.badges.length !== beforeBadges) {
+        this.saveState();
+      }
+      this.renderHUD();
+      this.renderDashboard();
       document.getElementById('inp-name').value = this.state.profile.name || '';
       document.getElementById('inp-sid').value = this.state.profile.studentId || '';
       document.getElementById('inp-room').value = this.state.profile.classRoom || 'ปวช.2/1';
@@ -488,8 +502,79 @@
       } else {
         closeBtn.classList.remove('hidden');
       }
+      this.renderProfileSpecialBadges();
       this.renderClassCards();
       document.getElementById('modal-profile').classList.remove('hidden');
+    },
+
+    renderProfileSpecialBadges() {
+      const wrap = document.getElementById('profile-special-showcase');
+      if (!wrap) return;
+      const cls = this.getClassObj();
+      const { current } = this.getRankInfo(this.state.xp);
+      const frameMeta = this.getAvatarFrameMeta(current.level, this.isTeacher);
+      const clearedUnits = Object.values(this.state.unitProgress).filter((u) => u.bossCleared).length;
+      const specialBadges = GameData.BADGES.filter((b) => b.special);
+      const unlockedSpecialCount = specialBadges.filter((b) => this.state.badges.includes(b.id)).length;
+      const unlockedNormal = GameData.BADGES.filter((b) => !b.special && this.state.badges.includes(b.id));
+
+      wrap.innerHTML = `
+        <div class="profile-hero-banner">
+          <div class="hud-avatar-frame ${frameMeta.cls}" title="${frameMeta.name}" style="width:66px; height:66px;">
+            ${PixelSprites.render(cls.sprite, 52)}
+            ${frameMeta.badge ? `<span class="avatar-frame-crest" aria-hidden="true">${frameMeta.badge}</span>` : ''}
+            ${this.isTeacher ? '<span class="avatar-teacher-ribbon" aria-hidden="true">MASTER</span>' : ''}
+          </div>
+          <div style="flex:1; min-width:210px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span class="pixel-title" style="font-size:1rem; color:var(--cyan);">${this.state.profile.name || 'ผู้เล่นใหม่'}</span>
+              <span class="hud-badge-lv">LV.${current.level}</span>
+              ${this.isTeacher ? '<span class="teacher-badge">👑 ครูผู้สอน</span>' : ''}
+            </div>
+            <div style="font-size:0.82rem; color:var(--amber); margin-top:2px;">${current.title} • ${frameMeta.name}</div>
+            <div class="profile-hero-stats">
+              <span class="profile-stat-chip">⚡ ${this.state.xp} XP</span>
+              <span class="profile-stat-chip">🪙 ${this.state.coins} BitCoins</span>
+              <span class="profile-stat-chip">🚩 ผ่าน ${clearedUnits}/${GameData.UNITS.length} หน่วย</span>
+              <span class="profile-stat-chip">🏅 เหรียญตรา ${this.state.badges.length}/${GameData.BADGES.length}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-special-wrap">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+            <div style="font-weight:700; color:var(--amber); font-size:0.95rem;">✨ คลังเหรียญตราพิเศษ (Special Prestige Badges)</div>
+            <span class="res-pill" style="font-size:0.78rem;">ปลดล็อกแล้ว ${unlockedSpecialCount}/${specialBadges.length} เหรียญ</span>
+          </div>
+          <div class="profile-special-grid">
+            ${specialBadges.map((b) => {
+              const unlocked = this.state.badges.includes(b.id);
+              const isMythic = b.rarity === 'MYTHIC';
+              return `
+                <div class="special-badge-card ${unlocked ? 'unlocked' : ''} ${isMythic ? 'is-mythic' : ''}" style="--sb-color:${b.color};">
+                  <div class="special-badge-icon">${b.icon}</div>
+                  <div style="min-width:0;">
+                    <span class="special-badge-rarity rarity-${b.rarity || 'RARE'}">${b.rarity || 'SPECIAL'}</span>
+                    <div style="font-weight:700; font-size:0.84rem; line-height:1.25;">${b.name}</div>
+                    <div style="font-size:0.74rem; color:var(--text-muted); margin-top:2px; line-height:1.3;">${b.desc}</div>
+                    <div style="font-size:0.72rem; margin-top:4px; font-weight:700; color:${unlocked ? 'var(--emerald)' : 'var(--amber)'};">
+                      ${unlocked ? '✔ ปลดล็อกแล้ว' : '🔒 ยังไม่ปลดล็อก'}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+          ${unlockedNormal.length > 0 ? `
+            <div style="margin-top:10px; padding-top:8px; border-top:1px dashed #334155; font-size:0.78rem; color:var(--text-muted);">
+              <b>🏅 เหรียญตราปกติที่ได้รับ (${unlockedNormal.length}/${GameData.BADGES.length - specialBadges.length}):</b>
+              <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
+                ${unlockedNormal.map((b) => `<span class="profile-stat-chip" title="${b.desc}">${b.icon} ${b.name}</span>`).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
     },
 
     renderClassCards() {
@@ -893,7 +978,7 @@
       bGrid.innerHTML = GameData.BADGES.map((b) => {
         const unlocked = this.state.badges.includes(b.id);
         return `
-          <div class="badge-slot ${unlocked ? 'unlocked' : ''}" onclick="App.showBadgeTip('${b.id}')" title="${b.name}: ${b.desc}">
+          <div class="badge-slot ${unlocked ? 'unlocked' : ''} ${b.special ? 'badge-special' : ''}" onclick="App.showBadgeTip('${b.id}')" title="${b.name}: ${b.desc}">
             <span>${b.icon}</span>
             <span class="badge-label">${b.name}</span>
           </div>
@@ -1248,6 +1333,14 @@
       }
 
       if (sub.status === 'graded' && typeof sub.teacherScore === 'number' && sub.teacherScore >= 0) {
+        if (sub.teacherScore >= 8) {
+          const hadMaster = this.state.badges.includes('skill_master');
+          this.unlockBadge('skill_master');
+          if (!hadMaster) {
+            this.saveState();
+            this.renderHUD();
+          }
+        }
         if (banner) {
           banner.classList.remove('hidden');
           banner.innerHTML = `
@@ -1519,6 +1612,12 @@
         });
         if (res.ok) {
           cloudMsg = ' | ☁️ ส่งใบงานขึ้นระบบให้ครูตรวจเรียบร้อยแล้ว!';
+          const hadSub = this.state.badges.includes('skill_submitter');
+          this.unlockBadge('skill_submitter');
+          if (!hadSub) {
+            this.saveState();
+            this.renderHUD();
+          }
         } else {
           cloudMsg = ` | ⚠️ ส่งขึ้น Cloud ไม่สำเร็จ (${res.error || 'ตรวจสอบอินเทอร์เน็ต'}) แต่บันทึกไว้ในเครื่องแล้ว`;
         }

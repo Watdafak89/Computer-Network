@@ -169,7 +169,14 @@
     { id: 'perfect_crimper', name: 'มือทองเข้าหัว RJ-45', desc: 'ผ่าน Lab 4 เข้าหัวสาย UTP (T568B) ในครั้งแรก', icon: '🔧', color: '#fbbf24' },
     { id: 'shopaholic', name: 'นักช้อปอุปกรณ์เทพ', desc: 'ซื้อไอเทมหรืออุปกรณ์จาก Pixel Shop', icon: '🛒', color: '#ec4899' },
     { id: 'arcade_hero', name: 'ราชาตู้อาร์เคด', desc: 'ทำคะแนนโหมด Endless Arcade ตั้งแต่ 500 ขึ้นไป', icon: '🕹️', color: '#8b5cf6' },
-    { id: 'grand_champion', name: 'บัณฑิตเครือข่าย ปวช.', desc: 'พิชิตครบทั้ง 10 บทเรียนในแผนที่อาณาจักรเครือข่าย!', icon: '👑', color: '#f59e0b' }
+    { id: 'grand_champion', name: 'บัณฑิตเครือข่าย ปวช.', desc: 'พิชิตครบทั้ง 10 บทเรียนในแผนที่อาณาจักรเครือข่าย!', icon: '👑', color: '#f59e0b' },
+    /* === Special Badges (เหรียญตราพิเศษ) === */
+    { id: 'skill_submitter', name: 'นักปฏิบัติการตัวจริง', desc: 'ส่งแบบฝึกทักษะขึ้นระบบ Cloud อย่างน้อย 1 หน่วย', icon: '📝', color: '#14b8a6', special: true, rarity: 'RARE' },
+    { id: 'skill_master', name: 'นักเรียนดีเด่นแบบฝึกทักษะ', desc: 'ได้รับคะแนนแบบฝึกทักษะจากครูตั้งแต่ 8/10 ขึ้นไป', icon: '🌟', color: '#f59e0b', special: true, rarity: 'EPIC' },
+    { id: 'lab_scientist', name: 'นักวิทยาศาสตร์ห้องแล็บ', desc: 'ผ่านห้องปฏิบัติการจำลอง (Pixel Lab) ครบ 5 หน่วยขึ้นไป', icon: '🔬', color: '#06b6d4', special: true, rarity: 'RARE' },
+    { id: 'full_equip', name: 'นักรบชุดเกราะเต็มยศ', desc: 'สวมใส่อุปกรณ์ถาวรจาก Pixel Shop ครบทั้ง 4 ชิ้น', icon: '⚔️', color: '#ec4899', special: true, rarity: 'EPIC' },
+    { id: 'max_level_legend', name: 'ตำนานไซเบอร์ LV.10', desc: 'สะสมค่าประสบการณ์จนบรรลุเลเวลสูงสุด LV.10 (6,000 XP)', icon: '💎', color: '#a855f7', special: true, rarity: 'LEGENDARY' },
+    { id: 'teacher_grandmaster', name: 'ปรมาจารย์ผู้สอนเครือข่าย', desc: 'เหรียญตราเกียรติยศเฉพาะบัญชีครูผู้สอน NetQuest', icon: '👑', color: '#facc15', special: true, teacherOnly: true, rarity: 'MYTHIC' }
   ];
 
   const DAILY_QUESTS = [

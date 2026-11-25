@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=10" />
+  <link rel="stylesheet" href="css/style.css?v=11" />
 </head>
 <body>
   <div class="pixel-bg-grid"></div>
@@ -113,7 +113,7 @@
 
           <div class="pixel-box panel-section">
             <div class="section-heading">
-              <span>🏅 ตู้เหรียญตรา (16 Pixel Badges)</span>
+              <span>🏅 ตู้เหรียญตรา (22 Pixel Badges)</span>
               <span id="badge-counter-text" style="font-size:0.8rem;">0/16</span>
             </div>
             <div id="badges-grid" class="badges-grid"></div>
@@ -233,9 +233,10 @@
   <div id="modal-profile" class="modal-backdrop hidden">
     <div class="modal-box">
       <div class="modal-header">
-        <h2 class="pixel-title" style="color:var(--amber);">🎮 แก้ไขข้อมูลตัวละครช่างเทคนิคเครือข่าย (ปวช.)</h2>
+        <h2 class="pixel-title" style="color:var(--amber);">🎮 ข้อมูลส่วนตัว &amp; คลังเหรียญตราพิเศษ (ปวช.)</h2>
         <button id="btn-close-profile" class="px-btn px-btn-sm" onclick="App.closeModal('modal-profile')">✖</button>
       </div>
+      <div id="profile-special-showcase" style="margin-bottom:16px;"></div>
       <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:14px;">
         <div>
           <label style="display:block; font-size:0.85rem; margin-bottom:4px;">ชื่อ-นามสกุลผู้เรียน *</label>
@@ -369,9 +370,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script src="js/pixel-sprites.js?v=2"></script>
   <script src="js/sound.js?v=2"></script>
-  <script src="js/data.js?v=12"></script>
+  <script src="js/data.js?v=13"></script>
   <script src="js/firebase-config.js?v=2"></script>
   <script src="js/firebase-service.js?v=9"></script>
-  <script src="js/app.js?v=20"></script>
+  <script src="js/app.js?v=22"></script>
 </body>
 </html>
