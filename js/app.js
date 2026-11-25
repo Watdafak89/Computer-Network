@@ -4046,6 +4046,23 @@
       }
     },
 
+    /* ---------------- RELAX MODE: BATTLE CITY 1990 ---------------- */
+    openRelaxTank() {
+      soundFX.playSelect();
+      document.getElementById('modal-relax-tank').classList.remove('hidden');
+      if (global.BattleCityGame) {
+        BattleCityGame.init('bc-canvas');
+      }
+    },
+
+    closeRelaxTank() {
+      soundFX.playSelect();
+      if (global.BattleCityGame) {
+        BattleCityGame.destroy();
+      }
+      document.getElementById('modal-relax-tank').classList.add('hidden');
+    },
+
     /* ---------------- ENCYCLOPEDIA ---------------- */
     openEncyclopedia() {
       soundFX.playSelect();

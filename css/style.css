@@ -1931,3 +1931,104 @@ body.light-mode .auth-modal-footer {
   border-top-color: #cbd5e1;
   color: #475569;
 }
+
+/* =========================================================
+   RELAX MODE — BATTLE CITY 1990
+   ========================================================= */
+.bc-layout {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.bc-stage-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.bc-canvas-wrap {
+  padding: 6px;
+  background: #020617;
+  border: 3px solid var(--amber);
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.25);
+  line-height: 0;
+}
+
+#bc-canvas {
+  display: block;
+  width: 416px;
+  height: 416px;
+  max-width: 100%;
+  image-rendering: pixelated;
+  background: #090b10;
+}
+
+.bc-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 240px;
+}
+
+.bc-enemy-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.bc-tank-pip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  font-size: 0.78rem;
+  background: #1e293b;
+  border: 1px solid #475569;
+}
+
+.bc-item-legend {
+  display: grid;
+  gap: 4px;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.bc-touch-pad {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.bc-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  gap: 4px;
+}
+
+.bc-fire-btn {
+  padding: 14px 18px !important;
+  font-size: 0.92rem !important;
+  user-select: none;
+}
+
+body.light-mode .bc-tank-pip {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+@media (max-width: 780px) {
+  .bc-layout {
+    grid-template-columns: 1fr;
+  }
+  #bc-canvas {
+    width: min(360px, 84vw);
+    height: min(360px, 84vw);
+  }
+}

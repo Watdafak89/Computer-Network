@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=12" />
+  <link rel="stylesheet" href="css/style.css?v=13" />
 </head>
 <body>
   <div class="pixel-bg-grid"></div>
@@ -51,6 +51,7 @@
       <button class="px-btn px-btn-cyan px-btn-sm" onclick="App.showWorldMap()">🗺️ แผนที่</button>
       <button class="px-btn px-btn-amber px-btn-sm" onclick="App.openShop()">🛒 ร้านค้า</button>
       <button class="px-btn px-btn-violet px-btn-sm" onclick="App.openArcade()">🕹️ อาร์เคด</button>
+      <button class="px-btn px-btn-emerald px-btn-sm" onclick="App.openRelaxTank()" title="โหมดรีแล็ค: เกมรถถัง Battle City 1990">🎮 รีแล็ค</button>
       <button class="px-btn px-btn-sm" onclick="App.openEncyclopedia()">📖 คัมภีร์</button>
       <button class="px-btn px-btn-sm" onclick="App.openLeaderboard()">🏆 อันดับ</button>
       <button class="px-btn px-btn-emerald px-btn-sm" onclick="App.openCertificate()">📜 เกียรติบัตร</button>
@@ -352,6 +353,77 @@
     </div>
   </div>
 
+  <!-- MODAL: RELAX MODE — BATTLE CITY 1990 -->
+  <div id="modal-relax-tank" class="modal-backdrop hidden">
+    <div class="modal-box" style="max-width:860px;">
+      <div class="modal-header">
+        <h2 class="pixel-title" style="color:var(--amber);">🎮 โหมดรีแล็ค: BATTLE CITY 1990 (เกมรถถังยุค 90)</h2>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button id="bc-btn-pause" class="px-btn px-btn-sm" onclick="BattleCityGame.togglePause()">⏸️ พักเกม</button>
+          <button id="bc-btn-mute" class="px-btn px-btn-sm" onclick="BattleCityGame.toggleMute()">🔊 เสียง: เปิด</button>
+          <button class="px-btn px-btn-amber px-btn-sm" onclick="BattleCityGame.startNewGame()">🔁 เริ่มเกมใหม่</button>
+          <button class="px-btn px-btn-crimson px-btn-sm" onclick="App.closeRelaxTank()">✖ ออก</button>
+        </div>
+      </div>
+
+      <div class="bc-layout">
+        <div class="bc-stage-col">
+          <div class="bc-canvas-wrap">
+            <canvas id="bc-canvas" width="416" height="416"></canvas>
+          </div>
+          <!-- Touch / On-screen controls for mobile & tablet -->
+          <div class="bc-touch-pad">
+            <div class="bc-dpad">
+              <div></div>
+              <button class="px-btn px-btn-sm" onpointerdown="BattleCityGame.setTouchDir(0)" onpointerup="BattleCityGame.setTouchDir(null)" onpointerleave="BattleCityGame.setTouchDir(null)">⬆️</button>
+              <div></div>
+              <button class="px-btn px-btn-sm" onpointerdown="BattleCityGame.setTouchDir(3)" onpointerup="BattleCityGame.setTouchDir(null)" onpointerleave="BattleCityGame.setTouchDir(null)">⬅️</button>
+              <button class="px-btn px-btn-sm" onpointerdown="BattleCityGame.setTouchDir(2)" onpointerup="BattleCityGame.setTouchDir(null)" onpointerleave="BattleCityGame.setTouchDir(null)">⬇️</button>
+              <button class="px-btn px-btn-sm" onpointerdown="BattleCityGame.setTouchDir(1)" onpointerup="BattleCityGame.setTouchDir(null)" onpointerleave="BattleCityGame.setTouchDir(null)">➡️</button>
+            </div>
+            <button class="px-btn px-btn-crimson bc-fire-btn" onpointerdown="BattleCityGame.setTouchFire(true)" onpointerup="BattleCityGame.setTouchFire(false)" onpointerleave="BattleCityGame.setTouchFire(false)">🔥 ยิงกระสุน</button>
+          </div>
+        </div>
+
+        <div class="bc-sidebar">
+          <div class="pixel-box" style="padding:10px 12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <b id="bc-stage" class="pixel-title" style="color:var(--amber); font-size:0.95rem;">STAGE 1</b>
+              <b id="bc-lives" style="color:var(--emerald);">🪖 x3</b>
+            </div>
+            <div style="font-size:0.82rem; display:grid; gap:4px;">
+              <div>คะแนน: <b id="bc-score" style="color:var(--cyan);">0</b> | สถิติสูงสุด: <b id="bc-hi" style="color:var(--amber);">0</b></div>
+              <div>ระดับปืน: <b id="bc-star" style="color:#facc15;">LV.0</b></div>
+            </div>
+          </div>
+
+          <div class="pixel-box" style="padding:10px 12px;">
+            <div style="font-size:0.78rem; font-weight:700; color:var(--cyan); margin-bottom:6px;">👾 รถถังศัตรูที่เหลือ (ยิงตัวสีแดงกระพริบเพื่อดรอปไอเท็ม)</div>
+            <div id="bc-enemy-icons" class="bc-enemy-icons"></div>
+            <div id="bc-active-buffs" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px;"></div>
+          </div>
+
+          <div class="pixel-box" style="padding:10px 12px;">
+            <div style="font-size:0.78rem; font-weight:700; color:var(--amber); margin-bottom:6px;">🎁 ไอเท็มคลาสสิก Battle City 1990</div>
+            <div class="bc-item-legend">
+              <div><b>⭐ Star:</b> อัปเกรดปืน (Lv.2 ยิง 2 นัด / Lv.3 ยิงเหล็กแตก!)</div>
+              <div><b>🛡️ Helmet:</b> เกราะอมตะชั่วคราว 10 วินาที</div>
+              <div><b>⏱️ Clock:</b> หยุดเวลารถถังศัตรูทั้งฉาก 10 วินาที</div>
+              <div><b>🧱 Shovel:</b> เสริมกำแพงฐานอินทรีเป็นเหล็กกล้า 15 วิ</div>
+              <div><b>💣 Grenade:</b> ระเบิดทำลายศัตรูทั้งฉากทันที</div>
+              <div><b>🪖 Tank:</b> เพิ่มชีวิต +1 (1-UP)</div>
+            </div>
+          </div>
+
+          <div style="font-size:0.76rem; color:var(--text-muted); line-height:1.4;">
+            ⌨️ <b>ควบคุม:</b> <code>WASD</code> หรือ <code>ลูกศร</code> เดิน | <code>Space</code> ยิง | <code>P</code> พักเกม<br/>
+            🦅 ปกป้อง <b>ฐานอินทรี</b> ด้านล่างไม่ให้ถูกศัตรูยิงแตก!
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: TEACHER MODE -->
   <div id="modal-teacher" class="modal-backdrop hidden">
     <div class="modal-box">
@@ -374,6 +446,7 @@
   <script src="js/data.js?v=16"></script>
   <script src="js/firebase-config.js?v=2"></script>
   <script src="js/firebase-service.js?v=11"></script>
-  <script src="js/app.js?v=29"></script>
+  <script src="js/battle-city.js?v=1"></script>
+  <script src="js/app.js?v=30"></script>
 </body>
 </html>
