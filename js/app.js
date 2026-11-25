@@ -104,7 +104,7 @@
     isTeacherRow(r) {
       if (!r) return false;
       const sid = String(r.studentId || '').trim().toLowerCase();
-      if (r.isTeacher || r.role === 'teacher' || sid === 'watdafak' || sid.startsWith('teacher')) return true;
+      if (r.isTeacher || r.role === 'teacher' || sid === 'watdafak' || sid.startsWith('teacher') || sid === '6720901099' || sid === 'demo') return true;
       if (this.isTeacher && sid && sid === String(this.state.profile.studentId || '').trim().toLowerCase()) return true;
       return false;
     },
@@ -341,6 +341,10 @@
 
     saveState(immediate = false) {
       try {
+        if (this.isDemoAccount()) {
+          // Demo mode runs purely in memory/sandbox — never write to Cloud Firestore or leaderboard
+          return;
+        }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
         this.syncLeaderboardEntry();
         if (global.FirebaseService && this.currentUid && this.state.profile.created) {
@@ -887,41 +891,28 @@
     async quickDemoLogin() {
       soundFX.playSelect();
       const demoId = '6720901099';
-      const demoPass = '123456';
       this.showAuthError('');
-      let res = await FirebaseService.loginStudent({ studentId: demoId, password: demoPass });
-      if (!res.ok) {
-        const fresh = createDefaultState();
-        fresh.profile = {
-          name: 'นายณัฐวุฒิ นักเครือข่าย (เดโม)',
-          studentId: demoId,
-          classRoom: 'ปวช.2/1',
-          heroClass: 'paladin',
-          created: true
-        };
-        fresh.badges = ['first_login'];
-        res = await FirebaseService.registerStudent({
-          studentId: demoId,
-          password: demoPass,
-          name: fresh.profile.name,
-          classRoom: 'ปวช.2/1',
-          heroClass: 'paladin',
-          initialState: fresh
-        });
-      }
-      if (!res.ok) {
-        this.showAuthError(res.error);
-        return;
-      }
-      this.currentUid = res.uid;
+      const fresh = createDefaultState();
+      fresh.profile = {
+        name: 'ผู้ทดลองเล่น (โหมดเดโม)',
+        studentId: demoId,
+        classRoom: 'โหมดทดลองเล่น',
+        heroClass: 'paladin',
+        created: true
+      };
+      fresh.hp = 130;
+      fresh.coins = 150;
+      fresh.badges = ['first_login'];
+      this.currentUid = null;
       this.isTeacher = false;
-      this.applyLoadedState(res.state, res.studentId);
-      await this.refreshCloudCourseData();
+      this.courseDataReady = true;
+      this.state = fresh;
+      this.bossAnswerStreak = 0;
       this.closeModal('modal-auth');
       this.renderHUD();
       this.renderDashboard();
       soundFX.playPowerUp();
-      this.toast(`⚡ เข้าสู่ระบบด้วยบัญชีเดโม (${demoId}) สำเร็จ!`);
+      this.toast('⚡ เข้าสู่โหมดทดลองเล่นเดโมแล้ว (เข้าเล่นได้ครบทุกแมพ • ไม่บันทึกลงฐานข้อมูล)');
     },
 
     async logoutStudent() {
@@ -1523,6 +1514,12 @@
         return;
       }
       if (!confirm(`ต้องการยกเลิกการส่งแบบฝึกทักษะบทที่ ${unitId} เพื่อกลับไปแก้ไขคำตอบหรือไม่?\n(คำตอบเดิมที่คุณพิมพ์ไว้จะยังคงอยู่ครบ)`)) return;
+      if (this.isDemoAccount()) {
+        this.activeSkillSubmission = null;
+        this.applySkillLockState(null);
+        this.toast('⚡ โหมดเดโม: สามารถแก้ไขคำตอบได้เลย');
+        return;
+      }
       const res = await FirebaseService.unsubmitSkillExercise(this.currentUid, unitId);
       if (!res.ok) {
         soundFX.playPlayerHurt();
@@ -1741,7 +1738,9 @@
       try { localStorage.setItem(this.getSkillStorageKey(unitId), JSON.stringify(saved)); } catch (e) { /* ignore */ }
 
       let cloudMsg = '';
-      if (global.FirebaseService && this.currentUid) {
+      if (this.isDemoAccount()) {
+        cloudMsg = ' | ⚡ โหมดเดโม: ทดสอบตรวจคำตอบได้ทันที (ไม่มีการบันทึกลงฐานข้อมูล)';
+      } else if (global.FirebaseService && this.currentUid) {
         const res = await FirebaseService.submitSkillExercise({
           uid: this.currentUid,
           unitId,

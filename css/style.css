@@ -1916,3 +1916,18 @@ body.light-mode .badge-slot.badge-special.unlocked {
   border-color: #ca8a04 !important;
   color: #0f172a;
 }
+
+.auth-modal-footer {
+  margin-top: 16px;
+  padding-top: 10px;
+  border-top: 2px dashed rgba(56, 189, 248, 0.35);
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+}
+
+body.light-mode .auth-modal-footer {
+  border-top-color: #cbd5e1;
+  color: #475569;
+}
