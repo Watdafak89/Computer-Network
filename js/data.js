@@ -8,14 +8,14 @@
 
   const RANKS = [
     { level: 1, minXp: 0, title: 'เด็กฝึกหัดสายแลน (Cable Novice)', titleShort: 'Novice' },
-    { level: 2, minXp: 250, title: 'ช่างเทคนิคสายสัญญาณ (Wire Tech)', titleShort: 'Wire Tech' },
-    { level: 3, minXp: 600, title: 'ผู้พิทักษ์สวิตช์ (Switch Knight)', titleShort: 'Switch Knight' },
-    { level: 4, minXp: 1050, title: 'นักวิเคราะห์แพ็กเก็ต (Packet Analyst)', titleShort: 'Analyst' },
-    { level: 5, minXp: 1600, title: 'จอมเวทไอพีแอดเดรส (IP Wizard)', titleShort: 'IP Wizard' },
-    { level: 6, minXp: 2250, title: 'วิศวกรเครือข่ายฝึกหัด (Net Engineer)', titleShort: 'Engineer' },
-    { level: 7, minXp: 3000, title: 'ผู้เชี่ยวชาญโครงข่ายไร้สาย (Wi-Fi Master)', titleShort: 'Wi-Fi Master' },
-    { level: 8, minXp: 3900, title: 'ผู้บัญชาการไฟร์วอลล์ (Firewall Commander)', titleShort: 'Commander' },
-    { level: 9, minXp: 4900, title: 'ปรมาจารย์สถาปัตยกรรม (Cyber Architect)', titleShort: 'Architect' },
+    { level: 2, minXp: 300, title: 'ช่างเทคนิคสายสัญญาณ (Wire Tech)', titleShort: 'Wire Tech' },
+    { level: 3, minXp: 750, title: 'ผู้พิทักษ์สวิตช์ (Switch Knight)', titleShort: 'Switch Knight' },
+    { level: 4, minXp: 1300, title: 'นักวิเคราะห์แพ็กเก็ต (Packet Analyst)', titleShort: 'Analyst' },
+    { level: 5, minXp: 1950, title: 'จอมเวทไอพีแอดเดรส (IP Wizard)', titleShort: 'IP Wizard' },
+    { level: 6, minXp: 2650, title: 'วิศวกรเครือข่ายฝึกหัด (Net Engineer)', titleShort: 'Engineer' },
+    { level: 7, minXp: 3400, title: 'ผู้เชี่ยวชาญโครงข่ายไร้สาย (Wi-Fi Master)', titleShort: 'Wi-Fi Master' },
+    { level: 8, minXp: 4200, title: 'ผู้บัญชาการไฟร์วอลล์ (Firewall Commander)', titleShort: 'Commander' },
+    { level: 9, minXp: 5050, title: 'ปรมาจารย์สถาปัตยกรรม (Cyber Architect)', titleShort: 'Architect' },
     { level: 10, minXp: 6000, title: 'ตำนานแห่งไซเบอร์ ปวช. (Grand Net Legend)', titleShort: 'Grand Legend' }
   ];
 
@@ -42,11 +42,11 @@
       color: '#a855f7',
       baseHp: 100,
       atkBonus: 8,
-      xpMult: 1.2,
+      xpMult: 1.15,
       coinMult: 1.0,
       timeBonus: 2,
       critBonus: 0.12,
-      perk: 'โบนัสค่าประสบการณ์ XP +20% และพลังโจมตี +8'
+      perk: 'โบนัสค่าประสบการณ์ XP +15% และพลังโจมตี +8'
     },
     {
       id: 'ranger',
@@ -180,10 +180,10 @@
   ];
 
   const DAILY_QUESTS = [
-    { id: 'dq_lab', title: 'ทำห้อง Lab จำลองสำเร็จ 1 หน่วย', rewardXp: 100, rewardCoins: 30, target: 1, metric: 'labsCompletedToday' },
-    { id: 'dq_boss', title: 'พิชิตบอสประจำหน่วย 1 ตัว', rewardXp: 120, rewardCoins: 40, target: 1, metric: 'bossesDefeatedToday' },
-    { id: 'dq_combo', title: 'ทำคอมโบตอบถูกต่อเนื่อง 3 ข้อ', rewardXp: 80, rewardCoins: 25, target: 3, metric: 'bestComboToday' },
-    { id: 'dq_arcade', title: 'เข้าเล่นโหมด Endless Arcade 1 รอบ', rewardXp: 70, rewardCoins: 20, target: 1, metric: 'arcadeRunsToday' }
+    { id: 'dq_lab', title: 'ทำห้อง Lab จำลองสำเร็จ 1 หน่วย', rewardXp: 40, rewardCoins: 25, target: 1, metric: 'labsCompletedToday' },
+    { id: 'dq_boss', title: 'พิชิตบอสประจำหน่วย 1 ตัว', rewardXp: 50, rewardCoins: 30, target: 1, metric: 'bossesDefeatedToday' },
+    { id: 'dq_combo', title: 'ทำคอมโบตอบถูกต่อเนื่อง 3 ข้อ', rewardXp: 35, rewardCoins: 20, target: 3, metric: 'bestComboToday' },
+    { id: 'dq_arcade', title: 'เข้าเล่นโหมด Endless Arcade 1 รอบ', rewardXp: 35, rewardCoins: 20, target: 1, metric: 'arcadeRunsToday' }
   ];
 
   const T568B = [
@@ -213,7 +213,7 @@
         name: 'Slime King of Disconnection',
         thName: 'ราชาสไลม์ตัดสัญญาณ',
         sprite: 'slime_king',
-        hp: 100,
+        hp: 170,
         atk: 18,
         taunt: 'สายบัสเส้นเดียวขาดเมื่อไหร่ เครือข่ายเจ้าก็ล่มทั้งตึก!'
       },
@@ -334,6 +334,30 @@
           options: ['N + 1', 'N × 2', 'N(N - 1) / 2', 'N²'],
           ans: 2,
           exp: 'Full Mesh เชื่อมทุกเครื่องเข้าหากันโดยตรง จึงใช้สายเท่ากับ N(N - 1) / 2 เส้น'
+        },
+        {
+          q: 'เครือข่ายที่เชื่อมต่ออุปกรณ์ส่วนตัวระยะใกล้ เช่น หูฟัง Bluetooth กับสมาร์ตโฟน (ระยะ ~10 เมตร) เรียกว่าเครือข่ายใด?',
+          options: ['PAN (Personal Area Network)', 'MAN (Metropolitan Area Network)', 'WAN (Wide Area Network)', 'SAN (Storage Area Network)'],
+          ans: 0,
+          exp: 'PAN เป็นเครือข่ายส่วนบุคคลระยะใกล้รอบตัวผู้ใช้ เช่น Bluetooth, Hotspot มือถือ หรือ NFC'
+        },
+        {
+          q: 'การสื่อสารข้อมูลที่สามารถรับและส่งข้อมูลได้พร้อมกันทั้งสองทิศทางในเวลาเดียวกัน (เช่น โทรศัพท์ หรือ Switch Ethernet) เรียกว่าแบบใด?',
+          options: ['Simplex', 'Half-Duplex', 'Full-Duplex', 'Broadcast'],
+          ans: 2,
+          exp: 'Full-Duplex ส่งและรับข้อมูลพร้อมกันได้สองทาง ส่วน Half-Duplex ต้องสลับกันส่ง (เช่น ว.สื่อสาร) และ Simplex ส่งทางเดียว'
+        },
+        {
+          q: 'โครงสร้างเครือข่ายแบบวงแหวน (Ring Topology) มักใช้กลไกใดในการควบคุมสิทธิ์การส่งข้อมูลเพื่อไม่ให้ชนกัน?',
+          options: ['CSMA/CD', 'Token Passing (ส่งผ่านโทเค็น)', 'DHCP Relay', 'Port Forwarding'],
+          ans: 1,
+          exp: 'Ring Topology ใช้ Token Passing โดยเครื่องที่ถือโทเค็นเท่านั้นจึงจะมีสิทธิ์ส่งข้อมูลในขณะนั้น'
+        },
+        {
+          q: 'ข้อใดคือจุดเด่นของสถาปัตยกรรมเครือข่ายแบบ Peer-to-Peer (P2P) เมื่อเทียบกับ Client-Server?',
+          options: ['รองรับผู้ใช้ได้หลักหมื่นคนพร้อมกัน', 'ติดตั้งง่าย ประหยัดต้นทุน ไม่ต้องมีเครื่อง Server กลาง', 'มีความปลอดภัยแบบรวมศูนย์สูงกว่ามาก', 'ต้องใช้ระบบ Active Directory เสมอ'],
+          ans: 1,
+          exp: 'Peer-to-Peer ทุกเครื่องมีสถานะเท่าเทียมกัน เหมาะกับเครือข่ายขนาดเล็ก (ไม่เกิน ~10 เครื่อง) และประหยัดงบประมาณ'
         }
       ]
     },
@@ -350,7 +374,7 @@
         name: 'Wire Golem MK-II',
         thName: 'โกเลมสื่อสัญญาณคลั่ง',
         sprite: 'wire_golem',
-        hp: 115,
+        hp: 185,
         atk: 19,
         taunt: 'เลือกสายผิดประเภทหรือเสียบหัวต่อผิดขั้ว สัญญาณเจ้าก็จะดับสนิท!'
       },
@@ -469,6 +493,30 @@
           options: ['สาย Coaxial', 'สาย Fiber Optic', 'สาย UTP Cat6', 'สายโทรศัพท์'],
           ans: 1,
           exp: 'SC, LC และ ST เป็นหัวต่อมาตรฐานสำหรับสายใยแก้วนำแสง (Fiber Optic)'
+        },
+        {
+          q: 'เหตุใดสาย UTP จึงต้องบิดสายทองแดงเป็นเกลียวคู่ (Twisted Pair)?',
+          options: ['เพื่อลดสัญญาณรบกวนทางแม่เหล็กไฟฟ้าและ Crosstalk ระหว่างคู่สาย', 'เพื่อให้สายมีน้ำหนักเบาลง', 'เพื่อเพิ่มแรงดันไฟฟ้าในสายเป็น 220V', 'เพื่อให้เสียบกับหัว BNC ได้'],
+          ans: 0,
+          exp: 'การบิดเกลียวช่วยหักล้างสัญญาณรบกวนแม่เหล็กไฟฟ้า (EMI) และลดสัญญาณแทรกข้ามคู่สาย (Crosstalk)'
+        },
+        {
+          q: 'อุปกรณ์ใดทำหน้าที่ขยายและทวนสัญญาณไฟฟ้าที่อ่อนลงให้กลับมาสมบูรณ์ เพื่อเพิ่มระยะทางเดินสายใน Layer 1?',
+          options: ['Repeater', 'Firewall', 'DNS Server', 'Proxy Server'],
+          ans: 0,
+          exp: 'Repeater ทำงานที่ Physical Layer (Layer 1) เพื่อทวนสัญญาณให้ส่งไปได้ไกลขึ้น'
+        },
+        {
+          q: 'สาย Fiber Optic แบบ Single-Mode (SMF) แตกต่างจาก Multi-Mode (MMF) อย่างไร?',
+          options: ['SMF แกนแสงเล็กกว่า ส่งข้อมูลได้ไกลหลายสิบกิโลเมตรด้วยเลเซอร์', 'MMF ส่งข้อมูลได้ไกลกว่า SMF เสมอ', 'SMF ใช้ลวดทองแดงแทนใยแก้ว', 'MMF ใช้ได้เฉพาะกับหัวต่อ RJ-45'],
+          ans: 0,
+          exp: 'Single-Mode Fiber ใช้ลำแสงเลเซอร์แกนเล็ก ส่งได้ไกลหลายสิบกิโลเมตร ส่วน Multi-Mode ใช้ LED เหมาะกับระยะใกล้ภายในอาคาร'
+        },
+        {
+          q: 'อุปกรณ์ใดที่ติดตั้งอยู่ภายในเครื่องคอมพิวเตอร์ (หรือแบบ USB) เพื่อให้เครื่องเชื่อมต่อเข้ากับสาย LAN หรือ Wi-Fi ได้?',
+          options: ['NIC (Network Interface Card)', 'Patch Panel', 'Rack Cabinet', 'Cable Tester'],
+          ans: 0,
+          exp: 'NIC หรือการ์ดแลน มีหมายเลข MAC Address ประจำตัว ทำหน้าที่แปลงข้อมูลคอมพิวเตอร์เป็นสัญญาณเครือข่าย'
         }
       ]
     },
@@ -485,7 +533,7 @@
         name: 'OSI 7-Headed Hydra',
         thName: 'ไฮดรา 7 เศียรแห่งโปรโตคอล',
         sprite: 'osi_hydra',
-        hp: 130,
+        hp: 200,
         atk: 21,
         taunt: 'เรียงชั้น OSI หรือแยกคลาส IP ผิดแม้แต่นิดเดียว แพ็กเก็ตเจ้าจะแหลกสลาย!'
       },
@@ -588,6 +636,30 @@
           options: ['TCP ส่งข้อมูลเร็วกว่าแต่ไม่ตรวจสอบความถูกต้อง', 'TCP มีการเชื่อมต่อและตรวจสอบให้ข้อมูลถึงครบถ้วน ส่วน UDP ส่งเร็วไม่รอการยืนยัน', 'UDP ใช้กับการโอนไฟล์ธนาคารเท่านั้น', 'TCP ทำงานที่ Layer 1'],
           ans: 1,
           exp: 'TCP เป็น Connection-Oriented ที่รับประกันความถูกต้อง ส่วน UDP เป็น Connectionless ที่เน้นความเร็ว'
+        },
+        {
+          q: 'โปรโตคอลใดทำหน้าที่แจกหมายเลข IP Address, Subnet Mask, Gateway และ DNS ให้เครื่องลูกข่ายโดยอัตโนมัติ?',
+          options: ['DNS', 'DHCP', 'HTTP', 'SMTP'],
+          ans: 1,
+          exp: 'DHCP (Dynamic Host Configuration Protocol) แจกค่า IP อัตโนมัติผ่านกระบวนการ DORA (Discover, Offer, Request, Acknowledge)'
+        },
+        {
+          q: 'หมายเลขพอร์ตมาตรฐานของโปรโตคอล HTTPS (การเข้าชมเว็บไซต์แบบเข้ารหัสปลอดภัย) คือพอร์ตใด?',
+          options: ['Port 21', 'Port 53', 'Port 80', 'Port 443'],
+          ans: 3,
+          exp: 'HTTP ใช้พอร์ต 80 ส่วน HTTPS (เข้ารหัส TLS/SSL) ใช้พอร์ต 443 (Port 21=FTP, Port 53=DNS)'
+        },
+        {
+          q: 'ในแบบจำลอง OSI ชั้นที่ 6 (Presentation Layer) มีหน้าที่หลักเกี่ยวข้องกับข้อใด?',
+          options: ['การเข้ารหัส (Encryption) บีบอัดข้อมูล และแปลงรูปแบบไฟล์ให้ระบบเข้าใจตรงกัน', 'การเข้าหัวสาย RJ-45', 'การกำหนด MAC Address', 'การเลือกเส้นทาง Routing'],
+          ans: 0,
+          exp: 'Presentation Layer (Layer 6) รับผิดชอบการแปลงรูปแบบข้อมูล (Encoding), การบีบอัด (Compression) และการเข้ารหัส (Encryption)'
+        },
+        {
+          q: 'หมายเลข IPv4 มีขนาดกี่บิต และโดยทั่วไปเขียนแสดงผลในรูปแบบใด?',
+          options: ['16 บิต เลขฐานสิบหก', '32 บิต แบ่งเป็น 4 ชุด (Octets) คั่นด้วยจุด', '64 บิต คั่นด้วยเครื่องหมายโคลอน', '128 บิต แบ่งเป็น 8 ชุด'],
+          ans: 1,
+          exp: 'IPv4 มีขนาด 32 บิต แบ่งเป็น 4 ชุด ชุดละ 8 บิต (เช่น 192.168.1.1) ส่วน IPv6 มีขนาด 128 บิต'
         }
       ]
     },
@@ -604,7 +676,7 @@
         name: 'Cable Titan RJ-45',
         thName: 'ไททันหัวสายแลน',
         sprite: 'cable_titan',
-        hp: 135,
+        hp: 210,
         atk: 21,
         taunt: 'เรียงสีสาย T568B ผิดแม้แต่พินเดียว ไฟ Tester จะไม่มีวันติดครบ 1 ถึง 8!'
       },
@@ -717,6 +789,30 @@
           options: ['25 เมตร', '50 เมตร', '100 เมตร', '500 เมตร'],
           ans: 2,
           exp: 'มาตรฐาน IEEE 802.3 กำหนดความยาวสูงสุดของสาย UTP ไว้ที่ 100 เมตร เพื่อไม่ให้สัญญาณอ่อนลงจนเกิดข้อผิดพลาด'
+        },
+        {
+          q: 'กลไกการตรวจสอบและหลีกเลี่ยงการชนกันของสัญญาณในเครือข่าย Ethernet แบบใช้สายดั้งเดิม (Half-Duplex) คือข้อใด?',
+          options: ['CSMA/CD', 'CSMA/CA', 'WPA3-SAE', 'RIP v2'],
+          ans: 0,
+          exp: 'Ethernet ใช้ CSMA/CD (Collision Detection) ตรวจจับการชนกันของสัญญาณ ส่วน Wi-Fi ใช้ CSMA/CA (Collision Avoidance)'
+        },
+        {
+          q: 'ลำดับสีของสาย UTP มาตรฐาน T568A ในพินที่ 1 และ 2 คือสีใด?',
+          options: ['ขาว-ส้ม และ ส้ม', 'ขาว-เขียว และ เขียว', 'ขาว-น้ำเงิน และ น้ำเงิน', 'ขาว-น้ำตาล และ น้ำตาล'],
+          ans: 1,
+          exp: 'T568A เริ่มต้นพิน 1-2 ด้วย ขาว-เขียว, เขียว (สลับคู่สีเขียวกับส้มเมื่อเทียบกับ T568B)'
+        },
+        {
+          q: 'มาตรฐาน 100BASE-TX (Fast Ethernet) รองรับความเร็วรับส่งข้อมูลสูงสุดเท่าใด?',
+          options: ['10 Mbps', '100 Mbps', '1,000 Mbps', '10,000 Mbps'],
+          ans: 1,
+          exp: 'ตัวเลข 100 ใน 100BASE-TX หมายถึงความเร็ว 100 Mbps ผ่านสายคู่บิดเกลียว (UTP Cat5 ขึ้นไป)'
+        },
+        {
+          q: 'เครื่องมือใดใช้สำหรับบีบหัวต่อ RJ-45 ให้เขี้ยวทองแดงกดแน่นเข้ากับสาย UTP ทั้ง 8 เส้น?',
+          options: ['คีมเข้าหัวสาย (Crimping Tool)', 'หัวแร้งบัดกรี', 'มัลติมิเตอร์', 'ไขควงวัดไฟ'],
+          ans: 0,
+          exp: 'คีมเข้าหัวสาย (Crimping Tool) ใช้ปลอกฉนวน ตัดปลายสายตรง และย้ำหัว RJ-45 ให้แน่นพอดี'
         }
       ]
     },
@@ -733,7 +829,7 @@
         name: 'Wi-Fi Signal Dragon',
         thName: 'มังกรคลื่นสัญญาณแทรก',
         sprite: 'wifi_dragon',
-        hp: 140,
+        hp: 220,
         atk: 22,
         taunt: 'ใช้รหัส WEP โบราณหรือเปิดช่องสัญญาณชนกัน ข้าจะแฮก Wi-Fi เจ้าในพริบตา!'
       },
@@ -830,6 +926,30 @@
           options: ['รหัสผ่านเข้าเครื่อง Windows', 'ชื่อของเครือข่ายไร้สายที่แสดงให้ผู้ใช้เลือกเชื่อมต่อ', 'หมายเลข MAC Address ของเครื่องพิมพ์', 'ความเร็วสายใยแก้วนำแสง'],
           ans: 1,
           exp: 'SSID (Service Set Identifier) คือชื่อประจำเครือข่าย Wi-Fi ที่ Access Point ประกาศออกมา'
+        },
+        {
+          q: 'เทคโนโลยี MU-MIMO ในมาตรฐาน Wi-Fi สมัยใหม่ (802.11ac Wave 2 / 802.11ax) มีข้อดีอย่างไร?',
+          options: ['ทำให้ Access Point ส่งข้อมูลถึงอุปกรณ์ลูกข่ายหลายเครื่องพร้อมกันในเวลาเดียวกัน', 'ทำให้ไม่ต้องใช้สายไฟฟ้าเลี้ยงเราเตอร์', 'เปลี่ยนคลื่นวิทยุเป็นสายใยแก้วนำแสง', 'ทำให้ใช้งานได้เฉพาะเครื่องเดียวต่อ AP'],
+          ans: 0,
+          exp: 'MU-MIMO (Multi-User MIMO) ช่วยให้ AP รับส่งข้อมูลกับอุปกรณ์หลายเครื่องพร้อมกัน ลดอาการหน่วงเมื่อมีผู้ใช้งานหนาแน่น'
+        },
+        {
+          q: 'อุปกรณ์ใดทำหน้าที่รับสัญญาณ Wi-Fi เดิมแล้วทวนสัญญาณขยายขอบเขตให้ครอบคลุมพื้นที่อับสัญญาณมากขึ้น?',
+          options: ['Range Extender / Wireless Repeater', 'Patch Panel', 'Crimping Tool', 'UPS'],
+          ans: 0,
+          exp: 'Range Extender (Repeater) รับสัญญาณจาก AP หลักแล้วส่งต่อเพื่อขยายพื้นที่ครอบคลุมในจุดอับสัญญาณ'
+        },
+        {
+          q: 'การเชื่อมต่อไร้สายโดยตรงระหว่างอุปกรณ์ 2 เครื่องโดยไม่ผ่าน Access Point (เช่น AirDrop หรือ Wi-Fi Direct) เรียกว่าโหมดใด?',
+          options: ['Infrastructure Mode', 'Ad-Hoc Mode', 'Trunk Mode', 'Bridge VLAN Mode'],
+          ans: 1,
+          exp: 'Ad-Hoc Mode เป็นการเชื่อมต่อแบบ Peer-to-Peer ระหว่างอุปกรณ์ไร้สายโดยตรง ไม่ต้องอาศัย Access Point กลาง'
+        },
+        {
+          q: 'ฟีเจอร์ MAC Address Filtering บนเราเตอร์ไร้สายใช้เพื่อวัตถุประสงค์ใด?',
+          options: ['จำกัดสิทธิ์เฉพาะอุปกรณ์ที่มีหมายเลข MAC ที่อนุญาต (หรือบล็อกเครื่องที่ไม่ต้องการ) ให้เชื่อมต่อ Wi-Fi', 'เพิ่มความเร็วอินเทอร์เน็ตจาก 100 Mbps เป็น 1 Gbps', 'เปลี่ยนชื่อโดเมนเว็บไซต์', 'สำรองข้อมูลไฟล์บนคลาวด์'],
+          ans: 0,
+          exp: 'MAC Filtering เป็นมาตรการเสริมความปลอดภัยด้วยการกำหนดรายการอนุญาต (Allow List) หรือปฏิเสธ (Deny List) ตามหมายเลข MAC ของอุปกรณ์'
         }
       ]
     },
@@ -846,7 +966,7 @@
         name: 'Window Phantom',
         thName: 'ภูตหน้าต่างเครือข่าย',
         sprite: 'win_phantom',
-        hp: 145,
+        hp: 230,
         atk: 22,
         taunt: 'ตั้ง IP ผิดวงหรือลืมกำหนดสิทธิ์แชร์โฟลเดอร์ เจ้าจะไม่มีวันมองเห็นเครื่องเพื่อนในวง LAN!'
       },
@@ -942,6 +1062,30 @@
           options: ['IP Address อย่างเดียว', 'IP Address, Subnet Mask, Default Gateway และ DNS Server', 'MAC Address และ Workgroup', 'SSID และ Channel'],
           ans: 1,
           exp: 'ต้องกำหนด IP + Subnet Mask (ระบุวง LAN), Default Gateway (ออกนอกวงผ่าน Router) และ DNS (แปลงชื่อเว็บเป็น IP)'
+        },
+        {
+          q: 'หากต้องการแชร์เครื่องพิมพ์ (Printer) บน Windows 10 ให้เครื่องอื่นในห้องแล็บสั่งพิมพ์ร่วมกันได้ ต้องเข้าไปเปิดใช้งานตัวเลือกใด?',
+          options: ['Printer Properties → แท็บ Sharing → ติ๊ก Share this printer', 'Device Manager → Uninstall device', 'Display Settings → Night Light', 'Task Manager → Startup'],
+          ans: 0,
+          exp: 'การแชร์เครื่องพิมพ์ทำได้ที่ Control Panel / Settings → Printer Properties → แท็บ Sharing → เลือก Share this printer และตั้งชื่อแชร์'
+        },
+        {
+          q: 'บน Windows หากต้องการให้เครื่องในวง LAN ค้นหากันเจอและมองเห็นโฟลเดอร์ที่แชร์ไว้ใน Network ต้องเปิดการตั้งค่าใดใน Advanced Sharing Settings?',
+          options: ['Turn on network discovery และ Turn on file and printer sharing', 'Turn off Wi-Fi adapter', 'Enable Airplane Mode', 'Disable TCP/IPv4'],
+          ans: 0,
+          exp: 'Network Discovery ทำให้มองเห็นเครื่องอื่นในวง LAN และ File and Printer Sharing ทำให้เข้าถึงไฟล์/เครื่องพิมพ์ที่แชร์ได้'
+        },
+        {
+          q: 'หลังเปลี่ยนชื่อคอมพิวเตอร์ (Computer Name) หรือเปลี่ยนชื่อ Workgroup บน Windows 10 ระบบจะต้องการขั้นตอนใดเพื่อให้มีผลสมบูรณ์?',
+          options: ['รีสตาร์ตเครื่องคอมพิวเตอร์ (Restart)', 'ฟอร์แมตฮาร์ดดิสก์ใหม่', 'ถอดสาย LAN ออกถาวร', 'เปลี่ยนรหัสผ่าน Wi-Fi'],
+          ans: 0,
+          exp: 'การเปลี่ยนชื่อเครื่องหรือ Workgroup ใน Windows ต้องทำการ Restart เครื่องเพื่อให้ระบบบันทึกและประกาศชื่อใหม่ในเครือข่าย'
+        },
+        {
+          q: 'เมื่อต้องการตั้งค่า IP แบบรับอัตโนมัติจาก DHCP Server ในหน้าต่าง Internet Protocol Version 4 (TCP/IPv4) Properties ควรเลือกตัวเลือกใด?',
+          options: ['Obtain an IP address automatically', 'Use the following IP address', 'Disable IPv4', 'Manual MAC Override'],
+          ans: 0,
+          exp: 'Obtain an IP address automatically จะสั่งให้ Windows ขอรับหมายเลข IP จาก DHCP Server อัตโนมัติ'
         }
       ]
     },
@@ -958,7 +1102,7 @@
         name: 'Hypervisor Mech',
         thName: 'หุ่นยนต์ไฮเปอร์ไวเซอร์',
         sprite: 'hypervisor_mech',
-        hp: 150,
+        hp: 240,
         atk: 23,
         taunt: 'จัดสรร RAM ไม่พอหรือตั้งการ์ดแลน VM ผิดโหมด Server ของเจ้าจะไม่มีวันบูตขึ้น!'
       },
@@ -1054,6 +1198,30 @@
           options: ['Ubuntu Server / Debian', 'Windows 98', 'macOS Classic', 'MS-DOS'],
           ans: 0,
           exp: 'Ubuntu Server และ Debian เป็นระบบปฏิบัติการเครือข่ายตระกูล Linux แบบ Open-Source ที่ใช้งานแพร่หลายทั่วโลก'
+        },
+        {
+          q: 'บริการใดใน Windows Server ที่ทำหน้าที่จัดการบัญชีผู้ใช้ กลุ่มผู้ใช้ และนโยบายความปลอดภัย (Group Policy) ของทั้งองค์กรแบบรวมศูนย์?',
+          options: ['Active Directory Domain Services (AD DS)', 'Windows Media Player', 'Paint 3D', 'Disk Defragmenter'],
+          ans: 0,
+          exp: 'Active Directory (AD DS) เป็นหัวใจสำคัญของ Windows Server ในการจัดการโดเมน บัญชีผู้ใช้ และสิทธิ์เข้าถึงแบบรวมศูนย์'
+        },
+        {
+          q: 'Hypervisor แบบ Type 1 (Bare-Metal) เช่น VMware ESXi หรือ Proxmox VE แตกต่างจาก Type 2 (VirtualBox) อย่างไร?',
+          options: ['Type 1 ติดตั้งลงบนฮาร์ดแวร์เครื่องเซิร์ฟเวอร์โดยตรง ไม่ต้องผ่าน OS หลัก จึงมีประสิทธิภาพสูงกว่า', 'Type 1 ทำงานได้เฉพาะบนโทรศัพท์มือถือ', 'Type 2 เร็วกว่าและใช้ใน Data Center ใหญ่เสมอ', 'Type 1 ไม่สามารถสร้างเครื่องจำลองได้'],
+          ans: 0,
+          exp: 'Bare-Metal Hypervisor (Type 1) รันบนฮาร์ดแวร์โดยตรง ลดภาระของ Host OS เหมาะกับงานเซิร์ฟเวอร์จริงในองค์กร'
+        },
+        {
+          q: 'หากตั้งค่า Virtual Network ของ VM เป็นโหมด NAT (Network Address Translation) เครื่อง VM จะมีลักษณะการเชื่อมต่ออย่างไร?',
+          options: ['VM สามารถออกอินเทอร์เน็ตผ่านเครื่อง Host ได้ แต่เครื่องอื่นในวง LAN ภายนอกไม่สามารถเชื่อมต่อตรงเข้า VM ได้ง่าย', 'VM ไม่สามารถเชื่อมต่อเครือข่ายใดๆ ได้เลย', 'VM จะได้ IP จริงจาก ISP โดยตรง', 'เครื่อง Host จะใช้งานอินเทอร์เน็ตไม่ได้'],
+          ans: 0,
+          exp: 'โหมด NAT เหมาะสำหรับการให้ VM ออกอินเทอร์เน็ตได้อย่างปลอดภัยโดยอาศัย IP ของเครื่อง Host แปลงที่อยู่ให้'
+        },
+        {
+          q: 'ในขั้นตอนการสร้างเครื่องจำลอง (VM) บน VirtualBox หากเครื่องจริงมี RAM 8 GB ควรจัดสรร RAM ให้ VM อย่างเหมาะสมอย่างไร?',
+          options: ['จัดสรรประมาณ 2–4 GB (อยู่ในแถบสีเขียว) เพื่อเหลือ RAM ให้เครื่อง Host ทำงานได้เสถียร', 'จัดสรรให้เต็ม 8 GB 100% เพื่อให้ VM เร็วที่สุด', 'จัดสรร 16 GB เกินกว่าที่มีจริง', 'ไม่ต้องจัดสรร RAM ให้ VM'],
+          ans: 0,
+          exp: 'ควรแบ่ง RAM ให้ VM ไม่เกินครึ่งหนึ่งของเครื่อง Host (อยู่ในโซนสีเขียว) เพื่อไม่ให้เครื่องจริงค้างหรือทำงานช้า'
         }
       ]
     },
@@ -1070,7 +1238,7 @@
         name: 'Subnet Glitch Lich',
         thName: 'ลิชบั๊กเครือข่ายล่ม',
         sprite: 'subnet_lich',
-        hp: 155,
+        hp: 250,
         atk: 24,
         taunt: 'Request Timed Out! ถ้าเจ้าวิเคราะห์ CLI และรีโมตแก้ปัญหาไม่เป็น เครือข่ายจะล่มตลอดกาล!'
       },
@@ -1183,6 +1351,30 @@
           options: ['ทำให้ความเร็วเน็ตเพิ่มขึ้น 10 เท่า', 'ช่วยให้ตรวจสอบ ไล่สาย และแก้ปัญหาในอนาคตได้รวดเร็วแม่นยำ', 'ป้องกันไวรัสคอมพิวเตอร์', 'ไม่ต้องใช้ Switch'],
           ans: 1,
           exp: 'การติดป้ายกำกับปลายสายทั้งสองฝั่งช่วยลดเวลาไล่สายและลดความผิดพลาดเมื่อต้องซ่อมบำรุง'
+        },
+        {
+          q: 'ในแนวทางการออกแบบเครือข่ายแบบ 3 ชั้นของ Cisco (Hierarchical Model) ชั้นใดทำหน้าที่รับส่งข้อมูลความเร็วสูงมากที่เป็นกระดูกสันหลัง (Backbone) ขององค์กร?',
+          options: ['Core Layer (ชั้นแกนหลัก)', 'Distribution Layer (ชั้นกระจายสัญญาณ)', 'Access Layer (ชั้นการเชื่อมต่อผู้ใช้)', 'Physical Layer'],
+          ans: 0,
+          exp: 'Core Layer เป็นกระดูกสันหลังความเร็วสูง เชื่อมต่อระหว่างอาคาร/โซนหลักด้วยความเสถียรสูงสุด (Access เชื่อมเครื่องผู้ใช้, Distribution กรองนโยบายและ Routing)'
+        },
+        {
+          q: 'คำสั่ง Command Prompt ใดใช้ตรวจสอบระบบชื่อโดเมน (Domain Name System) เพื่อดูว่าชื่อเว็บไซต์แปลงเป็นหมายเลข IP ใด?',
+          options: ['nslookup', 'chkdsk', 'mkdir', 'format'],
+          ans: 0,
+          exp: 'คำสั่ง nslookup (Name Server Lookup) ใช้ทดสอบและสืบค้นการแปลงชื่อโดเมนกับ DNS Server โดยตรง'
+        },
+        {
+          q: 'คำสั่งใดใช้ตรวจสอบการเชื่อมต่อและวัดเวลาตอบกลับ (Latency) จากเครื่องปลายทางโดยส่งแพ็กเก็ต ICMP Echo Request?',
+          options: ['ping', 'ipconfig', 'net user', 'calc'],
+          ans: 0,
+          exp: 'คำสั่ง ping ส่งแพ็กเก็ต ICMP เพื่อทดสอบว่าปลายทางตอบกลับหรือไม่ พร้อมแสดงค่าเวลา (ms) และ Packet Loss'
+        },
+        {
+          q: 'ตู้ Rack มาตรฐานที่ติดตั้งอุปกรณ์เครือข่าย (Switch, Patch Panel, UPS) นิยมระบุขนาดความสูงของช่องติดตั้งด้วยหน่วยใด?',
+          options: ['U (Rack Unit) เช่น 6U, 9U, 15U, 42U', 'GB (Gigabyte)', 'MHz (Megahertz)', 'dBm'],
+          ans: 0,
+          exp: 'ขนาดความสูงของตู้ Rack และอุปกรณ์ติดตั้งแร็กระบุเป็นหน่วย U โดย 1U เท่ากับ 1.75 นิ้ว (44.45 มม.)'
         }
       ]
     },
@@ -1199,7 +1391,7 @@
         name: 'Ransomware Overlord',
         thName: 'จอมมารมัลแวร์เรียกค่าไถ่',
         sprite: 'ransom_overlord',
-        hp: 165,
+        hp: 260,
         atk: 25,
         taunt: 'ปิด Windows Firewall เมื่อไหร่ กองทัพมัลแวร์และพอร์ตเถื่อนจะยึดระบบเจ้าทันที!'
       },
@@ -1312,6 +1504,30 @@
           options: ['Phishing', 'Packet Switching', 'DHCP Snooping', 'Virtualization'],
           ans: 0,
           exp: 'Phishing คือการหลอกลวงทางจิตวิทยาให้เหยื่อกรอกข้อมูลสำคัญหรือรหัสผ่านบนหน้าเว็บ/อีเมลปลอม'
+        },
+        {
+          q: 'มัลแวร์ประเภทใดที่ปลอมตัวเป็นโปรแกรมปกติหรือเกมฟรีเพื่อให้ผู้ใช้หลงกลติดตั้ง แล้วแอบเปิดช่องทาง (Backdoor) ให้ผู้โจมตีควบคุมเครื่อง?',
+          options: ['โทรจัน (Trojan Horse)', 'ไฟร์วอลล์ (Firewall)', 'ซับเน็ตมาสก์ (Subnet Mask)', 'แคช (Cache)'],
+          ans: 0,
+          exp: 'Trojan Horse แฝงตัวมากับโปรแกรมที่ดูเหมือนปลอดภัยเพื่อหลอกให้ผู้ใช้ติดตั้งเอง ไม่ได้แพร่กระจายตัวเองเหมือน Worm'
+        },
+        {
+          q: 'มัลแวร์ประเภทสปายแวร์ (Spyware) มีพฤติกรรมหลักอย่างไร?',
+          options: ['แอบดักจับพฤติกรรมการใช้งาน การพิมพ์รหัสผ่าน (Keylogger) หรือข้อมูลส่วนตัวส่งกลับให้ผู้ไม่หวังดี', 'ช่วยเพิ่มความเร็วอินเทอร์เน็ตให้เครื่อง', 'ทำความสะอาดไฟล์ขยะในฮาร์ดดิสก์', 'สำรองข้อมูลขึ้นระบบคลาวด์อัตโนมัติ'],
+          ans: 0,
+          exp: 'Spyware แอบฝังตัวเพื่อสอดแนมและขโมยข้อมูลสำคัญ เช่น รหัสผ่าน บัญชีธนาคาร หรือประวัติการใช้งาน'
+        },
+        {
+          q: 'ความแตกต่างระหว่าง Network Firewall กับ Personal Firewall คือข้อใด?',
+          options: ['Network Firewall ติดตั้งที่ขอบเครือข่ายเพื่อป้องกันทั้งองค์กร ส่วน Personal Firewall ติดตั้งบนเครื่องคอมพิวเตอร์แต่ละเครื่อง', 'Personal Firewall ใช้ได้เฉพาะกับเครื่องเซิร์ฟเวอร์ขนาดใหญ่เท่านั้น', 'Network Firewall ป้องกันได้แค่เครื่องเดียว', 'ทั้งสองแบบไม่สามารถกรองแพ็กเก็ตได้'],
+          ans: 0,
+          exp: 'Network Firewall (Hardware/Gateway) ปกป้องทั้งเครือข่ายที่จุดเชื่อมต่ออินเทอร์เน็ต ส่วน Personal Firewall (เช่น Windows Defender Firewall) ปกป้องเฉพาะเครื่องนั้น'
+        },
+        {
+          q: 'หลักความปลอดภัยด้านสารสนเทศ CIA Triad ข้อ "Confidentiality" (การรักษาความลับ) หมายถึงข้อใด?',
+          options: ['ข้อมูลต้องเปิดให้ทุกคนเข้าถึงได้โดยไม่ต้องใช้รหัสผ่าน', 'ข้อมูลต้องถูกปกป้องให้เฉพาะผู้ที่มีสิทธิ์เท่านั้นจึงจะเปิดอ่านหรือเข้าถึงได้', 'ระบบต้องเปิดใช้งานได้ตลอด 24 ชั่วโมง', 'ข้อมูลต้องถูกบีบอัดให้มีขนาดเล็กที่สุด'],
+          ans: 1,
+          exp: 'CIA Triad ประกอบด้วย Confidentiality (ความลับ), Integrity (ความถูกต้องสมบูรณ์ของข้อมูล) และ Availability (ความพร้อมใช้งาน)'
         }
       ]
     },
@@ -1328,7 +1544,7 @@
         name: 'Access Sovereign',
         thName: 'จักรพรรดิควบคุมสิทธิ์',
         sprite: 'access_sovereign',
-        hp: 175,
+        hp: 270,
         atk: 26,
         taunt: 'ให้สิทธิ์ Administrator กับทุกคนเมื่อไหร่ ระบบจะถูกทำลายจากภายในทันที!'
       },
@@ -1445,6 +1661,30 @@
           options: ['Full Control', 'Modify', 'Read (ยึดสิทธิ์ที่เข้มงวดกว่า)', 'Write Only'],
           ans: 2,
           exp: 'เมื่อ Share Permission และ NTFS Permission ทำงานร่วมกัน ระบบจะเลือกใช้สิทธิ์ที่เข้มงวดกว่า (Most Restrictive) คือ Read'
+        },
+        {
+          q: 'ในการสร้างบัญชีผู้ใช้บน Windows ตัวเลือก "User must change password at next logon" มีความหมายว่าอย่างไร?',
+          options: ['บังคับให้ผู้ใช้ต้องตั้งรหัสผ่านใหม่ทันทีเมื่อลงชื่อเข้าใช้งานครั้งแรก', 'ห้ามผู้ใช้เปลี่ยนรหัสผ่านตลอดไป', 'รหัสผ่านไม่มีวันหมดอายุ', 'ระงับบัญชีผู้ใช้ชั่วคราว'],
+          ans: 0,
+          exp: 'ตัวเลือกนี้ช่วยให้ผู้ดูแลตั้งรหัสผ่านชั่วคราวให้ แล้วบังคับผู้ใช้เปลี่ยนเป็นรหัสลับของตนเองเมื่อล็อกอินครั้งแรก'
+        },
+        {
+          q: 'หากต้องการปิดการใช้งานบัญชีผู้ใช้ชั่วคราวโดยไม่ลบบัญชีและข้อมูลเดิมทิ้ง ควรติ๊กตัวเลือกใดใน User Properties?',
+          options: ['Account is disabled', 'Password never expires', 'User cannot change password', 'Full Control'],
+          ans: 0,
+          exp: 'Account is disabled จะระงับไม่ให้บัญชีนั้นล็อกอินเข้าใช้งานได้ชั่วคราว แต่ยังคงเก็บโปรไฟล์และไฟล์เดิมไว้ครบถ้วน'
+        },
+        {
+          q: 'สิทธิ์ NTFS Permission ระดับ "Modify" แตกต่างจาก "Full Control" อย่างไร?',
+          options: ['Modify อ่าน เขียน แก้ไข และลบไฟล์ได้ แต่ไม่สามารถเปลี่ยนสิทธิ์ (Change Permissions) หรือยึดสิทธิ์เจ้าของ (Take Ownership) ได้เหมือน Full Control', 'Modify อ่านไฟล์ได้อย่างเดียว ห้ามแก้ไข', 'Modify ลบไฟล์ไม่ได้', 'Full Control ไม่สามารถอ่านไฟล์ได้'],
+          ans: 0,
+          exp: 'Full Control มีสิทธิ์สูงสุดรวมถึงการกำหนดสิทธิ์ NTFS ให้ผู้อื่นและการเป็นเจ้าของไฟล์ (Take Ownership) ซึ่ง Modify ทำไม่ได้'
+        },
+        {
+          q: 'สิทธิ์ NTFS ระดับ "Read & Execute" เหมาะสมกับการกำหนดให้ผู้ใช้กลุ่มใดมากที่สุด?',
+          options: ['กลุ่มผู้ใช้ทั่วไปที่ต้องการเปิดอ่านเอกสารและรันโปรแกรมได้ แต่ห้ามแก้ไขหรือลบไฟล์ต้นฉบับ', 'ผู้ดูแลระบบที่ต้องการลบไฟล์ทั้งเซิร์ฟเวอร์', 'ผู้ใช้ที่ถูกห้ามไม่ให้เข้าโฟลเดอร์เลย', 'ผู้ใช้ที่ต้องการเปลี่ยนสิทธิ์ของโฟลเดอร์'],
+          ans: 0,
+          exp: 'Read & Execute อนุญาตให้เปิดดู อ่านไฟล์ และเรียกใช้งานโปรแกรม/สคริปต์ได้ แต่ป้องกันไม่ให้แก้ไขหรือลบไฟล์สำคัญ'
         }
       ]
     }

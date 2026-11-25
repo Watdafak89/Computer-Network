@@ -165,6 +165,9 @@
             global.firebase.initializeApp(config);
           }
           this.auth = global.firebase.auth();
+          try {
+            this.auth.setPersistence(global.firebase.auth.Auth.Persistence.SESSION).catch(() => {});
+          } catch (e) { /* ignore */ }
           this.db = global.firebase.firestore();
           this.mode = 'firebase';
           return { mode: this.mode, projectId: config.projectId, source };
@@ -226,7 +229,12 @@
       if (this.isCloud()) {
         this.authUnsubscribe = this.auth.onAuthStateChanged(async (user) => {
           if (this._authBusy) return;
-          if (!user) {
+          let tabAuthed = false;
+          try { tabAuthed = sessionStorage.getItem('netquest_tab_authed_v1') === '1'; } catch (e) { /* ignore */ }
+          if (!user || !tabAuthed) {
+            if (user && !tabAuthed) {
+              try { await this.auth.signOut(); } catch (e) { /* ignore */ }
+            }
             callback(null);
             return;
           }
@@ -276,9 +284,10 @@
         return;
       }
 
-      // Local Mode session check
+      // Local Mode session check (only restore if already signed in within this browser tab)
       try {
-        const sid = localStorage.getItem(LOCAL_SESSION_KEY);
+        const tabAuthed = sessionStorage.getItem('netquest_tab_authed_v1') === '1';
+        const sid = tabAuthed ? localStorage.getItem(LOCAL_SESSION_KEY) : null;
         if (sid) {
           const accounts = this.getLocalAccounts();
           const acc = accounts[sid];
@@ -364,6 +373,7 @@
             updatedAtServer: global.firebase.firestore.FieldValue.serverTimestamp()
           });
           localStorage.setItem(LOCAL_BACKUP_PREFIX + uid, JSON.stringify(stateToSave));
+          try { sessionStorage.setItem('netquest_tab_authed_v1', '1'); } catch (e) { /* ignore */ }
           return { ok: true, uid, studentId: cleanId, isTeacher: false, state: stateToSave };
         } catch (err) {
           if (createdUser) {
@@ -429,6 +439,7 @@
               }
             } catch (e) { /* ignore */ }
           }
+          try { sessionStorage.setItem('netquest_tab_authed_v1', '1'); } catch (e) { /* ignore */ }
           return {
             ok: true,
             uid,
@@ -454,12 +465,14 @@
         return { ok: false, error: 'รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง' };
       }
       localStorage.setItem(LOCAL_SESSION_KEY, key);
+      try { sessionStorage.setItem('netquest_tab_authed_v1', '1'); } catch (e) { /* ignore */ }
       return { ok: true, uid: acc.uid, studentId: acc.studentId, isTeacher: key.startsWith('teacher'), state: acc.state };
     },
 
     async logout() {
       await this.flushSave();
       localStorage.removeItem(LOCAL_SESSION_KEY);
+      try { sessionStorage.removeItem('netquest_tab_authed_v1'); } catch (e) { /* ignore */ }
       if (this.isCloud()) {
         try {
           await this.auth.signOut();

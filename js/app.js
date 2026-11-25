@@ -61,6 +61,7 @@
     isTeacher: false,
     cloudQuestions: [],
     lockedUnits: [],
+    courseDataReady: false,
     teacherStudentsList: [],
     teacherSkillSubmissions: [],
     teacherSkillFilterUnit: 'all',
@@ -76,6 +77,72 @@
     battle: null,
     arcade: null,
     labState: {},
+    hpRegenTimerId: null,
+    hpRegenTicksSinceSave: 0,
+
+    isTeacherRow(r) {
+      if (!r) return false;
+      const sid = String(r.studentId || '').trim().toLowerCase();
+      if (r.isTeacher || r.role === 'teacher' || sid === 'watdafak' || sid.startsWith('teacher')) return true;
+      if (this.isTeacher && sid && sid === String(this.state.profile.studentId || '').trim().toLowerCase()) return true;
+      return false;
+    },
+
+    getHpRegenKey() {
+      const uidPart = this.currentUid || this.state.profile.studentId || 'guest';
+      return `netquest_hp_regen_ts_${uidPart}`;
+    },
+
+    touchHpRegenTimestamp() {
+      try { localStorage.setItem(this.getHpRegenKey(), String(Date.now())); } catch (e) { /* ignore */ }
+    },
+
+    applyElapsedHpRegen() {
+      const stats = this.getPlayerStats();
+      if (this.state.hp >= stats.maxHp) {
+        this.touchHpRegenTimestamp();
+        return false;
+      }
+      const now = Date.now();
+      let lastTs = now;
+      try {
+        const raw = Number(localStorage.getItem(this.getHpRegenKey()));
+        if (Number.isFinite(raw) && raw > 0) lastTs = raw;
+      } catch (e) { /* ignore */ }
+      const intervalMs = 15000; // +5 HP every 15 seconds (+20 HP/min)
+      const ticks = Math.floor((now - lastTs) / intervalMs);
+      if (ticks <= 0) return false;
+      const before = this.state.hp;
+      this.state.hp = Math.min(stats.maxHp, this.state.hp + ticks * 5);
+      const remainderMs = (now - lastTs) % intervalMs;
+      try { localStorage.setItem(this.getHpRegenKey(), String(now - remainderMs)); } catch (e) { /* ignore */ }
+      return this.state.hp > before;
+    },
+
+    startHpRegenTimer() {
+      if (this.hpRegenTimerId) return;
+      this.hpRegenTimerId = setInterval(() => {
+        if (!this.currentUid && !this.state.profile.created) return;
+        // Pause passive regen during an active boss battle so combat & Ping Potions stay meaningful
+        if (this.battle && !this.battle.finished) {
+          this.touchHpRegenTimestamp();
+          return;
+        }
+        const stats = this.getPlayerStats();
+        if (this.state.hp >= stats.maxHp) {
+          this.touchHpRegenTimestamp();
+          return;
+        }
+        this.state.hp = Math.min(stats.maxHp, this.state.hp + 5);
+        this.touchHpRegenTimestamp();
+        this.renderHUD();
+        this.hpRegenTicksSinceSave += 1;
+        if (this.state.hp >= stats.maxHp || this.hpRegenTicksSinceSave >= 4) {
+          this.hpRegenTicksSinceSave = 0;
+          this.saveState();
+        }
+      }, 15000);
+    },
 
     init() {
       this.initTheme();
@@ -85,12 +152,27 @@
       this.updateCloudBadge();
       this.renderHUD();
       this.renderDashboard();
+      this.startHpRegenTimer();
+
+      // Hydrate last-known lockedUnits synchronously so refresh never flashes locked units as open
+      try {
+        const cachedLocks = JSON.parse(localStorage.getItem('netquest_locked_units_cache_v1') || 'null');
+        if (Array.isArray(cachedLocks)) this.lockedUnits = cachedLocks;
+      } catch (e) { /* ignore */ }
+
+      // Always show Login screen immediately when opening a fresh link/tab
+      let tabAuthed = false;
+      try { tabAuthed = sessionStorage.getItem('netquest_tab_authed_v1') === '1'; } catch (e) { /* ignore */ }
+      if (!tabAuthed) {
+        this.openAuthModal('login');
+      }
 
       if (global.FirebaseService) {
         FirebaseService.onAuthReady(async (session) => {
           if (!session) {
             this.currentUid = null;
             this.isTeacher = false;
+            this.courseDataReady = false;
             this.state = createDefaultState();
             document.body.classList.remove('crt-active');
             this.renderHUD();
@@ -104,8 +186,10 @@
           this.applyLoadedState(session.state, session.studentId);
           this.ensureTeacherDefaultProfile(session.studentId);
           this.syncDailyReset();
+          if (this.applyElapsedHpRegen()) this.saveState();
           document.body.classList.toggle('crt-active', Boolean(this.state.crt));
           await this.refreshCloudCourseData();
+          this.courseDataReady = true;
           this.closeModal('modal-auth');
           this.renderHUD();
           this.renderDashboard();
@@ -114,8 +198,10 @@
           }
         });
       } else {
+        this.courseDataReady = true;
         this.loadState();
         this.syncDailyReset();
+        this.applyElapsedHpRegen();
         if (this.state.crt) document.body.classList.add('crt-active');
         this.renderHUD();
         this.renderDashboard();
@@ -132,13 +218,20 @@
       }
       try {
         this.lockedUnits = await FirebaseService.fetchLockedUnits();
+        try { localStorage.setItem('netquest_locked_units_cache_v1', JSON.stringify(this.lockedUnits)); } catch (e2) { /* ignore */ }
       } catch (e) {
-        this.lockedUnits = [];
+        // Keep cached lockedUnits on transient failure instead of wiping to []
       }
       if (typeof FirebaseService.subscribeLockedUnits === 'function') {
         FirebaseService.subscribeLockedUnits((locked) => {
           this.lockedUnits = locked;
+          try { localStorage.setItem('netquest_locked_units_cache_v1', JSON.stringify(this.lockedUnits)); } catch (e2) { /* ignore */ }
           this.renderDashboard();
+          const stageEl = document.getElementById('view-stage');
+          if (!this.isTeacher && stageEl && !stageEl.classList.contains('hidden') && this.isUnitLocked(this.currentUnitId)) {
+            this.showWorldMap();
+            this.toast(`🔒 หน่วยการเรียนรู้ที่ ${this.currentUnitId} ถูกล็อกโดยครูผู้สอนแล้ว`);
+          }
           if (!document.getElementById('modal-teacher')?.classList.contains('hidden')) {
             this.renderTeacherUnitLocks();
           }
@@ -458,7 +551,12 @@
 
       const hpPct = Math.max(0, Math.min(100, Math.round((this.state.hp / stats.maxHp) * 100)));
       document.getElementById('hud-hp-fill').style.width = `${hpPct}%`;
-      document.getElementById('hud-hp-text').textContent = `${this.state.hp}/${stats.maxHp}`;
+      const hpTextEl = document.getElementById('hud-hp-text');
+      const isRegenActive = this.state.hp < stats.maxHp && !(this.battle && !this.battle.finished);
+      hpTextEl.textContent = isRegenActive
+        ? `${this.state.hp}/${stats.maxHp} (+5/15s)`
+        : `${this.state.hp}/${stats.maxHp}`;
+      hpTextEl.title = 'HP ฟื้นฟูอัตโนมัติ +5 ทุก 15 วินาทีเมื่ออยู่นอกฉากต่อสู้';
 
       let xpPct = 100;
       let xpLabel = `${this.state.xp} XP (MAX)`;
@@ -889,8 +987,11 @@
     showWorldMap() {
       soundFX.playSelect();
       this.stopBattleTimer();
+      this.battle = null;
+      this.touchHpRegenTimestamp();
       document.getElementById('view-stage').classList.add('hidden');
       document.getElementById('view-dashboard').classList.remove('hidden');
+      this.renderHUD();
       this.renderDashboard();
     },
 
@@ -1006,6 +1107,10 @@
 
     /* ---------------- UNIT STAGE (CODEX / LAB / BOSS) ---------------- */
     openUnit(unitId) {
+      if (!this.isTeacher && !this.courseDataReady) {
+        this.toast('⏳ กำลังซิงก์สถานะบทเรียนจากระบบ กรุณารอสักครู่...');
+        return;
+      }
       if (!this.isTeacher && this.isUnitLocked(unitId)) {
         soundFX.playPlayerHurt();
         this.toast(`🔒 หน่วยการเรียนรู้ที่ ${unitId} ถูกล็อกโดยครูผู้สอนชั่วคราว (รอครูปลดล็อกก่อนเข้าเรียน)`);
@@ -1637,7 +1742,7 @@
         </div>
       `;
       if (firstComplete) {
-        this.addRewards(60, 20, `ส่งแบบฝึกทักษะบทที่ ${unitId}`);
+        this.addRewards(150, 35, `ส่งแบบฝึกทักษะบทที่ ${unitId}`);
       } else {
         this.toast(`☁️ อัปเดตและส่งแบบฝึกทักษะบทที่ ${unitId} ให้ครูเรียบร้อย!`);
       }
@@ -1700,7 +1805,7 @@
         this.state.daily.labsCompletedToday += 1;
       }
       this.refreshStageBadges();
-      this.addRewards(firstTime ? 130 : 0, firstTime ? 45 : 0, msg || `ผ่านปฏิบัติการ Lab หน่วยที่ ${unitId}`);
+      this.addRewards(firstTime ? 150 : 0, firstTime ? 45 : 0, msg || `ผ่านปฏิบัติการ Lab หน่วยที่ ${unitId}`);
     },
 
     /* === LAB 1: Topology Architect & Fault Simulator === */
@@ -3353,11 +3458,18 @@
     },
 
     startBossBattle(unitId) {
+      if (!this.isTeacher && (!this.courseDataReady || this.isUnitLocked(unitId))) {
+        soundFX.playPlayerHurt();
+        this.toast(`🔒 หน่วยการเรียนรู้ที่ ${unitId} ถูกล็อกโดยครูผู้สอนชั่วคราว`);
+        this.showWorldMap();
+        return;
+      }
       soundFX.playLaserAttack();
       const unit = GameData.UNITS.find((u) => u.id === unitId);
       const stats = this.getPlayerStats();
-      this.state.hp = stats.maxHp; // Full heal on entering battle stage
-      this.renderHUD();
+      this.applyElapsedHpRegen();
+      if (this.state.hp < 20) this.state.hp = Math.min(stats.maxHp, 20);
+      this.touchHpRegenTimestamp();
 
       const questions = this.getUnitQuestions(unitId);
       const labCleared = this.state.unitProgress[unitId].labCleared;
@@ -3373,10 +3485,12 @@
         correctCount: 0,
         shieldActive: false,
         answered: false,
+        finished: false,
         timeLeft: 25 + stats.timeBonus,
         timerId: null,
         labAtkBonus: labCleared ? 10 : 0
       };
+      this.renderHUD();
       this.renderBattleUI();
       this.startBattleTimer();
     },
@@ -3560,6 +3674,10 @@
           b.shieldActive = false;
         }
         this.state.hp = Math.max(0, this.state.hp - dmgTaken);
+        if (dmgTaken > 0) {
+          this.touchHpRegenTimestamp();
+          this.saveState(true);
+        }
         soundFX.playPlayerHurt();
         const heroEl = document.getElementById('hero-sprite-stage');
         if (heroEl) heroEl.classList.add('sprite-hit');
@@ -3607,7 +3725,9 @@
 
     finishBattle(won) {
       const b = this.battle;
+      if (b) b.finished = true;
       this.stopBattleTimer();
+      this.touchHpRegenTimestamp();
       const totalQ = b.questions.length;
       const pct = Math.round((b.correctCount / totalQ) * 100);
       const stars = won ? (pct >= 90 ? 3 : pct >= 70 ? 2 : 1) : 0;
@@ -3621,14 +3741,24 @@
         if (stars > prog.stars) prog.stars = stars;
         this.state.daily.bossesDefeatedToday += 1;
         this.refreshStageBadges();
-        const bossXp = firstBossClear ? (200 + b.correctCount * 20) : 15;
+        const bossXp = firstBossClear ? (160 + b.correctCount * 12) : 0;
         const bossCoins = firstBossClear ? (60 + b.maxCombo * 5) : 0;
-        this.addRewards(bossXp, bossCoins, `ปราบบอส ${b.unit.boss.thName}`);
+        if (bossXp > 0 || bossCoins > 0) {
+          this.addRewards(bossXp, bossCoins, `ปราบบอส ${b.unit.boss.thName}`);
+        } else {
+          this.checkBadges();
+          this.saveState(true);
+          this.renderHUD();
+          this.renderDashboard();
+          this.toast(`⚔️ ฝึกซ้อมปราบบอส ${b.unit.boss.thName} สำเร็จ! (รับรางวัลรอบแรกไปแล้ว)`);
+        }
       } else {
         soundFX.playPlayerHurt();
         const stats = this.getPlayerStats();
-        this.state.hp = stats.maxHp;
+        this.state.hp = Math.max(20, Math.round(stats.maxHp * 0.25));
+        this.saveState();
         this.renderHUD();
+        this.toast('💚 HP จะฟื้นฟูอัตโนมัติ +5 ทุก 15 วินาที (หรือซื้อ Ping Potion ในร้านค้า)');
       }
 
       document.getElementById('stage-body-boss').innerHTML = `
@@ -3750,7 +3880,9 @@
       const rawList = global.FirebaseService
         ? await FirebaseService.fetchLeaderboard(fallback)
         : fallback;
-      const list = [...rawList].sort((a, b) => (b.arcadeHighScore || 0) - (a.arcadeHighScore || 0));
+      const list = [...rawList]
+        .filter((r) => !this.isTeacherRow(r))
+        .sort((a, b) => (b.arcadeHighScore || 0) - (a.arcadeHighScore || 0));
       const isCloud = global.FirebaseService && FirebaseService.isCloud();
 
       body.innerHTML = `
@@ -3806,11 +3938,15 @@
           a.finished = true;
           const isRecord = a.score > this.state.arcadeHighScore;
           if (isRecord) this.state.arcadeHighScore = a.score;
-          const rewardXp = Math.min(200, Math.round(a.score / 5));
-          const withinDailyCoinCap = (this.state.daily.arcadeRunsToday || 0) <= 3;
-          const rewardCoins = withinDailyCoinCap ? Math.min(50, Math.round(a.score / 15)) : 0;
-          if (rewardXp > 0) this.addRewards(rewardXp, rewardCoins, `จบเกม Endless Arcade (${a.score} แต้ม)`);
-          else if (isRecord) this.saveState(true);
+          const withinDailyRewardCap = (this.state.daily.arcadeRunsToday || 0) <= 3;
+          const rewardXp = withinDailyRewardCap ? Math.min(80, Math.round(a.score / 10)) : 0;
+          const rewardCoins = withinDailyRewardCap ? Math.min(40, Math.round(a.score / 18)) : 0;
+          if (rewardXp > 0 || rewardCoins > 0) {
+            this.addRewards(rewardXp, rewardCoins, `จบเกม Endless Arcade (${a.score} แต้ม)`);
+          } else {
+            if (isRecord) this.saveState(true);
+            this.toast(`🕹️ จบเกมอาร์เคด (${a.score} แต้ม) — รับโบนัส XP/เหรียญครบ 3 รอบ/วันแล้ว ยังเล่นทำสถิติสูงสุดได้ต่อ!`);
+          }
         }
         body.innerHTML = `
           <div style="text-align:center; padding:24px;">
@@ -3921,7 +4057,7 @@
     },
 
     syncLeaderboardEntry() {
-      if (!this.state.profile.created) return;
+      if (!this.state.profile.created || this.isTeacher) return;
       let list = this.getLeaderboardData();
       const { current } = this.getRankInfo(this.state.xp);
       const cleared = Object.values(this.state.unitProgress).filter((u) => u.bossCleared).length;
@@ -3950,9 +4086,10 @@
       document.getElementById('modal-leaderboard').classList.remove('hidden');
 
       const fallback = this.getLeaderboardData();
-      const list = global.FirebaseService
+      const rawList = global.FirebaseService
         ? await FirebaseService.fetchLeaderboard(fallback)
         : fallback;
+      const list = rawList.filter((r) => !this.isTeacherRow(r));
       const isCloud = global.FirebaseService && FirebaseService.isCloud();
 
       document.getElementById('leaderboard-body').innerHTML = `
@@ -4000,9 +4137,10 @@
 
     async exportCSV() {
       const fallback = this.getLeaderboardData();
-      const list = global.FirebaseService
+      const rawList = global.FirebaseService
         ? await FirebaseService.fetchLeaderboard(fallback)
         : fallback;
+      const list = rawList.filter((r) => !this.isTeacherRow(r));
       const header = ['Rank', 'StudentID', 'Name', 'ClassRoom', 'Level', 'XP', 'UnitsCleared', 'Badges', 'UpdatedAt'];
       const rows = list.map((r, i) => [
         i + 1, r.studentId, `"${r.name}"`, `"${r.classRoom}"`, r.level, r.xp, `${r.unitsCleared}/${GameData.UNITS.length}`, r.badgeCount, r.updatedAt
