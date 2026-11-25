@@ -190,6 +190,10 @@
       if (this.state.profile.name && this.state.profile.name.trim()) {
         this.state.profile.created = true;
       }
+      this.state.xp = Math.max(0, Math.round(Number(this.state.xp) || 0));
+      this.state.coins = Math.max(0, Math.round(Number(this.state.coins) || 0));
+      this.state.hp = Math.max(0, Math.round(Number(this.state.hp) || 100));
+      this.state.arcadeHighScore = Math.max(0, Math.round(Number(this.state.arcadeHighScore) || 0));
     },
 
     loadState() {
@@ -316,27 +320,34 @@
 
     addRewards(rawXp, rawCoins, reason) {
       const stats = this.getPlayerStats();
+      this.state.xp = Math.max(0, Math.round(Number(this.state.xp) || 0));
+      this.state.coins = Math.max(0, Math.round(Number(this.state.coins) || 0));
       const oldLevel = this.getRankInfo(this.state.xp).current.level;
-      const gainedXp = Math.round(rawXp * stats.xpMult);
-      const gainedCoins = Math.round(rawCoins * stats.coinMult);
+      const gainedXp = Math.max(0, Math.round((Number(rawXp) || 0) * stats.xpMult));
+      const gainedCoins = Math.max(0, Math.round((Number(rawCoins) || 0) * stats.coinMult));
       this.state.xp += gainedXp;
       this.state.coins += gainedCoins;
       const newLevel = this.getRankInfo(this.state.xp).current.level;
 
       if (reason) {
-        const coinText = gainedCoins > 0 ? `, +${gainedCoins} 🪙` : ' (ฝึกซ้ำไม่เพิ่มเหรียญ)';
-        this.toast(`✨ ${reason}: +${gainedXp} XP${coinText}`);
+        if (gainedXp === 0 && gainedCoins === 0) {
+          this.toast(`✅ ${reason} (ฝึกซ้ำสำเร็จ — ได้รับรางวัลครั้งแรกไปแล้ว)`);
+        } else {
+          const coinText = gainedCoins > 0 ? `, +${gainedCoins} 🪙` : '';
+          this.toast(`✨ ${reason}: +${gainedXp} XP${coinText}`);
+        }
       }
       if (newLevel > oldLevel) {
         soundFX.playLevelUp();
         this.state.hp = stats.maxHp;
         this.toast(`🎉 LEVEL UP! เลื่อนระดับเป็น LV.${newLevel}! ฟื้น HP เต็ม!`);
-      } else {
+      } else if (gainedXp > 0 || gainedCoins > 0) {
         soundFX.playCoin();
       }
       this.checkBadges();
-      this.saveState();
+      this.saveState(true);
       this.renderHUD();
+      this.renderDashboard();
     },
 
     unlockBadge(badgeId) {
@@ -1463,8 +1474,9 @@
       }
 
       const evalRes = this.evaluateSkillAnswers(unitId, saved.answers);
-      const firstComplete = !saved.completed;
+      const firstComplete = !saved.completed && !saved.rewarded && !this.activeSkillSubmission;
       saved.completed = true;
+      saved.rewarded = true;
       try { localStorage.setItem(this.getSkillStorageKey(unitId), JSON.stringify(saved)); } catch (e) { /* ignore */ }
 
       let cloudMsg = '';
@@ -1560,9 +1572,11 @@
       const prog = this.state.unitProgress[unitId];
       const firstTime = !prog.labCleared;
       prog.labCleared = true;
-      this.state.daily.labsCompletedToday += 1;
+      if (firstTime) {
+        this.state.daily.labsCompletedToday += 1;
+      }
       this.refreshStageBadges();
-      this.addRewards(firstTime ? 130 : 15, firstTime ? 45 : 0, msg || `ผ่านปฏิบัติการ Lab หน่วยที่ ${unitId}`);
+      this.addRewards(firstTime ? 130 : 0, firstTime ? 45 : 0, msg || `ผ่านปฏิบัติการ Lab หน่วยที่ ${unitId}`);
     },
 
     /* === LAB 1: Topology Architect & Fault Simulator === */
@@ -3483,8 +3497,8 @@
         if (stars > prog.stars) prog.stars = stars;
         this.state.daily.bossesDefeatedToday += 1;
         this.refreshStageBadges();
-        const bossXp = firstBossClear ? (200 + b.correctCount * 20) : 40;
-        const bossCoins = firstBossClear ? (60 + b.maxCombo * 5) : 10;
+        const bossXp = firstBossClear ? (200 + b.correctCount * 20) : 15;
+        const bossCoins = firstBossClear ? (60 + b.maxCombo * 5) : 0;
         this.addRewards(bossXp, bossCoins, `ปราบบอส ${b.unit.boss.thName}`);
       } else {
         soundFX.playPlayerHurt();
@@ -3551,7 +3565,7 @@
         alert('เหรียญ BitCoins ไม่เพียงพอ! ลองทำ Lab หรือตอบคำถามเพื่อสะสมเหรียญเพิ่มนะ');
         return;
       }
-      this.state.coins -= item.price;
+      this.state.coins = Math.max(0, Math.round(Number(this.state.coins) || 0) - item.price);
       if (item.type === 'equipment') {
         this.state.equipment.push(id);
         this.state.hp = this.getPlayerStats().maxHp;
@@ -3561,7 +3575,7 @@
       this.unlockBadge('shopaholic');
       soundFX.playCoin();
       this.toast(`🛒 ซื้อ ${item.name} สำเร็จ!`);
-      this.saveState();
+      this.saveState(true);
       this.renderHUD();
       this.renderShop();
     },
