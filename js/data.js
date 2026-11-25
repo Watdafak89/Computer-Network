@@ -180,6 +180,7 @@
     { id: 'streak_20', name: 'สตรีคสายฟ้า 20 ข้อ', desc: 'ตอบคำถามศึกดวลบอสถูกติดต่อกัน 20 ข้อข้ามด่านโดยไม่ผิดเลย', icon: '⚡', color: '#eab308', special: true, rarity: 'EPIC' },
     { id: 'streak_30', name: 'ดาวหางไร้เทียมทาน 30 ข้อ', desc: 'ตอบคำถามศึกดวลบอสถูกติดต่อกัน 30 ข้อข้ามด่านโดยไม่ผิดเลย', icon: '☄️', color: '#ec4899', special: true, rarity: 'LEGENDARY' },
     { id: 'streak_100', name: 'ปรมาจารย์ไร้พ่าย 100 ข้อ (10 หน่วย)', desc: 'ตอบคำถามศึกดวลบอสถูกติดต่อกัน 100 ข้อ หรือทำคะแนนเต็ม 100% ครบทั้ง 10 หน่วย', icon: '🏆', color: '#facc15', special: true, rarity: 'MYTHIC' },
+    { id: 'tank_champion', name: 'ผู้บัญชาการรถถัง 1990', desc: 'พิชิตครบทั้ง 10 ด่านในเกม BATTLE CITY 1990', icon: '🪖', color: '#f59e0b', special: true, rarity: 'LEGENDARY' },
     { id: 'teacher_grandmaster', name: 'ปรมาจารย์ผู้สอนเครือข่าย', desc: 'เหรียญตราเกียรติยศเฉพาะบัญชีครูผู้สอน NetQuest', icon: '👑', color: '#facc15', special: true, teacherOnly: true, rarity: 'MYTHIC' }
   ];
 

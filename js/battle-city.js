@@ -125,21 +125,108 @@
       '.B..B...B..B.',
       '.............',
       '.............'
+    ],
+    // Stage 6: Iron Bridge
+    [
+      '.............',
+      '.BB.S...S.BB.',
+      '.BB.S.B.S.BB.',
+      '....B.B.B....',
+      'WWWW..B..WWWW',
+      'WWWW..B..WWWW',
+      '.GG.BBBBB.GG.',
+      '.GG..S.S..GG.',
+      '..BB.....BB..',
+      '..BB.BBB.BB..',
+      '.B...B.B...B.',
+      '.............',
+      '.............'
+    ],
+    // Stage 7: Jungle Ambush
+    [
+      '.............',
+      '.GGG.BBB.GGG.',
+      '.GGG.B.B.GGG.',
+      '..B..SSS..B..',
+      '.BB.GGGGG.BB.',
+      '.B..GGGGG..B.',
+      '.S.BB...BB.S.',
+      '...BB.B.BB...',
+      '.GGG.BBB.GGG.',
+      '.B...B.B...B.',
+      '.BB.......BB.',
+      '.............',
+      '.............'
+    ],
+    // Stage 8: Twin Rivers & Ice
+    [
+      '.............',
+      '.S.BB...BB.S.',
+      '...BB.S.BB...',
+      'WW..IIIII..WW',
+      'WW.BIIIIIB.WW',
+      '...B..S..B...',
+      '.BB..BBB..BB.',
+      '.BB.WW.WW.BB.',
+      '....BBBBB....',
+      '.S.BB...BB.S.',
+      '.B..B...B..B.',
+      '.............',
+      '.............'
+    ],
+    // Stage 9: Steel Labyrinth
+    [
+      '.............',
+      '.B.S.BBB.S.B.',
+      '.B...B.B...B.',
+      '.BBB.S.S.BBB.',
+      '...S.....S...',
+      '.BB.BSBSB.BB.',
+      '.GG.B...B.GG.',
+      '.BB.BSBSB.BB.',
+      '...S.....S...',
+      '.BBB..B..BBB.',
+      '.B...BBB...B.',
+      '.............',
+      '.............'
+    ],
+    // Stage 10: Final Imperial Fortress
+    [
+      '.............',
+      '.SS.GGGGG.SS.',
+      '.BB.G.S.G.BB.',
+      '.BB..BBB..BB.',
+      'WW.S.III.S.WW',
+      'WW.B.ISI.B.WW',
+      '.GG..III..GG.',
+      '.BB.SS.SS.BB.',
+      '.BB.BBBBB.BB.',
+      '.S..B...B..S.',
+      '.BB.......BB.',
+      '.............',
+      '.............'
     ]
   ];
+
+  const TOTAL_STAGES = RAW_MAPS.length; // 10 Stages
 
   const EAGLE_WALLS = [
     [5, 11], [6, 11], [7, 11],
     [5, 12],          [7, 12]
   ];
 
-  // Enemy wave compositions per stage (16 tanks per stage for crisp fun pacing)
+  // Enemy wave compositions per stage (10 stages, 16 tanks per stage)
   const STAGE_WAVES = [
     ['basic','basic','basic','basic','fast','basic','basic','power','basic','fast','basic','power','basic','fast','armor','armor'],
     ['basic','fast','basic','power','fast','basic','armor','basic','fast','power','basic','fast','armor','power','fast','armor'],
     ['fast','basic','power','fast','armor','power','basic','fast','armor','power','fast','armor','power','fast','armor','armor'],
     ['power','fast','armor','power','fast','armor','power','fast','armor','power','fast','armor','power','armor','armor','armor'],
-    ['armor','fast','power','armor','fast','power','armor','fast','power','armor','fast','armor','power','armor','armor','armor']
+    ['armor','fast','power','armor','fast','power','armor','fast','power','armor','fast','armor','power','armor','armor','armor'],
+    ['fast','power','basic','armor','fast','power','armor','fast','power','armor','fast','power','armor','power','armor','armor'],
+    ['power','fast','power','armor','fast','power','armor','fast','armor','power','fast','armor','power','armor','armor','armor'],
+    ['fast','armor','power','fast','armor','power','fast','armor','power','armor','fast','armor','power','armor','armor','armor'],
+    ['armor','power','fast','armor','power','armor','fast','power','armor','fast','armor','power','armor','armor','armor','armor'],
+    ['armor','armor','power','fast','armor','power','armor','fast','armor','power','armor','armor','power','armor','armor','armor']
   ];
 
   const ENEMY_SPECS = {
@@ -565,12 +652,26 @@
 
       if (this.gameOver) return;
 
-      // Stage clear progression
+      // Stage clear progression (10 handcrafted stages!)
       if (this.spawnQueue.length === 0 && this.enemies.length === 0) {
         if (this.stageClearTimer === 0) {
-          this.stageClearTimer = 120;
-          this.bannerText = `STAGE ${this.stage} CLEAR!`;
-          this.bannerTimer = 120;
+          this.stageClearTimer = 130;
+          if (this.stage >= TOTAL_STAGES) {
+            this.bannerText = '🏆 VICTORY! พิชิตครบ 10 ด่าน!';
+            this.bannerTimer = 999999;
+            this.gameOver = true;
+            bcAudio.powerup();
+            if (global.App && typeof global.App.unlockBadge === 'function') {
+              global.App.unlockBadge('tank_champion');
+              global.App.saveState(true);
+              global.App.renderHUD();
+              global.App.renderDashboard();
+            }
+            this.updateSidebarUI();
+            return;
+          }
+          this.bannerText = `STAGE ${this.stage} / ${TOTAL_STAGES} CLEAR!`;
+          this.bannerTimer = 130;
           bcAudio.powerup();
         } else {
           this.stageClearTimer -= 1;
@@ -1127,7 +1228,7 @@
       const elIcons = document.getElementById('bc-enemy-icons');
       const elBuffs = document.getElementById('bc-active-buffs');
 
-      if (elStage) elStage.textContent = `STAGE ${this.stage}`;
+      if (elStage) elStage.textContent = `STAGE ${this.stage} / ${TOTAL_STAGES}`;
       if (elLives) elLives.textContent = `🪖 x${Math.max(0, this.lives)}`;
       if (elScore) elScore.textContent = this.score;
       if (elHi) elHi.textContent = this.highScore;
