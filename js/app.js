@@ -79,6 +79,27 @@
     labState: {},
     hpRegenTimerId: null,
     hpRegenTicksSinceSave: 0,
+    bossAnswerStreak: 0,
+
+    getBossStreakKey() {
+      const uidPart = this.currentUid || this.state.profile.studentId || 'guest';
+      return `netquest_boss_streak_${uidPart}`;
+    },
+
+    loadBossStreak() {
+      try {
+        const val = Number(localStorage.getItem(this.getBossStreakKey()) || '0');
+        this.bossAnswerStreak = Number.isFinite(val) && val > 0 ? Math.floor(val) : 0;
+      } catch (e) {
+        this.bossAnswerStreak = 0;
+      }
+      return this.bossAnswerStreak;
+    },
+
+    saveBossStreak(val) {
+      this.bossAnswerStreak = Math.max(0, Math.floor(Number(val) || 0));
+      try { localStorage.setItem(this.getBossStreakKey(), String(this.bossAnswerStreak)); } catch (e) { /* ignore */ }
+    },
 
     isTeacherRow(r) {
       if (!r) return false;
@@ -184,6 +205,7 @@
           this.currentUid = session.uid;
           this.isTeacher = Boolean(session.isTeacher);
           this.applyLoadedState(session.state, session.studentId);
+          this.loadBossStreak();
           this.ensureTeacherDefaultProfile(session.studentId);
           this.syncDailyReset();
           if (this.applyElapsedHpRegen()) this.saveState();
@@ -459,11 +481,13 @@
       const totalUnits = GameData.UNITS.length;
       let clearedCount = 0;
       let labCount = 0;
+      let perfectUnitsCount = 0;
       for (let i = 1; i <= totalUnits; i++) {
         const up = this.state.unitProgress[i];
         if (up && up.bossCleared) {
           clearedCount++;
           this.unlockBadge(`unit${i}_clear`);
+          if ((up.bestScore || 0) >= 100) perfectUnitsCount++;
         }
         if (up && up.labCleared) labCount++;
       }
@@ -473,6 +497,10 @@
       if (labCount >= 5) this.unlockBadge('lab_scientist');
       if ((this.state.equipment || []).length >= 4) this.unlockBadge('full_equip');
       if (this.getRankInfo(this.state.xp).current.level >= 10) this.unlockBadge('max_level_legend');
+      if (this.bossAnswerStreak >= 10) this.unlockBadge('streak_10');
+      if (this.bossAnswerStreak >= 20) this.unlockBadge('streak_20');
+      if (this.bossAnswerStreak >= 30) this.unlockBadge('streak_30');
+      if (this.bossAnswerStreak >= 100 || perfectUnitsCount >= totalUnits) this.unlockBadge('streak_100');
       if (this.isTeacher) this.unlockBadge('teacher_grandmaster');
     },
 
@@ -635,6 +663,7 @@
               <span class="profile-stat-chip">🪙 ${this.state.coins} BitCoins</span>
               <span class="profile-stat-chip">🚩 ผ่าน ${clearedUnits}/${GameData.UNITS.length} หน่วย</span>
               <span class="profile-stat-chip">🏅 เหรียญตรา ${this.state.badges.length}/${GameData.BADGES.length}</span>
+              <span class="profile-stat-chip">🔥 สตรีคตอบถูกต่อเนื่อง ${this.bossAnswerStreak} ข้อ</span>
             </div>
           </div>
         </div>
@@ -3646,9 +3675,16 @@
       if (isCorrect) {
         b.combo += 1;
         b.correctCount += 1;
+        this.saveBossStreak(this.bossAnswerStreak + 1);
         if (b.combo > b.maxCombo) b.maxCombo = b.combo;
         if (b.combo > this.state.daily.bestComboToday) this.state.daily.bestComboToday = b.combo;
+        const beforeBadgeLen = this.state.badges.length;
         if (b.combo >= 4) this.unlockBadge('combo_master');
+        if (this.bossAnswerStreak >= 10) this.unlockBadge('streak_10');
+        if (this.bossAnswerStreak >= 20) this.unlockBadge('streak_20');
+        if (this.bossAnswerStreak >= 30) this.unlockBadge('streak_30');
+        if (this.bossAnswerStreak >= 100) this.unlockBadge('streak_100');
+        if (this.state.badges.length !== beforeBadgeLen) this.saveState(true);
 
         const isCrit = Math.random() < stats.crit;
         const baseDmg = stats.atk + b.labAtkBonus + (b.combo - 1) * 5;
@@ -3661,13 +3697,14 @@
 
         fb.innerHTML = `
           <div class="pixel-box" style="padding:12px; border-color:var(--emerald); background:rgba(16,185,129,0.12);">
-            <b style="color:var(--emerald);">⚔️ โจมตีบอส -${dmg} HP! ${isCrit ? '💥 CRITICAL HIT!' : ''} (Combo x${b.combo})</b>
+            <b style="color:var(--emerald);">⚔️ โจมตีบอส -${dmg} HP! ${isCrit ? '💥 CRITICAL HIT!' : ''} (Combo x${b.combo} | 🔥 สตรีคสะสม ${this.bossAnswerStreak} ข้อ)</b>
             <div style="font-size:0.88rem; margin-top:4px;">💡 เฉลย: ${q.exp}</div>
             <button class="px-btn px-btn-cyan px-btn-sm" style="margin-top:10px;" onclick="App.nextBattleStep()">ดำเนินการต่อ ➜</button>
           </div>
         `;
       } else {
         b.combo = 0;
+        this.saveBossStreak(0);
         let dmgTaken = Math.round(b.unit.boss.atk * (1 - stats.def));
         if (b.shieldActive) {
           dmgTaken = 0;

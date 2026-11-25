@@ -176,6 +176,10 @@
     { id: 'lab_scientist', name: 'นักวิทยาศาสตร์ห้องแล็บ', desc: 'ผ่านห้องปฏิบัติการจำลอง (Pixel Lab) ครบ 5 หน่วยขึ้นไป', icon: '🔬', color: '#06b6d4', special: true, rarity: 'RARE' },
     { id: 'full_equip', name: 'นักรบชุดเกราะเต็มยศ', desc: 'สวมใส่อุปกรณ์ถาวรจาก Pixel Shop ครบทั้ง 4 ชิ้น', icon: '⚔️', color: '#ec4899', special: true, rarity: 'EPIC' },
     { id: 'max_level_legend', name: 'ตำนานไซเบอร์ LV.10', desc: 'สะสมค่าประสบการณ์จนบรรลุเลเวลสูงสุด LV.10 (6,000 XP)', icon: '💎', color: '#a855f7', special: true, rarity: 'LEGENDARY' },
+    { id: 'streak_10', name: 'คอมโบ 10 ข้อไร้พลาด', desc: 'ตอบคำถามศึกดวลบอสถูกติดต่อกัน 10 ข้อโดยไม่ผิดเลย', icon: '🔥', color: '#f97316', special: true, rarity: 'RARE' },
+    { id: 'streak_20', name: 'สตรีคสายฟ้า 20 ข้อ', desc: 'ตอบคำถามศึกดวลบอสถูกติดต่อกัน 20 ข้อข้ามด่านโดยไม่ผิดเลย', icon: '⚡', color: '#eab308', special: true, rarity: 'EPIC' },
+    { id: 'streak_30', name: 'ดาวหางไร้เทียมทาน 30 ข้อ', desc: 'ตอบคำถามศึกดวลบอสถูกติดต่อกัน 30 ข้อข้ามด่านโดยไม่ผิดเลย', icon: '☄️', color: '#ec4899', special: true, rarity: 'LEGENDARY' },
+    { id: 'streak_100', name: 'ปรมาจารย์ไร้พ่าย 100 ข้อ (10 หน่วย)', desc: 'ตอบคำถามศึกดวลบอสถูกติดต่อกัน 100 ข้อ หรือทำคะแนนเต็ม 100% ครบทั้ง 10 หน่วย', icon: '🏆', color: '#facc15', special: true, rarity: 'MYTHIC' },
     { id: 'teacher_grandmaster', name: 'ปรมาจารย์ผู้สอนเครือข่าย', desc: 'เหรียญตราเกียรติยศเฉพาะบัญชีครูผู้สอน NetQuest', icon: '👑', color: '#facc15', special: true, teacherOnly: true, rarity: 'MYTHIC' }
   ];
 
