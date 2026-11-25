@@ -143,10 +143,10 @@
   ];
 
   const ENEMY_SPECS = {
-    basic: { hp: 1, speed: 0.78, bulletSpeed: 2.6, fireRate: 145, score: 100, body: '#cbd5e1', accent: '#64748b' },
-    fast:  { hp: 1, speed: 1.25, bulletSpeed: 3.1, fireRate: 120, score: 200, body: '#38bdf8', accent: '#0369a1' },
-    power: { hp: 1, speed: 0.95, bulletSpeed: 3.9, fireRate: 100, score: 300, body: '#4ade80', accent: '#15803d' },
-    armor: { hp: 4, speed: 0.75, bulletSpeed: 3.2, fireRate: 115, score: 400, body: '#facc15', accent: '#a16207' }
+    basic: { hp: 1, speed: 0.52, bulletSpeed: 2.0, fireRate: 185, score: 100, body: '#cbd5e1', accent: '#64748b' },
+    fast:  { hp: 1, speed: 0.88, bulletSpeed: 2.4, fireRate: 155, score: 200, body: '#38bdf8', accent: '#0369a1' },
+    power: { hp: 1, speed: 0.68, bulletSpeed: 3.0, fireRate: 130, score: 300, body: '#4ade80', accent: '#15803d' },
+    armor: { hp: 4, speed: 0.52, bulletSpeed: 2.5, fireRate: 145, score: 400, body: '#facc15', accent: '#a16207' }
   };
 
   // Retro Web Audio SFX (independent & lightweight)
@@ -444,7 +444,7 @@
     },
 
     spawnEnemy() {
-      const maxSimultaneous = this.stage === 1 ? 3 : 4;
+      const maxSimultaneous = this.stage === 1 ? 2 : (this.stage === 2 ? 3 : 4);
       if (this.spawnQueue.length === 0 || this.enemies.length >= maxSimultaneous) return;
       const spots = [0, 6, 12];
       const spotCol = spots[this.spawnIdx % 3];
@@ -464,7 +464,7 @@
       const spec = ENEMY_SPECS[type] || ENEMY_SPECS.basic;
       // Classic Battle City: 4th, 8th, 12th, 15th enemy tanks flash red & drop Power-Ups!
       const isBonus = [4, 8, 12, 15].includes(this.spawnIdx);
-      const stageSpeedScale = this.stage === 1 ? 0.86 : (this.stage === 2 ? 0.96 : 1 + Math.min(0.45, (this.stage - 2) * 0.08));
+      const stageSpeedScale = this.stage === 1 ? 0.78 : (this.stage === 2 ? 0.90 : 1 + Math.min(0.65, (this.stage - 2) * 0.12));
 
       this.enemies.push({
         x: sx,
@@ -476,15 +476,15 @@
         hp: spec.hp,
         maxHp: spec.hp,
         speed: spec.speed * stageSpeedScale,
-        bulletSpeed: spec.bulletSpeed + Math.min(1.0, (this.stage - 1) * 0.15),
-        fireRate: Math.max(55, spec.fireRate - (this.stage - 1) * 6),
-        fireCooldown: 65 + Math.floor(Math.random() * 65),
-        aiTimer: 45 + Math.floor(Math.random() * 60),
+        bulletSpeed: spec.bulletSpeed + Math.min(1.4, (this.stage - 1) * 0.2),
+        fireRate: Math.max(60, spec.fireRate - (this.stage - 1) * 10),
+        fireCooldown: 90 + Math.floor(Math.random() * 80),
+        aiTimer: 55 + Math.floor(Math.random() * 70),
         score: spec.score,
         isBonus,
         bonusDropped: false
       });
-      this.spawnTimer = Math.max(85, 175 - (this.stage - 1) * 18);
+      this.spawnTimer = Math.max(95, 220 - (this.stage - 1) * 24);
       this.updateSidebarUI();
     },
 
