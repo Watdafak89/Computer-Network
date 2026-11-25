@@ -250,7 +250,7 @@
           try { localStorage.setItem('netquest_locked_units_cache_v1', JSON.stringify(this.lockedUnits)); } catch (e2) { /* ignore */ }
           this.renderDashboard();
           const stageEl = document.getElementById('view-stage');
-          if (!this.isTeacher && stageEl && !stageEl.classList.contains('hidden') && this.isUnitLocked(this.currentUnitId)) {
+          if (!this.canBypassUnitLocks() && stageEl && !stageEl.classList.contains('hidden') && this.isUnitLocked(this.currentUnitId)) {
             this.showWorldMap();
             this.toast(`🔒 หน่วยการเรียนรู้ที่ ${this.currentUnitId} ถูกล็อกโดยครูผู้สอนแล้ว`);
           }
@@ -1024,19 +1024,28 @@
       this.renderDashboard();
     },
 
+    isDemoAccount() {
+      const sid = String((this.state && this.state.profile && this.state.profile.studentId) || '').trim().toLowerCase();
+      return sid === '6720901099' || sid === 'demo';
+    },
+
+    canBypassUnitLocks() {
+      return Boolean(this.isTeacher || this.isDemoAccount());
+    },
+
     isUnitLocked(unitId) {
       return Array.isArray(this.lockedUnits) && this.lockedUnits.includes(Number(unitId));
     },
 
     continueNextUnit() {
       for (let i = 1; i <= GameData.UNITS.length; i++) {
-        if (!this.isTeacher && this.isUnitLocked(i)) continue;
+        if (!this.canBypassUnitLocks() && this.isUnitLocked(i)) continue;
         if (!this.state.unitProgress[i] || !this.state.unitProgress[i].bossCleared) {
           this.openUnit(i);
           return;
         }
       }
-      const firstOpen = GameData.UNITS.find((u) => this.isTeacher || !this.isUnitLocked(u.id));
+      const firstOpen = GameData.UNITS.find((u) => this.canBypassUnitLocks() || !this.isUnitLocked(u.id));
       if (firstOpen) this.openUnit(firstOpen.id);
       else this.toast('🔒 ขณะนี้หน่วยการเรียนรู้ทั้งหมดถูกล็อกโดยครูผู้สอน');
     },
@@ -1047,7 +1056,7 @@
       grid.innerHTML = GameData.UNITS.map((u) => {
         const prog = this.state.unitProgress[u.id] || { labCleared: false, bossCleared: false, bestScore: 0, stars: 0 };
         const starsStr = '★'.repeat(prog.stars) + '☆'.repeat(3 - prog.stars);
-        const locked = this.isUnitLocked(u.id);
+        const locked = !this.isDemoAccount() && this.isUnitLocked(u.id);
         return `
           <div class="unit-card ${prog.bossCleared ? 'cleared' : ''} ${locked ? 'locked' : ''}" onclick="App.openUnit(${u.id})">
             <div>
@@ -1136,11 +1145,11 @@
 
     /* ---------------- UNIT STAGE (CODEX / LAB / BOSS) ---------------- */
     openUnit(unitId) {
-      if (!this.isTeacher && !this.courseDataReady) {
+      if (!this.canBypassUnitLocks() && !this.courseDataReady) {
         this.toast('⏳ กำลังซิงก์สถานะบทเรียนจากระบบ กรุณารอสักครู่...');
         return;
       }
-      if (!this.isTeacher && this.isUnitLocked(unitId)) {
+      if (!this.canBypassUnitLocks() && this.isUnitLocked(unitId)) {
         soundFX.playPlayerHurt();
         this.toast(`🔒 หน่วยการเรียนรู้ที่ ${unitId} ถูกล็อกโดยครูผู้สอนชั่วคราว (รอครูปลดล็อกก่อนเข้าเรียน)`);
         return;
@@ -3487,7 +3496,7 @@
     },
 
     startBossBattle(unitId) {
-      if (!this.isTeacher && (!this.courseDataReady || this.isUnitLocked(unitId))) {
+      if (!this.canBypassUnitLocks() && (!this.courseDataReady || this.isUnitLocked(unitId))) {
         soundFX.playPlayerHurt();
         this.toast(`🔒 หน่วยการเรียนรู้ที่ ${unitId} ถูกล็อกโดยครูผู้สอนชั่วคราว`);
         this.showWorldMap();
