@@ -374,7 +374,7 @@
         w: TANK_SIZE,
         h: TANK_SIZE,
         dir: 0,
-        speed: 1.65,
+        speed: 1.15,
         cooldown: 0,
         shieldTimer: initialShield ? 240 : 0, // 4s spawn protection
         slideFrames: 0,
@@ -643,12 +643,12 @@
       const onIce = this.isTankOnTile(p, T_ICE);
       if (moveDir !== null) {
         p.dir = moveDir;
-        const spd = p.speed + (this.starLevel >= 1 ? 0.25 : 0);
+        const spd = p.speed + (this.starLevel >= 1 ? 0.15 : 0);
         this.tryMoveTank(p, DX[p.dir] * spd, DY[p.dir] * spd, null);
         if (onIce) p.slideFrames = 14;
       } else if (p.slideFrames > 0 && onIce) {
         p.slideFrames -= 1;
-        this.tryMoveTank(p, DX[p.dir] * 1.1, DY[p.dir] * 1.1, null);
+        this.tryMoveTank(p, DX[p.dir] * 0.75, DY[p.dir] * 0.75, null);
       }
 
       const firing = this.touchFire || this.keys['Space'] || this.keys[' '] || this.keys['KeyJ'] || this.keys['KeyZ'] || this.keys['j'] || this.keys['z'];
