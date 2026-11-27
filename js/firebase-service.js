@@ -560,6 +560,7 @@
           snap.forEach((doc) => {
             const d = doc.data();
             if (d && d.studentId) {
+              const badgesArr = (d.state && Array.isArray(d.state.badges)) ? d.state.badges : [];
               list.push({
                 name: d.name || d.studentId,
                 studentId: d.studentId,
@@ -569,6 +570,7 @@
                 xp: d.xp || 0,
                 unitsCleared: d.unitsCleared || 0,
                 badgeCount: d.badgeCount || 0,
+                hasGrade4Badge: badgesArr.includes('grade4_sure'),
                 arcadeHighScore: d.arcadeHighScore || 0,
                 updatedAt: d.updatedAt || ''
               });
@@ -588,7 +590,11 @@
       const accounts = this.getLocalAccounts();
       Object.values(accounts).forEach((acc) => {
         if (acc && acc.summary && acc.summary.studentId) {
-          map.set(String(acc.summary.studentId).toLowerCase(), acc.summary);
+          const badgesArr = (acc.state && Array.isArray(acc.state.badges)) ? acc.state.badges : [];
+          map.set(String(acc.summary.studentId).toLowerCase(), {
+            ...acc.summary,
+            hasGrade4Badge: badgesArr.includes('grade4_sure')
+          });
         }
       });
       return Array.from(map.values()).sort((a, b) => (b.xp || 0) - (a.xp || 0));
@@ -855,6 +861,132 @@
         });
       }
       return { ok: failCount === 0, successCount, failCount, updatedMap };
+    },
+
+    async setStudentBadge(targetDoc, badgeId, grant, freshDefaultState) {
+      if (!targetDoc || !targetDoc.uid || !badgeId) {
+        return { ok: false, error: 'ไม่พบข้อมูลบัญชีนักศึกษาหรือรหัสเหรียญตรา' };
+      }
+
+      const uid = targetDoc.uid;
+      const shouldGrant = Boolean(grant);
+
+      const buildUpdatedPayload = (sourceDoc) => {
+        const oldState = (sourceDoc && sourceDoc.state && typeof sourceDoc.state === 'object') ? sourceDoc.state : {};
+        const oldProf = (oldState.profile && typeof oldState.profile === 'object') ? oldState.profile : {};
+
+        const preservedProfile = {
+          name: String(oldProf.name || sourceDoc.name || sourceDoc.studentId || 'ผู้เรียน'),
+          studentId: String(oldProf.studentId || sourceDoc.studentId || ''),
+          classRoom: String(oldProf.classRoom || sourceDoc.classRoom || '-'),
+          heroClass: String(oldProf.heroClass || sourceDoc.heroClass || 'paladin'),
+          created: true
+        };
+
+        const existingBadges = Array.isArray(oldState.badges) ? [...oldState.badges] : ['first_login'];
+        const badgeSet = new Set(existingBadges);
+        if (shouldGrant) badgeSet.add(badgeId);
+        else badgeSet.delete(badgeId);
+        const updatedBadges = [...badgeSet];
+
+        const updatedState = {
+          ...freshDefaultState,
+          profile: preservedProfile,
+          xp: Math.max(0, Math.round(Number(typeof oldState.xp === 'number' ? oldState.xp : (sourceDoc.xp || 0)))),
+          coins: Math.max(0, Math.round(Number(typeof oldState.coins === 'number' ? oldState.coins : freshDefaultState.coins))),
+          hp: Math.max(0, Math.round(Number(typeof oldState.hp === 'number' ? oldState.hp : freshDefaultState.hp))),
+          inventory: { ...freshDefaultState.inventory, ...(oldState.inventory || {}) },
+          equipment: Array.isArray(oldState.equipment) ? [...oldState.equipment] : [],
+          badges: updatedBadges,
+          unitProgress: { ...freshDefaultState.unitProgress, ...(oldState.unitProgress || {}) },
+          daily: { ...freshDefaultState.daily, ...(oldState.daily || {}) },
+          arcadeHighScore: Math.max(0, Math.round(Number(typeof oldState.arcadeHighScore === 'number' ? oldState.arcadeHighScore : (sourceDoc.arcadeHighScore || 0)))),
+          crt: Boolean(oldState.crt)
+        };
+
+        const clearedUnits = Object.values(updatedState.unitProgress).filter((u) => u && u.bossCleared).length;
+        const updatedSummary = {
+          studentId: preservedProfile.studentId,
+          name: preservedProfile.name,
+          classRoom: preservedProfile.classRoom,
+          heroClass: preservedProfile.heroClass,
+          level: Math.max(1, Math.min(10, Number(sourceDoc.level || 1))),
+          xp: updatedState.xp,
+          unitsCleared: Math.max(0, Math.min(10, clearedUnits || Number(sourceDoc.unitsCleared || 0))),
+          badgeCount: updatedBadges.length,
+          arcadeHighScore: updatedState.arcadeHighScore,
+          updatedAt: new Date().toISOString().slice(0, 10)
+        };
+
+        return { updatedState, updatedSummary };
+      };
+
+      if (this.isCloud()) {
+        const user = this.auth && this.auth.currentUser;
+        if (!user) return { ok: false, error: 'กรุณาเข้าสู่ระบบด้วยบัญชีครูผู้สอนก่อน' };
+        try {
+          const tokenRes = await user.getIdTokenResult();
+          if (!tokenRes || !tokenRes.claims || tokenRes.claims.teacher !== true) {
+            return { ok: false, error: 'เฉพาะบัญชีครูผู้สอนที่มีสิทธิ์ teacher: true เท่านั้นที่มอบเหรียญตราได้' };
+          }
+          const snap = await this.db.collection('students').doc(uid).get();
+          const latestDoc = snap.exists ? { uid, ...snap.data() } : targetDoc;
+          const { updatedState, updatedSummary } = buildUpdatedPayload(latestDoc);
+
+          await this.db.collection('students').doc(uid).set({
+            uid,
+            ...updatedSummary,
+            state: updatedState,
+            updatedAtServer: global.firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          try {
+            localStorage.setItem(LOCAL_BACKUP_PREFIX + uid, JSON.stringify(updatedState));
+          } catch (e) { /* ignore */ }
+          return { ok: true, granted: shouldGrant, updatedDoc: { uid, ...updatedSummary, state: updatedState } };
+        } catch (err) {
+          return { ok: false, error: translateFirebaseError(err) };
+        }
+      }
+
+      // Local Mode
+      const key = sanitizeStudentId(targetDoc.studentId || uid.replace(/^local_/, '')).toLowerCase();
+      const accounts = this.getLocalAccounts();
+      if (!accounts[key]) {
+        return { ok: false, error: 'ไม่พบบัญชีนักศึกษาในเครื่องนี้' };
+      }
+      const latestDoc = { uid, ...(accounts[key].summary || {}), state: accounts[key].state || null };
+      const { updatedState, updatedSummary } = buildUpdatedPayload(latestDoc);
+      accounts[key].summary = updatedSummary;
+      accounts[key].state = updatedState;
+      this.saveLocalAccounts(accounts);
+      try {
+        localStorage.setItem(LOCAL_BACKUP_PREFIX + uid, JSON.stringify(updatedState));
+      } catch (e) { /* ignore */ }
+      return { ok: true, granted: shouldGrant, updatedDoc: { uid, ...updatedSummary, state: updatedState } };
+    },
+
+    subscribeStudentDoc(uid, callback) {
+      if (this._unsubStudentDoc) {
+        try { this._unsubStudentDoc(); } catch (e) { /* ignore */ }
+        this._unsubStudentDoc = null;
+      }
+      if (!uid || !this.isCloud() || !this.db || !this.auth || !this.auth.currentUser) return;
+      this._unsubStudentDoc = this.db.collection('students').doc(uid).onSnapshot(
+        (doc) => {
+          if (!doc.exists || (doc.metadata && doc.metadata.hasPendingWrites)) return;
+          if (typeof callback === 'function') callback(doc.data());
+        },
+        (err) => {
+          console.warn('[NetQuest] subscribeStudentDoc error:', err);
+        }
+      );
+    },
+
+    unsubscribeStudentDoc() {
+      if (this._unsubStudentDoc) {
+        try { this._unsubStudentDoc(); } catch (e) { /* ignore */ }
+        this._unsubStudentDoc = null;
+      }
     },
 
     async deleteStudentRecord(uid, studentId) {

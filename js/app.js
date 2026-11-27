@@ -70,6 +70,7 @@
     teacherSkillSearch: '',
     activeGradingDocId: null,
     teacherStudentFilter: '',
+    teacherStudentRoomFilter: 'all',
     currentUnitId: 1,
     currentTab: 'codex',
     selectedClassTemp: 'paladin',
@@ -256,6 +257,28 @@
           }
           if (!document.getElementById('modal-teacher')?.classList.contains('hidden')) {
             this.renderTeacherUnitLocks();
+          }
+        });
+      }
+      if (this.currentUid && typeof FirebaseService.subscribeStudentDoc === 'function') {
+        FirebaseService.subscribeStudentDoc(this.currentUid, (docData) => {
+          const remoteBadges = docData && docData.state && Array.isArray(docData.state.badges)
+            ? docData.state.badges
+            : null;
+          if (!remoteBadges) return;
+          const hadGrade4 = this.state.badges.includes('grade4_sure');
+          const hasGrade4 = remoteBadges.includes('grade4_sure');
+          if (hadGrade4 !== hasGrade4) {
+            if (hasGrade4) {
+              this.state.badges.push('grade4_sure');
+              soundFX.playLevelUp();
+              this.toast('🎉 ครูผู้สอนมอบเหรียญตราพิเศษ "🎓 เกรด4 แน่นอน" ให้คุณแล้ว!');
+            } else {
+              this.state.badges = this.state.badges.filter((id) => id !== 'grade4_sure');
+            }
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); } catch (e) { /* ignore */ }
+            this.renderHUD();
+            this.renderDashboard();
           }
         });
       }
@@ -575,6 +598,8 @@
       document.getElementById('hud-level').textContent = `LV.${current.level}`;
       const teacherBadge = document.getElementById('hud-teacher-badge');
       if (teacherBadge) teacherBadge.classList.toggle('hidden', !this.isTeacher);
+      const grade4Badge = document.getElementById('hud-grade4-badge');
+      if (grade4Badge) grade4Badge.classList.toggle('hidden', !this.state.badges.includes('grade4_sure'));
       const teacherMenuBtn = document.getElementById('btn-teacher-menu');
       const isCloud = global.FirebaseService && FirebaseService.isCloud();
       if (teacherMenuBtn) teacherMenuBtn.classList.toggle('hidden', isCloud ? !this.isTeacher : false);
@@ -926,6 +951,9 @@
       if (global.FirebaseService) {
         if (typeof FirebaseService.unsubscribeLockedUnits === 'function') {
           FirebaseService.unsubscribeLockedUnits();
+        }
+        if (typeof FirebaseService.unsubscribeStudentDoc === 'function') {
+          FirebaseService.unsubscribeStudentDoc();
         }
         await FirebaseService.flushSave();
         await FirebaseService.logout();
@@ -3479,6 +3507,8 @@
 
     renderBossLobby(unit) {
       const prog = this.state.unitProgress[unit.id];
+      const questions = this.getUnitQuestions(unit.id);
+      const totalQ = questions.length;
       const labBuff = prog.labCleared ? '⚡ บัฟห้อง Lab ทำงาน: พลังโจมตี +10 ต่อบอส!' : '💡 คำแนะนำ: ผ่าน Lab ขั้นที่ 2 ก่อนเพื่อรับโบนัสโจมตี +10';
       document.getElementById('stage-body-boss').innerHTML = `
         <div class="battle-arena" style="text-align:center;">
@@ -3486,9 +3516,16 @@
             ${PixelSprites.render(unit.boss.sprite, 108)}
           </div>
           <h2 class="pixel-title" style="color:var(--crimson); font-size:1.4rem;">${unit.boss.name}</h2>
-          <div style="font-size:1.05rem; color:#fff; margin-top:4px;">${unit.boss.thName} (HP: ${unit.boss.hp})</div>
+          <div style="font-size:1.05rem; color:#fff; margin-top:4px;">${unit.boss.thName} (HP: ${unit.boss.hp} | คำถามทั้งหมด ${totalQ} ข้อ)</div>
           <p style="color:var(--amber); margin:10px auto; max-width:560px; font-style:italic;">"${unit.boss.taunt}"</p>
-          <div style="color:var(--cyan); font-size:0.9rem; margin-bottom:16px;">${labBuff}</div>
+          <div style="color:var(--cyan); font-size:0.9rem; margin-bottom:8px;">${labBuff}</div>
+          <div class="boss-rules-box">
+            <div style="font-weight:700; color:var(--amber); margin-bottom:4px;">📋 กติกาการดวลบอสและการให้ดาว (ต้องตอบให้ครบทุกข้อ ${totalQ}/${totalQ} ข้อ):</div>
+            <div>• <b style="color:#facc15;">★★★ (3 ดาว)</b>: ตอบถูกครบทุกข้อ <b>100%</b> (${totalQ}/${totalQ} ข้อ)</div>
+            <div>• <b style="color:#38bdf8;">★★☆ (2 ดาว)</b>: ตอบถูกไม่ครบทุกข้อ แต่ได้ <b>70% – 99%</b> (ลดลง 1 ดาว)</div>
+            <div>• <b style="color:#4ade80;">★☆☆ (1 ดาว)</b>: ตอบถูก <b>50% – 69%</b> (ลดลง 2 ดาว)</div>
+            <div>• <b style="color:#f87171;">ไม่ผ่าน (0 ดาว)</b>: ตอบถูกน้อยกว่า 50% (ต้องลองสู้ใหม่อีกครั้ง)</div>
+          </div>
           <button class="px-btn px-btn-crimson" onclick="App.startBossBattle(${unit.id})">⚔️ เริ่มการต่อสู้กับบอส!</button>
         </div>
       `;
@@ -3517,9 +3554,12 @@
         qIndex: 0,
         bossHp: unit.boss.hp,
         bossMaxHp: unit.boss.hp,
+        overkillDmg: 0,
         combo: 0,
         maxCombo: 0,
         correctCount: 0,
+        wrongCount: 0,
+        eliminatedOptions: [],
         shieldActive: false,
         answered: false,
         finished: false,
@@ -3564,14 +3604,22 @@
       const q = b.questions[b.qIndex];
       const bossPct = Math.max(0, Math.round((b.bossHp / b.bossMaxHp) * 100));
       const heroPct = Math.max(0, Math.round((this.state.hp / stats.maxHp) * 100));
+      const eliminated = Array.isArray(b.eliminatedOptions) ? b.eliminatedOptions : [];
+      const remainingCount = Math.max(1, b.questions.length - b.qIndex);
 
       document.getElementById('stage-body-boss').innerHTML = `
         <div class="battle-arena">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-            <span class="unit-code" style="color:var(--cyan);">ข้อที่ ${b.qIndex + 1} / ${b.questions.length}</span>
+            <span class="unit-code" style="color:var(--cyan);">ข้อที่ ${b.qIndex + 1} / ${b.questions.length} (ถูกแล้ว ${b.correctCount})</span>
             <span id="battle-combo-pill" class="combo-pill">🔥 COMBO x${b.combo}</span>
             <span class="res-pill" style="border-color:var(--amber);">⏱️ เวลา: <b id="battle-timer-val" style="color:var(--amber);">${b.timeLeft}s</b></span>
           </div>
+
+          ${b.bossHp <= 0 ? `
+            <div class="boss-overkill-banner">
+              ⚡ บอสพลังชีวิตหมดแล้ว! (Overkill +${b.overkillDmg}) — ตอบคำถามที่เหลืออีก ${remainingCount} ข้อให้ครบทุกข้อเพื่อปิดฉากและคว้า ★★★ (3 ดาว)!
+            </div>
+          ` : ''}
 
           <div class="battle-stage">
             <div class="combatant">
@@ -3587,18 +3635,21 @@
               <div id="boss-sprite-stage" class="sprite-stage">${PixelSprites.render(b.unit.boss.sprite, 92)}</div>
               <b style="color:var(--crimson);">${b.unit.boss.thName}</b>
               <div class="pixel-bar-track" style="width:180px;"><div id="battle-boss-bar" class="pixel-bar-fill bar-boss" style="width:${bossPct}%"></div></div>
-              <small id="battle-boss-hp-text">${b.bossHp} / ${b.bossMaxHp} HP</small>
+              <small id="battle-boss-hp-text">${b.bossHp} / ${b.bossMaxHp} HP${b.bossHp <= 0 ? ' (OVERKILL!)' : ''}</small>
             </div>
           </div>
 
           <div class="pixel-box" style="padding:16px;">
             <h3 style="font-size:1.08rem; color:#fff;">❓ ${q.q}</h3>
             <div class="quiz-options-grid" id="battle-options">
-              ${q.options.map((opt, idx) => `
-                <button id="b-opt-${idx}" class="quiz-option-btn" onclick="App.handleBattleAnswer(${idx})">
-                  <b>${['ก', 'ข', 'ค', 'ง'][idx] || idx + 1}.</b> ${opt}
-                </button>
-              `).join('')}
+              ${q.options.map((opt, idx) => {
+                const isElim = eliminated.includes(idx);
+                return `
+                  <button id="b-opt-${idx}" class="quiz-option-btn" ${isElim ? 'disabled style="opacity:0.25;"' : ''} onclick="App.handleBattleAnswer(${idx})">
+                    <b>${['ก', 'ข', 'ค', 'ง'][idx] || idx + 1}.</b> ${opt}
+                  </button>
+                `;
+              }).join('')}
             </div>
 
             <div id="battle-feedback" style="margin-top:12px;"></div>
@@ -3642,12 +3693,17 @@
         this.toast('🛡️ เปิดเกราะ Firewall Shield กันดาเมจ 1 ครั้ง!');
         this.renderBattleUI();
       } else if (type === 'analyzer') {
+        if (Array.isArray(this.battle.eliminatedOptions) && this.battle.eliminatedOptions.length > 0) {
+          this.toast('🔍 ใช้ 50/50 กับข้อนี้ไปแล้ว!');
+          return;
+        }
         const q = this.battle.questions[this.battle.qIndex];
         const wrongIndices = q.options.map((_, i) => i).filter((i) => i !== q.ans);
         if (wrongIndices.length < 2) return;
         this.state.inventory.analyzer -= 1;
+        this.battle.eliminatedOptions = wrongIndices.slice(0, 2);
         soundFX.playPowerUp();
-        wrongIndices.slice(0, 2).forEach((wi) => {
+        this.battle.eliminatedOptions.forEach((wi) => {
           const btn = document.getElementById(`b-opt-${wi}`);
           if (btn) {
             btn.disabled = true;
@@ -3669,6 +3725,8 @@
       const q = b.questions[b.qIndex];
       const stats = this.getPlayerStats();
       const isCorrect = selectedIdx === q.ans;
+      const isLastQuestion = b.qIndex >= b.questions.length - 1;
+      const nextBtnText = isLastQuestion ? '🏁 สรุปผลการดวลบอสและรับดาว ➜' : 'ข้อถัดไป ➜';
 
       // Highlight options
       q.options.forEach((_, idx) => {
@@ -3697,21 +3755,31 @@
         const isCrit = Math.random() < stats.crit;
         const baseDmg = stats.atk + b.labAtkBonus + (b.combo - 1) * 5;
         const dmg = Math.round(baseDmg * (isCrit ? 1.5 : 1));
+        const prevBossHp = b.bossHp;
         b.bossHp = Math.max(0, b.bossHp - dmg);
+        if (dmg > prevBossHp) {
+          b.overkillDmg += (dmg - prevBossHp);
+        }
 
         soundFX.playBossHit();
         const bossEl = document.getElementById('boss-sprite-stage');
         if (bossEl) bossEl.classList.add('sprite-hit');
 
+        const overkillNote = (!isLastQuestion && b.bossHp <= 0)
+          ? `<div style="font-size:0.84rem; color:#fde047; margin-top:4px;">⚡ พลังชีวิตบอสหมดแล้ว! ตอบข้อที่เหลือให้ครบทุกข้อเพื่อคว้า ★★★ (3 ดาว)</div>`
+          : '';
+
         fb.innerHTML = `
           <div class="pixel-box" style="padding:12px; border-color:var(--emerald); background:rgba(16,185,129,0.12);">
-            <b style="color:var(--emerald);">⚔️ โจมตีบอส -${dmg} HP! ${isCrit ? '💥 CRITICAL HIT!' : ''} (Combo x${b.combo} | 🔥 สตรีคสะสม ${this.bossAnswerStreak} ข้อ)</b>
+            <b style="color:var(--emerald);">⚔️ ${prevBossHp <= 0 ? 'OVERKILL โจมตีซ้ำ' : 'โจมตีบอส'} -${dmg} HP! ${isCrit ? '💥 CRITICAL HIT!' : ''} (Combo x${b.combo} | 🔥 สตรีคสะสม ${this.bossAnswerStreak} ข้อ)</b>
             <div style="font-size:0.88rem; margin-top:4px;">💡 เฉลย: ${q.exp}</div>
-            <button class="px-btn px-btn-cyan px-btn-sm" style="margin-top:10px;" onclick="App.nextBattleStep()">ดำเนินการต่อ ➜</button>
+            ${overkillNote}
+            <button class="px-btn px-btn-cyan px-btn-sm" style="margin-top:10px;" onclick="App.nextBattleStep()">${nextBtnText}</button>
           </div>
         `;
       } else {
         b.combo = 0;
+        b.wrongCount += 1;
         this.saveBossStreak(0);
         let dmgTaken = Math.round(b.unit.boss.atk * (1 - stats.def));
         if (b.shieldActive) {
@@ -3727,11 +3795,16 @@
         const heroEl = document.getElementById('hero-sprite-stage');
         if (heroEl) heroEl.classList.add('sprite-hit');
 
+        const hpNote = (!isLastQuestion && this.state.hp <= 0)
+          ? `<div style="font-size:0.84rem; color:#fbbf24; margin-top:4px;">⚠️ HP เหลือ 0 แล้ว แต่ยังต้องตอบคำถามที่เหลือให้ครบทุกข้อเพื่อสรุปผลคะแนน!</div>`
+          : '';
+
         fb.innerHTML = `
           <div class="pixel-box" style="padding:12px; border-color:var(--crimson); background:rgba(239,68,68,0.12);">
             <b style="color:var(--crimson);">${selectedIdx === -1 ? '⏱️ หมดเวลา!' : '❌ ตอบผิด!'} ${dmgTaken === 0 ? '🛡️ โล่ Firewall ป้องกันดาเมจไว้ได้!' : `โดนบอสโจมตี -${dmgTaken} HP!`}</b>
             <div style="font-size:0.88rem; margin-top:4px;">💡 เฉลย: ${q.exp}</div>
-            <button class="px-btn px-btn-amber px-btn-sm" style="margin-top:10px;" onclick="App.nextBattleStep()">สู้ต่อ ➜</button>
+            ${hpNote}
+            <button class="px-btn px-btn-amber px-btn-sm" style="margin-top:10px;" onclick="App.nextBattleStep()">${nextBtnText}</button>
           </div>
         `;
       }
@@ -3742,7 +3815,7 @@
       const heroHpTxt = document.getElementById('battle-hero-hp-text');
       const comboPill = document.getElementById('battle-combo-pill');
       if (bossBar) bossBar.style.width = `${Math.max(0, Math.round((b.bossHp / b.bossMaxHp) * 100))}%`;
-      if (bossHpTxt) bossHpTxt.textContent = `${b.bossHp} / ${b.bossMaxHp} HP`;
+      if (bossHpTxt) bossHpTxt.textContent = `${b.bossHp} / ${b.bossMaxHp} HP${b.bossHp <= 0 ? ' (OVERKILL!)' : ''}`;
       if (heroBar) heroBar.style.width = `${Math.max(0, Math.round((this.state.hp / stats.maxHp) * 100))}%`;
       if (heroHpTxt) heroHpTxt.textContent = `${this.state.hp} / ${stats.maxHp} HP`;
       if (comboPill) comboPill.textContent = `🔥 COMBO x${b.combo}`;
@@ -3752,17 +3825,18 @@
     nextBattleStep() {
       const b = this.battle;
       if (!b) return;
-      if (this.state.hp <= 0) {
-        this.finishBattle(false);
-        return;
-      }
-      if (b.bossHp <= 0 || b.qIndex >= b.questions.length - 1) {
-        const won = b.bossHp <= 0 || b.correctCount >= Math.ceil(b.questions.length * 0.6);
+      // Always require answering every question in the unit before finishing
+      if (b.qIndex >= b.questions.length - 1) {
+        const totalQ = Math.max(1, b.questions.length);
+        const pct = Math.round((b.correctCount / totalQ) * 100);
+        const won = pct >= 50;
+        if (won) b.bossHp = 0;
         this.finishBattle(won);
         return;
       }
       b.qIndex += 1;
       b.answered = false;
+      b.eliminatedOptions = [];
       b.timeLeft = 25 + this.getPlayerStats().timeBonus;
       this.renderBattleUI();
       this.startBattleTimer();
@@ -3773,12 +3847,18 @@
       if (b) b.finished = true;
       this.stopBattleTimer();
       this.touchHpRegenTimestamp();
-      const totalQ = b.questions.length;
+      const totalQ = Math.max(1, b.questions.length);
+      const wrongCount = Math.max(0, totalQ - b.correctCount);
       const pct = Math.round((b.correctCount / totalQ) * 100);
-      const stars = won ? (pct >= 90 ? 3 : pct >= 70 ? 2 : 1) : 0;
+      // 3 stars = 100% (all questions correct), 2 stars = 70-99%, 1 star = 50-69%, 0 stars = <50%
+      const stars = won
+        ? (b.correctCount === totalQ ? 3 : pct >= 70 ? 2 : 1)
+        : 0;
+      const stats = this.getPlayerStats();
 
       if (won) {
         soundFX.playVictoryFanfare();
+        if (this.state.hp < 20) this.state.hp = Math.max(20, Math.round(stats.maxHp * 0.25));
         const prog = this.state.unitProgress[b.unit.id];
         const firstBossClear = !prog.bossCleared;
         prog.bossCleared = true;
@@ -3799,11 +3879,21 @@
         }
       } else {
         soundFX.playPlayerHurt();
-        const stats = this.getPlayerStats();
         this.state.hp = Math.max(20, Math.round(stats.maxHp * 0.25));
         this.saveState();
         this.renderHUD();
         this.toast('💚 HP จะฟื้นฟูอัตโนมัติ +5 ทุก 15 วินาที (หรือซื้อ Ping Potion ในร้านค้า)');
+      }
+
+      let starExplain = '';
+      if (stars === 3) {
+        starExplain = '🏆 ยอดเยี่ยม! ตอบถูกครบทุกข้อ 100% รับเต็ม ★★★ (3 ดาว)!';
+      } else if (stars === 2) {
+        starExplain = `⭐ ตอบผิด ${wrongCount} ข้อ จึงลดเหลือ ★★☆ (2 ดาว) — ตอบถูกครบทุกข้อ (${totalQ}/${totalQ}) เพื่อรับ 3 ดาว!`;
+      } else if (stars === 1) {
+        starExplain = `⭐ ตอบผิด ${wrongCount} ข้อ จึงลดเหลือ ★☆☆ (1 ดาว) — ตอบถูก 70% ขึ้นไปรับ 2 ดาว / ครบทุกข้อรับ 3 ดาว!`;
+      } else {
+        starExplain = `💡 ตอบถูกไม่ถึง 50% (ต้องตอบถูกอย่างน้อย ${Math.ceil(totalQ * 0.5)}/${totalQ} ข้อจึงจะปราบบอสผ่าน) ลองทบทวนคัมภีร์แล้วสู้ใหม่!`;
       }
 
       document.getElementById('stage-body-boss').innerHTML = `
@@ -3812,7 +3902,8 @@
             ${won ? '🎉 VICTORY! ปราบบอสสำเร็จ!' : '💀 DEFEAT! พ่ายแพ้ในการต่อสู้'}
           </h2>
           <div style="font-size:2rem; color:var(--amber); margin:10px 0;">${'★'.repeat(stars)}${'☆'.repeat(3 - stars)}</div>
-          <p style="font-size:1.05rem;">ตอบถูก ${b.correctCount} / ${totalQ} ข้อ (${pct}%) | คอมโบสูงสุด x${b.maxCombo}</p>
+          <p style="font-size:1.05rem;">ตอบครบทุกข้อ: ถูก <b>${b.correctCount} / ${totalQ}</b> ข้อ (${pct}%) | คอมโบสูงสุด x${b.maxCombo}</p>
+          <p style="font-size:0.9rem; color:${stars === 3 ? 'var(--emerald)' : 'var(--cyan)'}; margin-top:8px;">${starExplain}</p>
           <div style="display:flex; justify-content:center; gap:12px; margin-top:18px; flex-wrap:wrap;">
             <button class="px-btn px-btn-cyan" onclick="App.showWorldMap()">🗺️ กลับแผนที่โลก</button>
             <button class="px-btn px-btn-amber" onclick="App.startBossBattle(${b.unit.id})">🔁 ท้าทายบอสอีกครั้ง</button>
@@ -3963,7 +4054,7 @@
                     </div>
                   </td>
                   <td>${r.studentId}</td>
-                  <td>${r.name}</td>
+                  <td>${r.name}${r.hasGrade4Badge ? ' <span class="grade4-pill" style="margin-left:4px;">🎓 เกรด4 แน่นอน</span>' : ''}</td>
                   <td>${r.classRoom}</td>
                   <td><b style="color:var(--amber);">🏆 ${r.arcadeHighScore || 0}</b></td>
                 </tr>
@@ -4132,6 +4223,7 @@
         xp: this.state.xp,
         unitsCleared: cleared,
         badgeCount: this.state.badges.length,
+        hasGrade4Badge: this.state.badges.includes('grade4_sure'),
         arcadeHighScore: this.state.arcadeHighScore || 0,
         updatedAt: todayKey()
       };
@@ -4183,7 +4275,7 @@
                     </div>
                   </td>
                   <td>${r.studentId}</td>
-                  <td>${r.name}</td>
+                  <td>${r.name}${r.hasGrade4Badge ? ' <span class="grade4-pill" style="margin-left:4px;">🎓 เกรด4 แน่นอน</span>' : ''}</td>
                   <td>${r.classRoom}</td>
                   <td>LV.${r.level}</td>
                   <td><b>${r.xp}</b></td>
@@ -4234,6 +4326,11 @@
         </div>
         <div>ระดับชั้น: <b>${this.state.profile.classRoom || '-'}</b> | อาชีพ: <b>${cls.thName}</b> | ยศ: <b>LV.${current.level} ${current.title}</b></div>
         <div style="margin-top:8px;">คะแนนประสบการณ์รวม: <b>${this.state.xp} XP</b> | ผ่านภารกิจ: <b>${cleared}/${GameData.UNITS.length} หน่วย</b> | เหรียญตรา: <b>${this.state.badges.length}/${GameData.BADGES.length}</b></div>
+        ${this.state.badges.includes('grade4_sure') ? `
+          <div style="display:inline-block; margin-top:10px; padding:6px 16px; background:#fef9c3; border:2px solid #ca8a04; color:#854d0e; font-weight:700; font-size:0.95rem;">
+            🎓 ได้รับเหรียญตราเกียรติยศพิเศษ: เกรด4 แน่นอน (รับรองโดยครูผู้สอน)
+          </div>
+        ` : ''}
 
         <table class="cert-table">
           <thead>
@@ -4396,9 +4493,10 @@
 
           <div class="pixel-box pixel-box-gold" style="padding:14px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
-              <h4 style="color:var(--amber); margin:0;">👥 จัดการและรีเซ็ตข้อมูล EXP / เหรียญนักเรียน</h4>
+              <h4 style="color:var(--amber); margin:0;">👥 จัดการนักเรียน, มอบเหรียญ "🎓 เกรด4 แน่นอน" และรีเซ็ต EXP / เหรียญ</h4>
               ${canManageQuestions ? `
-                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                  <span id="teacher-grade4-counter" class="grade4-pill">🎓 เกรด4 แน่นอน: 0 คน</span>
                   <button class="px-btn px-btn-amber px-btn-sm" onclick="App.resetAllStudentsUI('exp')" title="รีเซ็ต EXP นักศึกษาทั้งหมด (ตามรายการที่กรอง ไม่รวมบัญชีครู)">🔄 รีเซ็ต EXP ทั้งหมด</button>
                   <button class="px-btn px-btn-crimson px-btn-sm" onclick="App.resetAllStudentsUI('coins')" title="รีเซ็ตเหรียญ BitCoins นักศึกษาทั้งหมด (ตามรายการที่กรอง ไม่รวมบัญชีครู)">🪙 รีเซ็ตเหรียญทั้งหมด</button>
                   <button class="px-btn px-btn-sm" onclick="App.reloadTeacherStudentsUI()">🔄 โหลดรายชื่อใหม่</button>
@@ -4407,14 +4505,20 @@
             </div>
             ${!canManageQuestions ? `
               <div class="teacher-lock-box">
-                🔒 <b>ล็อกสิทธิ์สำหรับครูผู้สอนเท่านั้น</b> — เฉพาะบัญชีครูที่มี Custom Claim <code>teacher: true</code> จึงจะดูรายชื่อและรีเซ็ต EXP นักเรียนรายบุคคลได้
+                🔒 <b>ล็อกสิทธิ์สำหรับครูผู้สอนเท่านั้น</b> — เฉพาะบัญชีครูที่มี Custom Claim <code>teacher: true</code> จึงจะดูรายชื่อ มอบเหรียญตรา "เกรด4 แน่นอน" และรีเซ็ต EXP นักเรียนรายบุคคลได้
               </div>
             ` : `
               <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:8px;">
-                กด <b>🔄 รีเซ็ต EXP ทั้งหมด</b> หรือ <b>🪙 รีเซ็ตเหรียญทั้งหมด</b> เพื่อล้างค่าให้นักเรียนทุกคนพร้อมกัน (หากพิมพ์ชื่อห้องในช่องค้นหา จะรีเซ็ตเฉพาะห้องนั้น และจะข้ามบัญชีครูโดยอัตโนมัติ) หรือกดรีเซ็ตรายบุคคลในตารางด้านล่าง
+                กด <b>🎓 +เกรด4 แน่นอน</b> เพื่อมอบเหรียญตราเกียรติยศพิเศษให้นักศึกษา (กดซ้ำเพื่อถอนคืนได้) • กด <b>🔄 รีเซ็ต EXP ทั้งหมด</b> หรือ <b>🪙 รีเซ็ตเหรียญทั้งหมด</b> เพื่อล้างค่าตามรายการที่กรอง (ข้ามบัญชีครูอัตโนมัติ)
               </p>
-              <input id="teacher-student-search" class="px-input" style="margin-bottom:10px;" value="${this.teacherStudentFilter || ''}" placeholder="🔍 ค้นหาด้วย รหัสนักศึกษา, ชื่อ หรือ ห้อง..." oninput="App.filterTeacherStudents(this.value)" />
-              <div id="teacher-students-table-wrap" style="max-height:240px; overflow:auto;"></div>
+              <div style="display:grid; grid-template-columns:1fr 140px; gap:8px; margin-bottom:10px;">
+                <input id="teacher-student-search" class="px-input" value="${this.teacherStudentFilter || ''}" placeholder="🔍 ค้นหาด้วย รหัสนักศึกษา, ชื่อ หรือ ห้อง..." oninput="App.filterTeacherStudents(this.value)" />
+                <select id="teacher-student-room" class="px-select" onchange="App.filterTeacherStudentsRoom(this.value)">
+                  <option value="all" ${this.teacherStudentRoomFilter === 'all' ? 'selected' : ''}>ทุกห้อง</option>
+                  ${[...new Set((this.teacherStudentsList || []).map((s) => s.classRoom).filter(Boolean))].sort().map((rm) => `<option value="${rm}" ${this.teacherStudentRoomFilter === rm ? 'selected' : ''}>${rm}</option>`).join('')}
+                </select>
+              </div>
+              <div id="teacher-students-table-wrap" style="max-height:280px; overflow:auto;"></div>
             `}
           </div>
 
@@ -4766,11 +4870,29 @@
       this.renderTeacherStudentsTable();
     },
 
+    filterTeacherStudentsRoom(room) {
+      this.teacherStudentRoomFilter = room || 'all';
+      this.renderTeacherStudentsTable();
+    },
+
+    studentHasBadge(studentDoc, badgeId) {
+      return Boolean(studentDoc && studentDoc.state && Array.isArray(studentDoc.state.badges) && studentDoc.state.badges.includes(badgeId));
+    },
+
     renderTeacherStudentsTable() {
       const wrap = document.getElementById('teacher-students-table-wrap');
       if (!wrap) return;
+      const allList = this.teacherStudentsList || [];
+      const grade4Count = allList.filter((s) => this.studentHasBadge(s, 'grade4_sure')).length;
+      const counterEl = document.getElementById('teacher-grade4-counter');
+      if (counterEl) {
+        counterEl.textContent = `🎓 เกรด4 แน่นอน: ${grade4Count} / ${allList.length} คน`;
+      }
+
       const q = (this.teacherStudentFilter || '').trim().toLowerCase();
-      const filtered = (this.teacherStudentsList || []).filter((s) => {
+      const rFilter = this.teacherStudentRoomFilter || 'all';
+      const filtered = allList.filter((s) => {
+        if (rFilter !== 'all' && String(s.classRoom || '') !== String(rFilter)) return false;
         if (!q) return true;
         return String(s.studentId || '').toLowerCase().includes(q)
           || String(s.name || '').toLowerCase().includes(q)
@@ -4790,12 +4912,14 @@
               <th>ชื่อ-นามสกุล</th>
               <th>ห้อง</th>
               <th>LV / XP / เหรียญ</th>
+              <th>เหรียญตรา</th>
               <th>จัดการ</th>
             </tr>
           </thead>
           <tbody>
             ${filtered.map((s) => {
               const coins = (s.state && typeof s.state.coins === 'number') ? s.state.coins : 0;
+              const hasG4 = this.studentHasBadge(s, 'grade4_sure');
               return `
               <tr>
                 <td><code>${s.studentId}</code></td>
@@ -4803,6 +4927,14 @@
                 <td>${s.classRoom}</td>
                 <td><b>LV.${s.level || 1}</b> (${s.xp || 0} XP) • <span style="color:var(--amber);">🪙 ${coins}</span></td>
                 <td style="white-space:nowrap;">
+                  🏅 ${s.badgeCount || 0}/${GameData.BADGES.length}
+                  ${hasG4 ? '<div style="margin-top:3px;"><span class="grade4-pill">🎓 เกรด4 แน่นอน</span></div>' : ''}
+                </td>
+                <td style="white-space:nowrap;">
+                  ${hasG4
+                    ? `<button class="px-btn px-btn-violet px-btn-sm" onclick="App.toggleStudentGrade4BadgeUI('${s.uid}', false)" title="คลิกเพื่อถอนเหรียญตรา เกรด4 แน่นอน">🎓 ถอนเกรด4</button>`
+                    : `<button class="px-btn px-btn-emerald px-btn-sm" onclick="App.toggleStudentGrade4BadgeUI('${s.uid}', true)" title="มอบเหรียญตรา เกรด4 แน่นอน ให้นักศึกษาคนนี้">🎓 +เกรด4 แน่นอน</button>`
+                  }
                   <button class="px-btn px-btn-amber px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'exp')" title="รีเซ็ตเฉพาะ EXP เป็น 0">🔄 EXP</button>
                   <button class="px-btn px-btn-cyan px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'coins')" title="รีเซ็ตเฉพาะเหรียญ BitCoins เป็น 0">🪙 เหรียญ</button>
                   <button class="px-btn px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'full')" title="รีเซ็ต EXP + เหรียญ + หน่วย + เหรียญตราทั้งหมด">🧹 ทั้งหมด</button>
@@ -4814,6 +4946,40 @@
           </tbody>
         </table>
       `;
+    },
+
+    async toggleStudentGrade4BadgeUI(uid, grant) {
+      const target = (this.teacherStudentsList || []).find((s) => s.uid === uid);
+      if (!target) return;
+      const shouldGrant = Boolean(grant);
+      const confirmMsg = shouldGrant
+        ? `ยืนยันมอบเหรียญตรา "🎓 เกรด4 แน่นอน" ให้กับ "${target.name}" (${target.studentId}) หรือไม่?`
+        : `ยืนยันถอนเหรียญตรา "🎓 เกรด4 แน่นอน" ออกจาก "${target.name}" (${target.studentId}) หรือไม่?`;
+      if (!confirm(confirmMsg)) return;
+
+      const res = await FirebaseService.setStudentBadge(target, 'grade4_sure', shouldGrant, createDefaultState());
+      if (!res.ok) {
+        soundFX.playPlayerHurt();
+        alert(res.error || 'ไม่สามารถอัปเดตเหรียญตราได้');
+        return;
+      }
+
+      const idx = this.teacherStudentsList.findIndex((s) => s.uid === uid);
+      if (idx >= 0) this.teacherStudentsList[idx] = res.updatedDoc;
+      if (uid === this.currentUid) {
+        this.applyLoadedState(res.updatedDoc.state, res.updatedDoc.studentId);
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); } catch (e) { /* ignore */ }
+        this.renderHUD();
+        this.renderDashboard();
+      }
+      this.renderTeacherStudentsTable();
+      if (shouldGrant) {
+        soundFX.playLevelUp();
+        this.toast(`🎓 มอบเหรียญตรา "เกรด4 แน่นอน" ให้ ${target.name} (${target.studentId}) เรียบร้อย!`);
+      } else {
+        soundFX.playSelect();
+        this.toast(`↩️ ถอนเหรียญตรา "เกรด4 แน่นอน" จาก ${target.name} (${target.studentId}) แล้ว`);
+      }
     },
 
     async reloadTeacherStudentsUI() {
@@ -4862,9 +5028,11 @@
 
     async resetAllStudentsUI(mode = 'exp') {
       const q = (this.teacherStudentFilter || '').trim().toLowerCase();
+      const rFilter = this.teacherStudentRoomFilter || 'all';
       const targets = (this.teacherStudentsList || []).filter((s) => {
         // Always skip current teacher account & known teacher ID to prevent accidental self-wipe
         if (s.uid === this.currentUid || String(s.studentId || '').toLowerCase() === 'watdafak') return false;
+        if (rFilter !== 'all' && String(s.classRoom || '') !== String(rFilter)) return false;
         if (!q) return true;
         return String(s.studentId || '').toLowerCase().includes(q)
           || String(s.name || '').toLowerCase().includes(q)
@@ -4876,7 +5044,10 @@
         return;
       }
 
-      const scopeText = q ? `ที่ตรงกับคำค้นหา "${this.teacherStudentFilter.trim()}"` : 'ทั้งหมดในระบบ';
+      const scopeParts = [];
+      if (rFilter !== 'all') scopeParts.push(`ห้อง "${rFilter}"`);
+      if (q) scopeParts.push(`ที่ตรงกับคำค้นหา "${this.teacherStudentFilter.trim()}"`);
+      const scopeText = scopeParts.length > 0 ? scopeParts.join(' ') : 'ทั้งหมดในระบบ';
       const actionText = mode === 'coins'
         ? 'รีเซ็ตเหรียญ BitCoins เป็น 0 🪙'
         : 'รีเซ็ต EXP เป็น 0 XP (LV.1)';
