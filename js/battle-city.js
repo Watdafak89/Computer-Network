@@ -323,6 +323,7 @@
 
     boundKeyDown: null,
     boundKeyUp: null,
+    boundFsChange: null,
 
     init(canvasId) {
       this.canvas = document.getElementById(canvasId);
@@ -359,15 +360,27 @@
         if (k) this.keys[k] = false;
         if (code) this.keys[code] = false;
       };
+      this.boundFsChange = () => {
+        const btn = document.getElementById('bc-btn-fs');
+        const active = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+        if (btn) btn.textContent = active ? '🗗 ย่อจอ' : '⛶ เต็มจอ';
+      };
       window.addEventListener('keydown', this.boundKeyDown);
       window.addEventListener('keyup', this.boundKeyUp);
+      document.addEventListener('fullscreenchange', this.boundFsChange);
+      document.addEventListener('webkitfullscreenchange', this.boundFsChange);
     },
 
     unbindInputs() {
       if (this.boundKeyDown) window.removeEventListener('keydown', this.boundKeyDown);
       if (this.boundKeyUp) window.removeEventListener('keyup', this.boundKeyUp);
+      if (this.boundFsChange) {
+        document.removeEventListener('fullscreenchange', this.boundFsChange);
+        document.removeEventListener('webkitfullscreenchange', this.boundFsChange);
+      }
       this.boundKeyDown = null;
       this.boundKeyUp = null;
+      this.boundFsChange = null;
       this.keys = {};
       this.touchDir = null;
       this.touchFire = false;
@@ -397,6 +410,8 @@
       this.starLevel = 0;
       this.gameOver = false;
       this.paused = false;
+      const pauseBtn = document.getElementById('bc-btn-pause');
+      if (pauseBtn) pauseBtn.textContent = '⏸️ พักเกม';
       this.loadStage(1);
       this.startLoop();
     },

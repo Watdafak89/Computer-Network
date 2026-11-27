@@ -78,9 +78,35 @@
     battle: null,
     arcade: null,
     labState: {},
+    labTimers: [],
     hpRegenTimerId: null,
     hpRegenTicksSinceSave: 0,
     bossAnswerStreak: 0,
+
+    escHtml(v) {
+      return String(v ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    },
+
+    clearLabTimers() {
+      if (Array.isArray(this.labTimers) && this.labTimers.length > 0) {
+        this.labTimers.forEach((tid) => clearTimeout(tid));
+      }
+      this.labTimers = [];
+    },
+
+    addLabTimer(fn, delayMs) {
+      const tid = setTimeout(() => {
+        this.labTimers = (this.labTimers || []).filter((x) => x !== tid);
+        fn();
+      }, delayMs);
+      this.labTimers.push(tid);
+      return tid;
+    },
 
     getBossStreakKey() {
       const uidPart = this.currentUid || this.state.profile.studentId || 'guest';
@@ -747,7 +773,7 @@
           </div>
           <div style="flex:1; min-width:210px;">
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <span class="pixel-title" style="font-size:1rem; color:var(--cyan);">${this.state.profile.name || 'ผู้เล่นใหม่'}</span>
+              <span class="pixel-title" style="font-size:1rem; color:var(--cyan);">${this.escHtml(this.state.profile.name || 'ผู้เล่นใหม่')}</span>
               <span class="hud-badge-lv">LV.${current.level}</span>
               ${this.isTeacher ? '<span class="teacher-badge">👑 ครูผู้สอน</span>' : ''}
             </div>
@@ -806,7 +832,7 @@
             ${PixelSprites.render(c.sprite, 64)}
           </div>
           <div style="font-weight:700; color:${c.color};">${c.name}</div>
-          <div style="font-size:0.85rem; color:#fff;">${c.thName}</div>
+          <div class="class-th-name" style="font-size:0.85rem; color:#fff;">${c.thName}</div>
           <div style="font-size:0.75rem; color:var(--text-muted); margin-top:6px;">${c.perk}</div>
         </div>
       `).join('');
@@ -846,7 +872,7 @@
             ${PixelSprites.render(c.sprite, 56)}
           </div>
           <div style="font-weight:700; color:${c.color}; font-size:0.9rem;">${c.name}</div>
-          <div style="font-size:0.82rem; color:#fff;">${c.thName}</div>
+          <div class="class-th-name" style="font-size:0.82rem; color:#fff;">${c.thName}</div>
           <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px;">${c.perk}</div>
         </div>
       `).join('');
@@ -964,8 +990,10 @@
       }
 
       this.currentUid = res.uid;
-      this.isTeacher = false;
+      this.isTeacher = Boolean(res.isTeacher);
       this.applyLoadedState(res.state || fresh, res.studentId);
+      this.loadBossStreak();
+      this.ensureTeacherDefaultProfile(res.studentId);
       await this.refreshCloudCourseData();
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
@@ -1066,6 +1094,9 @@
           this.state.inventory.shield = (this.state.inventory.shield || 0) + 1;
         }
         this.unlockBadge('first_login');
+      } else {
+        const stats = this.getPlayerStats();
+        if (this.state.hp > stats.maxHp) this.state.hp = stats.maxHp;
       }
       this.saveState(true);
       this.closeModal('modal-profile');
@@ -1110,6 +1141,7 @@
     showWorldMap() {
       soundFX.playSelect();
       this.stopBattleTimer();
+      this.clearLabTimers();
       this.battle = null;
       this.touchHpRegenTimestamp();
       document.getElementById('view-stage').classList.add('hidden');
@@ -1251,6 +1283,7 @@
       soundFX.playSelect();
       this.currentUnitId = unitId;
       this.stopBattleTimer();
+      this.clearLabTimers();
       const unit = GameData.UNITS.find((u) => u.id === unitId);
       if (!unit) return;
 
@@ -1296,6 +1329,7 @@
         if (bodyEl) bodyEl.classList.toggle('hidden', t !== tab);
       });
       if (tab !== 'boss') this.stopBattleTimer();
+      if (tab !== 'lab') this.clearLabTimers();
     },
 
     /* ---------------- SKILL EXERCISES (UNITS 1 & 2) ---------------- */
@@ -1544,16 +1578,27 @@
         return;
       }
       const sub = await FirebaseService.fetchStudentSkillSubmission(this.currentUid, unitId);
+      if (this.currentUnitId !== unitId) return;
       this.activeSkillSubmission = sub || null;
       const banner = document.getElementById('skill-teacher-grade-banner');
       const pill = document.getElementById('skill-status-pill');
 
       if (sub && sub.answers) {
-        // Hydrate answers from Cloud if user logged in on another device
+        // Hydrate answers from Cloud if user logged in on another device, and persist locally so unsubmit never loses text
+        const localSaved = this.loadSkillAnswers(unitId);
+        let localUpdated = false;
         Object.entries(sub.answers).forEach(([key, val]) => {
           const field = document.getElementById(`sk-${key}`);
           if (field && !field.value && val) field.value = val;
+          if (val && !localSaved.answers[key]) {
+            localSaved.answers[key] = val;
+            localUpdated = true;
+          }
         });
+        if (localUpdated || !localSaved.completed) {
+          localSaved.completed = true;
+          try { localStorage.setItem(this.getSkillStorageKey(unitId), JSON.stringify(localSaved)); } catch (e) { /* ignore */ }
+        }
       }
 
       if (!sub) {
@@ -1584,7 +1629,7 @@
             <div style="padding:12px 14px; background:rgba(16,185,129,0.16); border:2px solid var(--emerald); font-size:0.88rem;">
               <b style="color:#4ade80;">✅ ครูผู้สอนตรวจแบบฝึกทักษะนี้แล้ว! คะแนนที่ได้: ${sub.teacherScore} / 10 คะแนน</b>
               <div style="font-size:0.8rem; color:#fde68a; margin-top:4px;">🔒 ใบงานนี้ได้รับคะแนนแล้ว ไม่สามารถแก้ไขหรือส่งซ้ำได้ (สามารถพิมพ์ใบงาน PDF หรือดูแนวคำตอบได้)</div>
-              ${sub.teacherComment ? `<div style="margin-top:4px; color:#e2e8f0;">💬 ความเห็นครู: ${sub.teacherComment}</div>` : ''}
+              ${sub.teacherComment ? `<div style="margin-top:4px; color:#e2e8f0;">💬 ความเห็นครู: ${this.escHtml(sub.teacherComment)}</div>` : ''}
             </div>
           `;
         }
@@ -1597,7 +1642,7 @@
           banner.classList.remove('hidden');
           banner.innerHTML = `
             <div style="padding:10px 14px; background:rgba(56,189,248,0.12); border:2px solid var(--cyan); font-size:0.84rem; color:#bae6fd;">
-              ☁️ ส่งงานให้ครูเรียบร้อยแล้วเมื่อ <b>${sub.submittedAt || '-'}</b> (คะแนนแนะนำเบื้องต้น: <b>${Math.round((sub.autoScore || 0) / 10)}/10</b> — รอครูตรวจ)
+              ☁️ ส่งงานให้ครูเรียบร้อยแล้วเมื่อ <b>${this.escHtml(sub.submittedAt || '-')}</b> (คะแนนแนะนำเบื้องต้น: <b>${Math.round((sub.autoScore || 0) / 10)}/10</b> — รอครูตรวจ)
               <div style="margin-top:4px; font-size:0.8rem; color:#cbd5e1;">หากต้องการแก้ไขคำตอบ กดปุ่ม <b>↩️ ยกเลิกการส่งเพื่อแก้ไขคำตอบ</b> ด้านล่างก่อนครูตรวจ</div>
             </div>
           `;
@@ -1737,12 +1782,16 @@
       `;
 
       document.body.classList.add('printing-skill');
+      const cleanupPrint = () => {
+        document.body.classList.remove('printing-skill');
+        window.removeEventListener('afterprint', cleanupPrint);
+      };
+      window.addEventListener('afterprint', cleanupPrint, { once: true });
       setTimeout(() => {
         window.print();
-        setTimeout(() => {
-          document.body.classList.remove('printing-skill');
-        }, 400);
-      }, 100);
+        // Fallback cleanup after print dialog closes in browsers without afterprint
+        setTimeout(cleanupPrint, 2500);
+      }, 80);
     },
 
     toggleSkillModelAnswers() {
@@ -1856,7 +1905,10 @@
           part2Total: connTotal
         });
         if (res.ok) {
-          cloudMsg = ' | ☁️ ส่งใบงานขึ้นระบบให้ครูตรวจเรียบร้อยแล้ว!';
+          const isCloudMode = FirebaseService.isCloud();
+          cloudMsg = isCloudMode
+            ? ' | ☁️ ส่งใบงานขึ้นระบบให้ครูตรวจเรียบร้อยแล้ว!'
+            : ' | 💾 บันทึกใบงานในระบบเครื่องนี้เรียบร้อยแล้ว!';
           const hadSub = this.state.badges.includes('skill_submitter');
           this.unlockBadge('skill_submitter');
           if (!hadSub) {
@@ -2296,13 +2348,17 @@
 
     lab2ResetWires() {
       soundFX.playSelect();
+      this.clearLabTimers();
       const s = this.labState[2];
+      s.testing = false;
       s.pins = Array(8).fill(null);
       s.crimped = false;
       s.testerPassed = false;
-      document.getElementById('lab2-tester-status').textContent = 'พร้อมทดสอบ';
+      const stEl = document.getElementById('lab2-tester-status');
+      if (stEl) stEl.textContent = 'พร้อมทดสอบ';
       for (let p = 1; p <= 8; p++) {
-        document.getElementById(`led-${p}`).className = 'tester-led';
+        const led = document.getElementById(`led-${p}`);
+        if (led) led.className = 'tester-led';
       }
       this.lab2RenderPins();
     },
@@ -2325,24 +2381,31 @@
         alert('กรุณากด "บีบหัวสายด้วยคีม (Crimp)" ก่อนทดสอบสาย!');
         return;
       }
+      if (s.testing) return;
+      s.testing = true;
+      this.clearLabTimers();
       s.attempts += 1;
       const targetOrder = s.standard === 'T568A' ? GameData.T568A_ORDER : GameData.T568B_ORDER;
       let allOk = true;
       for (let i = 1; i <= 8; i++) {
-        document.getElementById(`led-${i}`).className = 'tester-led';
+        const led = document.getElementById(`led-${i}`);
+        if (led) led.className = 'tester-led';
       }
-      document.getElementById('lab2-tester-status').textContent = 'กำลังสแกนพิน 1-8...';
+      const statusInit = document.getElementById('lab2-tester-status');
+      if (statusInit) statusInit.textContent = 'กำลังสแกนพิน 1-8...';
 
       for (let i = 0; i < 8; i++) {
         const ok = s.pins[i] === targetOrder[i];
         if (!ok) allOk = false;
-        setTimeout(() => {
+        this.addLabTimer(() => {
           soundFX.playTesterBeep(i + 1);
           const led = document.getElementById(`led-${i + 1}`);
           if (led) led.classList.add(ok ? 'led-ok' : 'led-fail');
           if (i === 7) {
+            s.testing = false;
             s.testerPassed = allOk;
             const stEl = document.getElementById('lab2-tester-status');
+            if (!stEl) return;
             if (allOk) {
               stEl.innerHTML = `<b style="color:var(--emerald)">PASS! สายตรงมาตรฐาน ${s.standard} ✔</b>`;
               if (s.attempts === 1 && s.standard === 'T568B') this.unlockBadge('perfect_crimper');
@@ -2473,6 +2536,7 @@
       document.getElementById('osi-name-1').value = 'Physical';
       document.getElementById('osi-pdu-1').value = 'Bits';
       document.getElementById('osi-proto-1').value = 'UTP / Fiber / Hub';
+      this.renderLab3SVG();
       this.toast('💡 ใส่คำใบ้ Layer 7 และ Layer 1 ให้แล้ว!');
     },
 
@@ -2513,12 +2577,15 @@
         'L2 Data Link: ห่อ MAC Header + FCS → [Frame]',
         'L1 Physical: แปลงเป็น Bits 01011001 ส่งข้ามสายไฟเบอร์สำเร็จ! ✔'
       ];
+      this.clearLabTimers();
       const box = document.getElementById('lab3-encap-box');
       box.innerHTML = '';
       steps.forEach((st, idx) => {
-        setTimeout(() => {
+        this.addLabTimer(() => {
+          const curBox = document.getElementById('lab3-encap-box');
+          if (!curBox) return;
           soundFX.playTesterBeep(idx + 1);
-          box.innerHTML += `<div>▶ ${st}</div>`;
+          curBox.innerHTML += `<div>▶ ${st}</div>`;
           if (idx === steps.length - 1) {
             this.completeUnitLab(3, 'ผ่าน Lab 3 หอคอย OSI 7 Layers');
           }
@@ -2546,9 +2613,9 @@
                   <b style="color:var(--crimson);">PC-01 (แจ้งเตือน: IP Conflict ชน Gateway!)</b>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:8px;">
-                  <div><small>IPv4 Address</small><input id="pc1-ip" class="pc-input" value="192.168.10.1" /></div>
-                  <div><small>Subnet Mask</small><input id="pc1-mask" class="pc-input" value="255.255.255.0" /></div>
-                  <div><small>Gateway</small><input id="pc1-gw" class="pc-input" value="192.168.10.1" /></div>
+                  <div><small>IPv4 Address</small><input id="pc1-ip" class="pc-input" value="192.168.10.1" oninput="App.lab4MarkDirty()" /></div>
+                  <div><small>Subnet Mask</small><input id="pc1-mask" class="pc-input" value="255.255.255.0" oninput="App.lab4MarkDirty()" /></div>
+                  <div><small>Gateway</small><input id="pc1-gw" class="pc-input" value="192.168.10.1" oninput="App.lab4MarkDirty()" /></div>
                 </div>
               </div>
 
@@ -2557,9 +2624,9 @@
                   <b style="color:var(--crimson);">PC-02 (แจ้งเตือน: อยู่คนละ Network ID!)</b>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:8px;">
-                  <div><small>IPv4 Address</small><input id="pc2-ip" class="pc-input" value="192.168.99.25" /></div>
-                  <div><small>Subnet Mask</small><input id="pc2-mask" class="pc-input" value="255.255.255.0" /></div>
-                  <div><small>Gateway</small><input id="pc2-gw" class="pc-input" value="192.168.10.1" /></div>
+                  <div><small>IPv4 Address</small><input id="pc2-ip" class="pc-input" value="192.168.99.25" oninput="App.lab4MarkDirty()" /></div>
+                  <div><small>Subnet Mask</small><input id="pc2-mask" class="pc-input" value="255.255.255.0" oninput="App.lab4MarkDirty()" /></div>
+                  <div><small>Gateway</small><input id="pc2-gw" class="pc-input" value="192.168.10.1" oninput="App.lab4MarkDirty()" /></div>
                 </div>
               </div>
 
@@ -2568,9 +2635,9 @@
                   <b style="color:var(--crimson);">PC-03 (แจ้งเตือน: ออกเน็ตไม่ได้ Gateway ผิด!)</b>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-top:8px;">
-                  <div><small>IPv4 Address</small><input id="pc3-ip" class="pc-input" value="192.168.10.30" /></div>
-                  <div><small>Subnet Mask</small><input id="pc3-mask" class="pc-input" value="255.255.255.0" /></div>
-                  <div><small>Gateway</small><input id="pc3-gw" class="pc-input" value="192.168.10.254" /></div>
+                  <div><small>IPv4 Address</small><input id="pc3-ip" class="pc-input" value="192.168.10.30" oninput="App.lab4MarkDirty()" /></div>
+                  <div><small>Subnet Mask</small><input id="pc3-mask" class="pc-input" value="255.255.255.0" oninput="App.lab4MarkDirty()" /></div>
+                  <div><small>Gateway</small><input id="pc3-gw" class="pc-input" value="192.168.10.254" oninput="App.lab4MarkDirty()" /></div>
                 </div>
               </div>
               <button class="px-btn px-btn-emerald" onclick="App.lab4ValidatePCs()">💾 บันทึกการตั้งค่า IP ทั้ง 3 เครื่อง</button>
@@ -2632,6 +2699,12 @@
           <text x="553" y="106" fill="#cbd5e1" font-size="9" text-anchor="middle">8.8.8.8</text>
         </svg>
       `;
+    },
+
+    lab4MarkDirty() {
+      if (this.labState[4]) this.labState[4].allFixed = false;
+      [1, 2, 3].forEach((n) => document.getElementById(`pc-card-${n}`)?.classList.remove('fixed'));
+      this.renderLab8SVG(false, false, false);
     },
 
     lab4IsValidOctetHost(ip, usedIps) {
@@ -2830,13 +2903,16 @@
         { k: 'R - REQUEST', m: 'Client: ตกลงครับ ขอเช่าใช้ IP 192.168.50.101!', c: '#a855f7' },
         { k: 'A - ACKNOWLEDGE', m: 'DHCP Server: อนุมัติ! Client เชื่อมต่อ Wi-Fi 6 (WPA3) สำเร็จ!', c: '#facc15' }
       ];
+      this.clearLabTimers();
       const log = document.getElementById('lab5-dora-log');
       log.innerHTML = '';
       steps.forEach((st, idx) => {
-        setTimeout(() => {
+        this.addLabTimer(() => {
+          const curLog = document.getElementById('lab5-dora-log');
+          if (!curLog) return;
           soundFX.playTesterBeep(idx + 2);
           this.renderLab5SVG(idx + 1);
-          log.innerHTML += `<div style="border:2px solid ${st.c}; padding:8px; color:#fff;"><b style="color:${st.c}">${st.k}</b><br/>${st.m}</div>`;
+          curLog.innerHTML += `<div style="border:2px solid ${st.c}; padding:8px; color:#e2e8f0; background:#0f172a;"><b style="color:${st.c}">${st.k}</b><br/>${st.m}</div>`;
           if (idx === steps.length - 1) {
             this.completeUnitLab(5, 'ผ่าน Lab 5 Wi-Fi & DHCP DORA');
           }
@@ -2968,11 +3044,14 @@
         '🛡️ BLOCKED TCP:445 — สกัดมัลแวร์ Ransomware จากภายนอกสำเร็จ!',
         '✔ ALLOW UDP:53 — ระบบ DNS แปลงชื่อโดเมนทำงานราบรื่น'
       ];
+      this.clearLabTimers();
       log.innerHTML = '';
       waves.forEach((w, idx) => {
-        setTimeout(() => {
+        this.addLabTimer(() => {
+          const curLog = document.getElementById('lab6-fw-log');
+          if (!curLog) return;
           soundFX.playTesterBeep(idx + 3);
-          log.innerHTML += `<div style="color:${w.startsWith('🛡️') ? '#fbbf24' : '#4ade80'}">${w}</div>`;
+          curLog.innerHTML += `<div style="color:${w.startsWith('🛡️') ? '#fbbf24' : '#4ade80'}">${w}</div>`;
           if (idx === waves.length - 1) {
             this.completeUnitLab(9, 'ผ่าน Lab 9 Windows Firewall & ป้องกันภัยคุกคาม');
           }
@@ -3200,16 +3279,16 @@
         <svg viewBox="0 0 600 185" class="pixel-infographic-svg" shape-rendering="crispEdges">
           <rect width="600" height="185" fill="#070d1d"/>
           <rect x="20" y="20" width="212" height="145" fill="#0f172a" stroke="${wgOk && gwOk ? '#22c55e' : '#3b82f6'}" stroke-width="3"/>
-          <text x="126" y="42" fill="#60a5fa" font-size="12" font-weight="bold" text-anchor="middle">🪟 ${name}</text>
-          <text x="126" y="62" fill="${wgOk ? '#4ade80' : '#facc15'}" font-size="10" text-anchor="middle">Workgroup: ${wg}</text>
-          <text x="126" y="82" fill="#e2e8f0" font-size="10" text-anchor="middle">IP: ${ip}</text>
-          <text x="126" y="98" fill="${gwOk ? '#4ade80' : '#fca5a5'}" font-size="10" text-anchor="middle">GW: ${gw}</text>
+          <text x="126" y="42" fill="#60a5fa" font-size="12" font-weight="bold" text-anchor="middle">🪟 ${this.escHtml(name)}</text>
+          <text x="126" y="62" fill="${wgOk ? '#4ade80' : '#facc15'}" font-size="10" text-anchor="middle">Workgroup: ${this.escHtml(wg)}</text>
+          <text x="126" y="82" fill="#e2e8f0" font-size="10" text-anchor="middle">IP: ${this.escHtml(ip)}</text>
+          <text x="126" y="98" fill="${gwOk ? '#4ade80' : '#fca5a5'}" font-size="10" text-anchor="middle">GW: ${this.escHtml(gw)}</text>
           <rect x="34" y="112" width="88" height="38" fill="#1e293b" stroke="${folder ? '#22c55e' : '#475569'}"/><text x="78" y="135" fill="${folder ? '#4ade80' : '#94a3b8'}" font-size="10" text-anchor="middle">📁 ${folder ? 'Shared' : 'Closed'}</text>
           <rect x="130" y="112" width="88" height="38" fill="#1e293b" stroke="${printer ? '#22c55e' : '#475569'}"/><text x="174" y="135" fill="${printer ? '#4ade80' : '#94a3b8'}" font-size="10" text-anchor="middle">🖨️ ${printer ? 'Shared' : 'Closed'}</text>
 
           <line x1="234" y1="92" x2="394" y2="92" stroke="${disc && folder ? '#22c55e' : '#64748b'}" stroke-width="4" stroke-dasharray="8,5"/>
           <rect x="246" y="66" width="136" height="22" fill="#1e293b" stroke="#a855f7"/>
-          <text x="314" y="81" fill="#e9d5ff" font-size="9" text-anchor="middle">${unc.slice(0, 22)}</text>
+          <text x="314" y="81" fill="#e9d5ff" font-size="9" text-anchor="middle">${this.escHtml(unc.slice(0, 22))}</text>
 
           <rect x="396" y="38" width="184" height="108" fill="#0f172a" stroke="${disc ? '#38bdf8' : '#64748b'}" stroke-width="3"/>
           <text x="488" y="68" fill="#38bdf8" font-size="12" font-weight="bold" text-anchor="middle">💻 CLIENT PC</text>
@@ -3252,7 +3331,7 @@
         return;
       }
       soundFX.playPowerUp();
-      log.innerHTML = `<div style="color:#4ade80;">✔ เชื่อมต่อ <code>${unc}</code> สำเร็จ! พบโฟลเดอร์แชร์ Homework และเครื่องพิมพ์ LAB-LaserJet ใน Workgroup ROOM301</div>`;
+      log.innerHTML = `<div style="color:#4ade80;">✔ เชื่อมต่อ <code>${this.escHtml(unc)}</code> สำเร็จ! พบโฟลเดอร์แชร์ Homework และเครื่องพิมพ์ LAB-LaserJet ใน Workgroup ROOM301</div>`;
       this.completeUnitLab(6, 'ผ่าน Lab 6 การใช้งานเครือข่ายใน Windows');
     },
 
@@ -3403,11 +3482,14 @@
         `[NET] Bridged Adapter Active → Assigned LAN IP 192.168.10.5/24`,
         `✔ [READY] ${nosName} บูตสำเร็จและพร้อมให้บริการในเครือข่ายแล้ว! (บันทึก Snapshot สำเร็จ)`
       ];
+      this.clearLabTimers();
       log.innerHTML = '';
       steps.forEach((line, idx) => {
-        setTimeout(() => {
+        this.addLabTimer(() => {
+          const curLog = document.getElementById('lab-nos-log');
+          if (!curLog) return;
           soundFX.playTesterBeep(idx + 2);
-          log.innerHTML += `<div style="color:${idx === steps.length - 1 ? '#4ade80' : '#38bdf8'}">${line}</div>`;
+          curLog.innerHTML += `<div style="color:${idx === steps.length - 1 ? '#4ade80' : '#38bdf8'}">${line}</div>`;
           if (idx === steps.length - 1) {
             this.completeUnitLab(7, 'ผ่าน Lab 7 ติดตั้งระบบปฏิบัติการเครือข่ายบน VM');
           }
@@ -3699,9 +3781,9 @@
           <div class="battle-stage">
             <div class="combatant">
               <div id="hero-sprite-stage" class="sprite-stage">${PixelSprites.render(cls.sprite, 88)}</div>
-              <b>${this.state.profile.name || 'ผู้กล้า'} ${b.shieldActive ? '🛡️' : ''}</b>
+              <b style="color:#f8fafc;">${this.escHtml(this.state.profile.name || 'ผู้กล้า')} ${b.shieldActive ? '🛡️' : ''}</b>
               <div class="pixel-bar-track" style="width:180px;"><div id="battle-hero-bar" class="pixel-bar-fill bar-hp" style="width:${heroPct}%"></div></div>
-              <small id="battle-hero-hp-text">${this.state.hp} / ${stats.maxHp} HP</small>
+              <small id="battle-hero-hp-text" style="color:#e2e8f0;">${this.state.hp} / ${stats.maxHp} HP</small>
             </div>
 
             <div class="pixel-title" style="color:var(--amber); font-size:1.3rem;">VS</div>
@@ -3710,18 +3792,18 @@
               <div id="boss-sprite-stage" class="sprite-stage">${PixelSprites.render(b.unit.boss.sprite, 92)}</div>
               <b style="color:var(--crimson);">${b.unit.boss.thName}</b>
               <div class="pixel-bar-track" style="width:180px;"><div id="battle-boss-bar" class="pixel-bar-fill bar-boss" style="width:${bossPct}%"></div></div>
-              <small id="battle-boss-hp-text">${b.bossHp} / ${b.bossMaxHp} HP${b.bossHp <= 0 ? ' (OVERKILL!)' : ''}</small>
+              <small id="battle-boss-hp-text" style="color:#e2e8f0;">${b.bossHp} / ${b.bossMaxHp} HP${b.bossHp <= 0 ? ' (OVERKILL!)' : ''}</small>
             </div>
           </div>
 
           <div class="pixel-box" style="padding:16px;">
-            <h3 style="font-size:1.08rem; color:#fff;">❓ ${q.q}</h3>
+            <h3 style="font-size:1.08rem; color:var(--text-main);">❓ ${this.escHtml(q.q)}</h3>
             <div class="quiz-options-grid" id="battle-options">
               ${q.options.map((opt, idx) => {
                 const isElim = eliminated.includes(idx);
                 return `
                   <button id="b-opt-${idx}" class="quiz-option-btn" ${isElim ? 'disabled style="opacity:0.25;"' : ''} onclick="App.handleBattleAnswer(${idx})">
-                    <b>${['ก', 'ข', 'ค', 'ง'][idx] || idx + 1}.</b> ${opt}
+                    <b>${['ก', 'ข', 'ค', 'ง'][idx] || idx + 1}.</b> ${this.escHtml(opt)}
                   </button>
                 `;
               }).join('')}
@@ -3847,7 +3929,7 @@
         fb.innerHTML = `
           <div class="pixel-box" style="padding:12px; border-color:var(--emerald); background:rgba(16,185,129,0.12);">
             <b style="color:var(--emerald);">⚔️ ${prevBossHp <= 0 ? 'OVERKILL โจมตีซ้ำ' : 'โจมตีบอส'} -${dmg} HP! ${isCrit ? '💥 CRITICAL HIT!' : ''} (Combo x${b.combo} | 🔥 สตรีคสะสม ${this.bossAnswerStreak} ข้อ)</b>
-            <div style="font-size:0.88rem; margin-top:4px;">💡 เฉลย: ${q.exp}</div>
+            <div style="font-size:0.88rem; margin-top:4px;">💡 เฉลย: ${this.escHtml(q.exp)}</div>
             ${overkillNote}
             <button class="px-btn px-btn-cyan px-btn-sm" style="margin-top:10px;" onclick="App.nextBattleStep()">${nextBtnText}</button>
           </div>
@@ -3877,7 +3959,7 @@
         fb.innerHTML = `
           <div class="pixel-box" style="padding:12px; border-color:var(--crimson); background:rgba(239,68,68,0.12);">
             <b style="color:var(--crimson);">${selectedIdx === -1 ? '⏱️ หมดเวลา!' : '❌ ตอบผิด!'} ${dmgTaken === 0 ? '🛡️ โล่ Firewall ป้องกันดาเมจไว้ได้!' : `โดนบอสโจมตี -${dmgTaken} HP!`}</b>
-            <div style="font-size:0.88rem; margin-top:4px;">💡 เฉลย: ${q.exp}</div>
+            <div style="font-size:0.88rem; margin-top:4px;">💡 เฉลย: ${this.escHtml(q.exp)}</div>
             ${hpNote}
             <button class="px-btn px-btn-amber px-btn-sm" style="margin-top:10px;" onclick="App.nextBattleStep()">${nextBtnText}</button>
           </div>
@@ -4038,10 +4120,12 @@
         this.state.inventory[id] = (this.state.inventory[id] || 0) + 1;
       }
       this.unlockBadge('shopaholic');
+      this.checkBadges();
       soundFX.playCoin();
       this.toast(`🛒 ซื้อ ${item.name} สำเร็จ!`);
       this.saveState(true);
       this.renderHUD();
+      this.renderDashboard();
       this.renderShop();
     },
 
@@ -4052,11 +4136,15 @@
       GameData.UNITS.forEach((u) => {
         this.getUnitQuestions(u.id).forEach((q) => pool.push({ ...q, unitCode: u.code }));
       });
-      // Shuffle
-      pool.sort(() => Math.random() - 0.5);
+      // Unbiased Fisher-Yates shuffle
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
       this.arcade = { pool, idx: 0, hearts: 3, score: 0, streak: 0, viewingBoard: false };
       this.state.daily.arcadeRunsToday += 1;
       this.saveState();
+      this.renderDashboard();
       const boardBtn = document.getElementById('btn-arcade-board');
       if (boardBtn) boardBtn.textContent = '🏆 ตารางคะแนน';
       this.renderArcade();
@@ -4065,6 +4153,7 @@
 
     stopArcade() {
       this.arcade = null;
+      this.renderDashboard();
       this.closeModal('modal-arcade');
     },
 
@@ -4128,9 +4217,9 @@
                       </span>
                     </div>
                   </td>
-                  <td>${r.studentId}</td>
-                  <td>${r.name}${r.hasGrade4Badge ? ' <span class="grade4-pill" style="margin-left:4px;">🎓 เกรด4 แน่นอน</span>' : ''}</td>
-                  <td>${r.classRoom}</td>
+                  <td>${this.escHtml(r.studentId)}</td>
+                  <td>${this.escHtml(r.name)}${r.hasGrade4Badge ? ' <span class="grade4-pill" style="margin-left:4px;">🎓 เกรด4 แน่นอน</span>' : ''}</td>
+                  <td>${this.escHtml(r.classRoom)}</td>
                   <td><b style="color:var(--amber);">🏆 ${r.arcadeHighScore || 0}</b></td>
                 </tr>
               `;
@@ -4149,14 +4238,23 @@
           a.finished = true;
           const isRecord = a.score > this.state.arcadeHighScore;
           if (isRecord) this.state.arcadeHighScore = a.score;
+          const beforeBadges = this.state.badges.length;
+          this.checkBadges();
+          const badgeUnlocked = this.state.badges.length !== beforeBadges;
           const withinDailyRewardCap = (this.state.daily.arcadeRunsToday || 0) <= 3;
           const rewardXp = withinDailyRewardCap ? Math.min(80, Math.round(a.score / 10)) : 0;
           const rewardCoins = withinDailyRewardCap ? Math.min(40, Math.round(a.score / 18)) : 0;
           if (rewardXp > 0 || rewardCoins > 0) {
             this.addRewards(rewardXp, rewardCoins, `จบเกม Endless Arcade (${a.score} แต้ม)`);
           } else {
-            if (isRecord) this.saveState(true);
-            this.toast(`🕹️ จบเกมอาร์เคด (${a.score} แต้ม) — รับโบนัส XP/เหรียญครบ 3 รอบ/วันแล้ว ยังเล่นทำสถิติสูงสุดได้ต่อ!`);
+            if (isRecord || badgeUnlocked) {
+              this.saveState(true);
+              this.renderHUD();
+              this.renderDashboard();
+            }
+            this.toast(withinDailyRewardCap
+              ? `🕹️ จบเกมอาร์เคด (${a.score} แต้ม) — สะสมคะแนนให้มากขึ้นเพื่อรับ XP และเหรียญโบนัส!`
+              : `🕹️ จบเกมอาร์เคด (${a.score} แต้ม) — รับโบนัส XP/เหรียญครบ 3 รอบ/วันแล้ว ยังเล่นทำสถิติสูงสุดได้ต่อ!`);
           }
         }
         body.innerHTML = `
@@ -4181,10 +4279,10 @@
         </div>
         <div class="pixel-box" style="padding:16px;">
           <span class="unit-code" style="color:var(--violet);">${q.unitCode}</span>
-          <h4 style="margin-top:8px; font-size:1.05rem;">${q.q}</h4>
+          <h4 style="margin-top:8px; font-size:1.05rem;">${this.escHtml(q.q)}</h4>
           <div class="quiz-options-grid">
             ${q.options.map((opt, idx) => `
-              <button class="quiz-option-btn" onclick="App.answerArcade(${idx})">${['ก', 'ข', 'ค', 'ง'][idx]}. ${opt}</button>
+              <button class="quiz-option-btn" onclick="App.answerArcade(${idx})">${['ก', 'ข', 'ค', 'ง'][idx]}. ${this.escHtml(opt)}</button>
             `).join('')}
           </div>
           <div id="arcade-fb" style="margin-top:10px; font-size:0.88rem;"></div>
@@ -4349,9 +4447,9 @@
                       </span>
                     </div>
                   </td>
-                  <td>${r.studentId}</td>
-                  <td>${r.name}${r.hasGrade4Badge ? ' <span class="grade4-pill" style="margin-left:4px;">🎓 เกรด4 แน่นอน</span>' : ''}</td>
-                  <td>${r.classRoom}</td>
+                  <td>${this.escHtml(r.studentId)}</td>
+                  <td>${this.escHtml(r.name)}${r.hasGrade4Badge ? ' <span class="grade4-pill" style="margin-left:4px;">🎓 เกรด4 แน่นอน</span>' : ''}</td>
+                  <td>${this.escHtml(r.classRoom)}</td>
                   <td>LV.${r.level}</td>
                   <td><b>${r.xp}</b></td>
                   <td>${r.unitsCleared}/${GameData.UNITS.length}</td>
@@ -4372,7 +4470,15 @@
       const list = rawList.filter((r) => !this.isTeacherRow(r));
       const header = ['Rank', 'StudentID', 'Name', 'ClassRoom', 'Level', 'XP', 'UnitsCleared', 'Badges', 'UpdatedAt'];
       const rows = list.map((r, i) => [
-        i + 1, r.studentId, `"${r.name}"`, `"${r.classRoom}"`, r.level, r.xp, `${r.unitsCleared}/${GameData.UNITS.length}`, r.badgeCount, r.updatedAt
+        i + 1,
+        r.studentId,
+        `"${String(r.name || '').replace(/"/g, '""')}"`,
+        `"${String(r.classRoom || '').replace(/"/g, '""')}"`,
+        r.level,
+        r.xp,
+        `${r.unitsCleared}/${GameData.UNITS.length}`,
+        r.badgeCount,
+        r.updatedAt
       ].join(','));
       const csv = '\uFEFF' + [header.join(','), ...rows].join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -4397,9 +4503,9 @@
         <h2>เกียรติบัตรและใบรายงานผลการเรียนรู้รายวิชาระบบเครือข่ายคอมพิวเตอร์</h2>
         <p>ขอมอบเกียรติบัตรฉบับนี้เพื่อแสดงว่า</p>
         <div style="font-size:1.5rem; font-weight:700; color:#1e3a8a; margin:8px 0;">
-          ${this.state.profile.name || 'ผู้เรียน'} (รหัส ${this.state.profile.studentId || '-'})
+          ${this.escHtml(this.state.profile.name || 'ผู้เรียน')} (รหัส ${this.escHtml(this.state.profile.studentId || '-')})
         </div>
-        <div>ระดับชั้น: <b>${this.state.profile.classRoom || '-'}</b> | อาชีพ: <b>${cls.thName}</b> | ยศ: <b>LV.${current.level} ${current.title}</b></div>
+        <div>ระดับชั้น: <b>${this.escHtml(this.state.profile.classRoom || '-')}</b> | อาชีพ: <b>${cls.thName}</b> | ยศ: <b>LV.${current.level} ${current.title}</b></div>
         <div style="margin-top:8px;">คะแนนประสบการณ์รวม: <b>${this.state.xp} XP</b> | ผ่านภารกิจ: <b>${cleared}/${GameData.UNITS.length} หน่วย</b> | เหรียญตรา: <b>${this.state.badges.length}/${GameData.BADGES.length}</b></div>
         ${this.state.badges.includes('grade4_sure') ? `
           <div style="display:inline-block; margin-top:10px; padding:6px 16px; background:#fef9c3; border:2px solid #ca8a04; color:#854d0e; font-weight:700; font-size:0.95rem;">
@@ -4495,11 +4601,11 @@
             <h4 style="color:var(--amber); margin-bottom:6px;">🔐 สถานะสิทธิ์บัญชี (Role &amp; Custom Claim)</h4>
             <div style="font-size:0.88rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
               <div>
-                บัญชี: <b>${this.state.profile.studentId || 'ยังไม่เข้าสู่ระบบ'}</b> |
+                บัญชี: <b>${this.escHtml(this.state.profile.studentId || 'ยังไม่เข้าสู่ระบบ')}</b> |
                 สิทธิ์: <b style="color:${this.isTeacher ? 'var(--emerald)' : 'var(--cyan)'};">
                   ${this.isTeacher ? '👑 ครูผู้สอน (Custom Claim: teacher=true)' : (isCloud ? '🎓 นักเรียนทั่วไป (ไม่สามารถแก้ไขข้อสอบหรือรีเซ็ตคะแนน)' : '💾 โหมดเครื่องท้องถิ่น')}
                 </b>
-                ${this.currentUid ? `<div style="font-size:0.78rem; color:var(--text-muted); margin-top:3px;">UID: <code>${this.currentUid}</code></div>` : ''}
+                ${this.currentUid ? `<div style="font-size:0.78rem; color:var(--text-muted); margin-top:3px;">UID: <code>${this.escHtml(this.currentUid)}</code></div>` : ''}
               </div>
               ${isCloud && this.currentUid ? `<button class="px-btn px-btn-sm" onclick="App.refreshTeacherClaimUI()">🔄 รีเฟรชสิทธิ์ครู</button>` : ''}
             </div>
@@ -4527,7 +4633,7 @@
                   ${[...new Set([
                     ...(this.teacherSkillSubmissions || []).map((s) => s.classRoom),
                     ...(this.teacherStudentsList || []).map((s) => s.classRoom)
-                  ].filter(Boolean))].sort().map((rm) => `<option value="${rm}" ${this.teacherSkillFilterRoom === rm ? 'selected' : ''}>${rm}</option>`).join('')}
+                  ].filter(Boolean))].sort().map((rm) => `<option value="${this.escHtml(rm)}" ${this.teacherSkillFilterRoom === rm ? 'selected' : ''}>${this.escHtml(rm)}</option>`).join('')}
                 </select>
                 <select id="teacher-skill-unit" class="px-select" onchange="App.filterTeacherSkills()">
                   <option value="all" ${this.teacherSkillFilterUnit === 'all' ? 'selected' : ''}>ทุกบทเรียน</option>
@@ -4591,7 +4697,7 @@
                 <input id="teacher-student-search" class="px-input" value="${this.teacherStudentFilter || ''}" placeholder="🔍 ค้นหาด้วย รหัสนักศึกษา, ชื่อ หรือ ห้อง..." oninput="App.filterTeacherStudents(this.value)" />
                 <select id="teacher-student-room" class="px-select" onchange="App.filterTeacherStudentsRoom(this.value)">
                   <option value="all" ${this.teacherStudentRoomFilter === 'all' ? 'selected' : ''}>ทุกห้อง</option>
-                  ${[...new Set((this.teacherStudentsList || []).map((s) => s.classRoom).filter(Boolean))].sort().map((rm) => `<option value="${rm}" ${this.teacherStudentRoomFilter === rm ? 'selected' : ''}>${rm}</option>`).join('')}
+                  ${[...new Set((this.teacherStudentsList || []).map((s) => s.classRoom).filter(Boolean))].sort().map((rm) => `<option value="${this.escHtml(rm)}" ${this.teacherStudentRoomFilter === rm ? 'selected' : ''}>${this.escHtml(rm)}</option>`).join('')}
                 </select>
               </div>
               <div id="teacher-students-table-wrap" style="max-height:280px; overflow:auto;"></div>
@@ -4653,9 +4759,9 @@
                 <div style="font-size:0.85rem; color:var(--cyan); font-weight:700; margin-bottom:6px;">📋 รายการข้อสอบพิเศษปัจจุบัน:</div>
                 <div style="display:flex; flex-direction:column; gap:6px; max-height:160px; overflow-y:auto;">
                   ${customList.map((item, idx) => `
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; background:#0b1224; border:1px solid #334155; padding:6px 8px; font-size:0.82rem;">
-                      <span><b>[U${item.unitId}]</b> ${item.q}</span>
-                      ${canManageQuestions ? `<button class="px-btn px-btn-crimson px-btn-sm" onclick="App.deleteTeacherQuestion('${item.id || ''}', ${idx})">🗑️</button>` : ''}
+                    <div class="custom-q-row" style="display:flex; justify-content:space-between; align-items:center; gap:8px; background:#0b1224; border:1px solid #334155; padding:6px 8px; font-size:0.82rem;">
+                      <span><b>[U${item.unitId}]</b> ${this.escHtml(item.q)}</span>
+                      ${canManageQuestions ? `<button class="px-btn px-btn-crimson px-btn-sm" onclick="App.deleteTeacherQuestion('${this.escHtml(item.id || '')}', ${idx})">🗑️</button>` : ''}
                     </div>
                   `).join('')}
                 </div>
@@ -4736,14 +4842,14 @@
               const graded = s.status === 'graded' && s.teacherScore >= 0;
               return `
                 <tr>
-                  <td><code>${s.studentId}</code></td>
-                  <td>${s.name}</td>
-                  <td>${s.classRoom}</td>
+                  <td><code>${this.escHtml(s.studentId)}</code></td>
+                  <td>${this.escHtml(s.name)}</td>
+                  <td>${this.escHtml(s.classRoom)}</td>
                   <td><b>U${s.unitId}</b></td>
                   <td><span style="color:var(--cyan);">${auto10}/10 (${s.autoScore || 0}%)</span></td>
                   <td><b>${graded ? `${s.teacherScore}/10` : '-'}</b></td>
                   <td>${graded ? '<span style="color:#4ade80;">✔ ตรวจแล้ว</span>' : '<span style="color:#facc15;">⏳ รอตรวจ</span>'}</td>
-                  <td><button class="px-btn px-btn-cyan px-btn-sm" onclick="App.openTeacherSkillGrader('${s.id}')">📝 ตรวจงาน</button></td>
+                  <td><button class="px-btn px-btn-cyan px-btn-sm" onclick="App.openTeacherSkillGrader('${this.escHtml(s.id)}')">📝 ตรวจงาน</button></td>
                 </tr>
               `;
             }).join('')}
@@ -4781,7 +4887,7 @@
 
           <div style="max-height:260px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin-bottom:12px;">
             ${ex.writtenSections.map((sec) => `
-              <div style="padding:8px 10px; background:#0f172a; border:1px solid #334155; font-size:0.82rem;">
+              <div class="grader-ans-card" style="padding:8px 10px; background:#0f172a; border:1px solid #334155; font-size:0.82rem;">
                 <b style="color:var(--cyan);">${sec.no}. ${sec.prompt}</b>
                 ${sec.items.map((it) => {
                   const ir = evalRes.itemResults[it.id] || { matched: false };
@@ -4795,7 +4901,7 @@
               </div>
             `).join('')}
             ${ex.connectorPart ? `
-              <div style="padding:8px 10px; background:#0f172a; border:1px solid #334155; font-size:0.82rem;">
+              <div class="grader-ans-card" style="padding:8px 10px; background:#0f172a; border:1px solid #334155; font-size:0.82rem;">
                 <b style="color:var(--amber);">ตอนที่ 2 (รูปภาพหัวต่อ 6 ข้อ): ถูก ${evalRes.part2Correct}/${evalRes.part2Total}</b>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:6px; margin-top:6px;">
                   ${ex.connectorPart.rows.map((row) => {
@@ -4808,7 +4914,7 @@
               </div>
             ` : ''}
             ${Array.isArray(ex.matchingParts) ? ex.matchingParts.map((mp) => `
-              <div style="padding:8px 10px; background:#0f172a; border:1px solid #334155; font-size:0.82rem;">
+              <div class="grader-ans-card" style="padding:8px 10px; background:#0f172a; border:1px solid #334155; font-size:0.82rem;">
                 <b style="color:var(--amber);">${mp.title}</b>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:6px; margin-top:6px;">
                   ${mp.rows.map((row) => {
@@ -5006,11 +5112,13 @@
             ${filtered.map((s) => {
               const coins = (s.state && typeof s.state.coins === 'number') ? s.state.coins : 0;
               const hasG4 = this.studentHasBadge(s, 'grade4_sure');
+              const safeUid = this.escHtml(s.uid);
+              const safeSid = this.escHtml(s.studentId);
               return `
               <tr>
-                <td><code>${s.studentId}</code></td>
-                <td>${s.name}</td>
-                <td>${s.classRoom}</td>
+                <td><code>${safeSid}</code></td>
+                <td>${this.escHtml(s.name)}</td>
+                <td>${this.escHtml(s.classRoom)}</td>
                 <td><b>LV.${s.level || 1}</b> (${s.xp || 0} XP) • <span style="color:var(--amber);">🪙 ${coins}</span></td>
                 <td style="white-space:nowrap;">
                   🏅 ${s.badgeCount || 0}/${GameData.BADGES.length}
@@ -5018,13 +5126,13 @@
                 </td>
                 <td style="white-space:nowrap;">
                   ${hasG4
-                    ? `<button class="px-btn px-btn-violet px-btn-sm" onclick="App.toggleStudentGrade4BadgeUI('${s.uid}', false)" title="คลิกเพื่อถอนเหรียญตรา เกรด4 แน่นอน">🎓 ถอนเกรด4</button>`
-                    : `<button class="px-btn px-btn-emerald px-btn-sm" onclick="App.toggleStudentGrade4BadgeUI('${s.uid}', true)" title="มอบเหรียญตรา เกรด4 แน่นอน ให้นักศึกษาคนนี้">🎓 +เกรด4 แน่นอน</button>`
+                    ? `<button class="px-btn px-btn-violet px-btn-sm" onclick="App.toggleStudentGrade4BadgeUI('${safeUid}', false)" title="คลิกเพื่อถอนเหรียญตรา เกรด4 แน่นอน">🎓 ถอนเกรด4</button>`
+                    : `<button class="px-btn px-btn-emerald px-btn-sm" onclick="App.toggleStudentGrade4BadgeUI('${safeUid}', true)" title="มอบเหรียญตรา เกรด4 แน่นอน ให้นักศึกษาคนนี้">🎓 +เกรด4 แน่นอน</button>`
                   }
-                  <button class="px-btn px-btn-amber px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'exp')" title="รีเซ็ตเฉพาะ EXP เป็น 0">🔄 EXP</button>
-                  <button class="px-btn px-btn-cyan px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'coins')" title="รีเซ็ตเฉพาะเหรียญ BitCoins เป็น 0">🪙 เหรียญ</button>
-                  <button class="px-btn px-btn-crimson px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'full')" title="ล้างสถิติทุกอย่างของนักศึกษาคนนี้ (XP, เลเวล, เหรียญ 0, อุปกรณ์, ด่าน 1-10, เหรียญตรา, Arcade และใบงานแบบฝึกทักษะ)">🧹 ล้างสถิติ</button>
-                  ${s.uid !== this.currentUid ? `<button class="px-btn px-btn-sm" onclick="App.deleteStudentRecordUI('${s.uid}', '${s.studentId}')" title="ลบบัญชีนี้ออกจากตาราง">🗑️</button>` : ''}
+                  <button class="px-btn px-btn-amber px-btn-sm" onclick="App.resetStudentExpUI('${safeUid}', 'exp')" title="รีเซ็ตเฉพาะ EXP เป็น 0">🔄 EXP</button>
+                  <button class="px-btn px-btn-cyan px-btn-sm" onclick="App.resetStudentExpUI('${safeUid}', 'coins')" title="รีเซ็ตเฉพาะเหรียญ BitCoins เป็น 0">🪙 เหรียญ</button>
+                  <button class="px-btn px-btn-crimson px-btn-sm" onclick="App.resetStudentExpUI('${safeUid}', 'full')" title="ล้างสถิติทุกอย่างของนักศึกษาคนนี้ (XP, เลเวล, เหรียญ 0, อุปกรณ์, ด่าน 1-10, เหรียญตรา, Arcade และใบงานแบบฝึกทักษะ)">🧹 ล้างสถิติ</button>
+                  ${s.uid !== this.currentUid ? `<button class="px-btn px-btn-sm" onclick="App.deleteStudentRecordUI('${safeUid}', '${safeSid}')" title="ลบบัญชีนี้ออกจากตาราง">🗑️</button>` : ''}
                 </td>
               </tr>
               `;
@@ -5032,6 +5140,39 @@
           </tbody>
         </table>
       `;
+    },
+
+    syncLocalLeaderboardAfterTeacherEdit(updatedDocs = [], deletedStudentId = null) {
+      try {
+        let list = this.getLeaderboardData();
+        if (deletedStudentId) {
+          const delLower = String(deletedStudentId).toLowerCase();
+          list = list.filter((x) => String(x.studentId || '').toLowerCase() !== delLower);
+        }
+        (Array.isArray(updatedDocs) ? updatedDocs : []).forEach((doc) => {
+          if (!doc || !doc.studentId) return;
+          const sidLower = String(doc.studentId).toLowerCase();
+          const idx = list.findIndex((x) => String(x.studentId || '').toLowerCase() === sidLower);
+          if (idx >= 0) {
+            const badgesArr = (doc.state && Array.isArray(doc.state.badges)) ? doc.state.badges : [];
+            list[idx] = {
+              ...list[idx],
+              name: doc.name || list[idx].name,
+              studentId: doc.studentId,
+              classRoom: doc.classRoom || list[idx].classRoom,
+              heroClass: doc.heroClass || list[idx].heroClass,
+              level: doc.level || 1,
+              xp: doc.xp || 0,
+              unitsCleared: doc.unitsCleared || 0,
+              badgeCount: typeof doc.badgeCount === 'number' ? doc.badgeCount : badgesArr.length,
+              hasGrade4Badge: badgesArr.includes('grade4_sure'),
+              arcadeHighScore: doc.arcadeHighScore || 0,
+              updatedAt: doc.updatedAt || todayKey()
+            };
+          }
+        });
+        localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(list));
+      } catch (e) { /* ignore */ }
     },
 
     async toggleStudentGrade4BadgeUI(uid, grant) {
@@ -5052,6 +5193,7 @@
 
       const idx = this.teacherStudentsList.findIndex((s) => s.uid === uid);
       if (idx >= 0) this.teacherStudentsList[idx] = res.updatedDoc;
+      this.syncLocalLeaderboardAfterTeacherEdit([res.updatedDoc]);
       if (uid === this.currentUid) {
         this.applyLoadedState(res.updatedDoc.state, res.updatedDoc.studentId);
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); } catch (e) { /* ignore */ }
@@ -5097,6 +5239,7 @@
 
       const idx = this.teacherStudentsList.findIndex((s) => s.uid === uid);
       if (idx >= 0) this.teacherStudentsList[idx] = res.updatedDoc;
+      this.syncLocalLeaderboardAfterTeacherEdit([res.updatedDoc]);
       if (mode === 'full') {
         this.teacherSkillSubmissions = (this.teacherSkillSubmissions || []).filter((sub) => sub.uid !== uid);
         if (this.activeGradingDocId && String(this.activeGradingDocId).startsWith(`${uid}_u`)) {
@@ -5159,6 +5302,7 @@
       this.toast(`⏳ กำลัง${mode === 'full' ? 'ล้างสถิติทุกอย่าง' : actionText} ให้นักศึกษา ${targets.length} คน...`);
       const res = await FirebaseService.resetAllStudentsProgress(targets, mode, () => createDefaultState());
       this.teacherStudentsList = (this.teacherStudentsList || []).map((s) => res.updatedMap[s.uid] || s);
+      this.syncLocalLeaderboardAfterTeacherEdit(Object.values(res.updatedMap || {}));
       if (mode === 'full') {
         const wipedUids = new Set(Object.keys(res.updatedMap || {}));
         this.teacherSkillSubmissions = (this.teacherSkillSubmissions || []).filter((sub) => !wipedUids.has(sub.uid));
@@ -5187,6 +5331,7 @@
         return;
       }
       this.teacherStudentsList = (this.teacherStudentsList || []).filter((s) => s.uid !== uid);
+      this.syncLocalLeaderboardAfterTeacherEdit([], studentId);
       this.renderTeacherStudentsTable();
       soundFX.playSelect();
       this.toast(`🗑️ ลบข้อมูลของ ${studentId} ออกจากฐานข้อมูลแล้ว`);

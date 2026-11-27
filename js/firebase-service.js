@@ -401,7 +401,8 @@
       };
       this.saveLocalAccounts(accounts);
       localStorage.setItem(LOCAL_SESSION_KEY, key);
-      return { ok: true, uid, studentId: cleanId, isTeacher: false, state: stateToSave };
+      try { sessionStorage.setItem('netquest_tab_authed_v1', '1'); } catch (e) { /* ignore */ }
+      return { ok: true, uid, studentId: cleanId, isTeacher: key.startsWith('teacher'), state: stateToSave };
     },
 
     async loginStudent({ studentId, password }) {

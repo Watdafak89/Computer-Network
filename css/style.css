@@ -1243,37 +1243,68 @@ body.crt-active::after {
 }
 
 @media print {
-  body * {
-    visibility: hidden;
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
   }
-  body:not(.printing-skill) #certificate-print-area,
-  body:not(.printing-skill) #certificate-print-area * {
-    visibility: visible;
+  body.crt-active::after,
+  .pixel-bg-grid,
+  .pixel-bg-glow,
+  .top-hud,
+  .main-container,
+  .toast-container,
+  .site-footer,
+  .modal-backdrop:not(#modal-certificate) {
+    display: none !important;
+  }
+  body.printing-skill #modal-certificate {
+    display: none !important;
+  }
+  body:not(.printing-skill) #skill-print-area {
+    display: none !important;
+  }
+  body:not(.printing-skill) #modal-certificate {
+    display: block !important;
+    position: static !important;
+    inset: auto !important;
+    background: transparent !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  body:not(.printing-skill) #modal-certificate .modal-box {
+    max-width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+  body:not(.printing-skill) #modal-certificate .modal-header {
+    display: none !important;
   }
   body:not(.printing-skill) #certificate-print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
     border: 6px double #b45309 !important;
-  }
-  body.printing-skill #skill-print-area,
-  body.printing-skill #skill-print-area * {
-    visibility: visible;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   body.printing-skill #skill-print-area {
     display: block !important;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
+    position: static !important;
+    width: 100% !important;
     background: #ffffff !important;
     color: #0f172a !important;
-    padding: 20px 24px;
+    padding: 16px 20px !important;
     font-family: var(--font-ui), sans-serif;
-  }
-  .site-footer {
-    display: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }
 
@@ -1496,14 +1527,56 @@ body.light-mode .mini-avatar-frame.frame-teacher {
   border-color: #b45309;
 }
 
-body.light-mode .hud-bar-track {
+body.light-mode .pixel-bar-track {
   background: #cbd5e1;
   border-color: #64748b;
 }
 
-body.light-mode .hud-bar-text {
+body.light-mode .class-card {
+  background: #f8fafc;
+  border-color: #94a3b8;
   color: #0f172a;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+body.light-mode .class-card.selected {
+  background: #fef3c7;
+  border-color: #d97706;
+  color: #0f172a;
+}
+
+body.light-mode .class-card .class-th-name {
+  color: #0f172a !important;
+}
+
+body.light-mode .auth-tab {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #334155;
+}
+
+body.light-mode .auth-tab.active {
+  background: #0284c7;
+  border-color: #0369a1;
+  color: #ffffff;
+}
+
+body.light-mode .auth-banner {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+body.light-mode .auth-error {
+  background: #fee2e2;
+  border-color: #dc2626;
+  color: #991b1b;
+}
+
+body.light-mode .grader-ans-card,
+body.light-mode .custom-q-row {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
 }
 
 body.light-mode .cloud-pill.cloud-online {
