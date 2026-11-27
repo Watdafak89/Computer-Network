@@ -2117,3 +2117,77 @@ body.light-mode .boss-overkill-banner {
   border-color: #ca8a04;
   color: #854d0e;
 }
+
+/* =========================================================
+   LARGE RESPONSIVE TEACHER DASHBOARD MODAL
+   ========================================================= */
+#modal-teacher {
+  padding: clamp(8px, 1.4vw, 18px);
+}
+
+#modal-teacher .teacher-modal-box {
+  width: min(96vw, 1520px);
+  max-width: 96vw;
+  height: 94vh;
+  max-height: 94vh;
+  padding: clamp(14px, 1.8vw, 24px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 0.18s ease, height 0.18s ease, max-width 0.18s ease, max-height 0.18s ease;
+}
+
+#modal-teacher.teacher-modal-expanded {
+  padding: 0;
+}
+
+#modal-teacher.teacher-modal-expanded .teacher-modal-box {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  border-width: 3px;
+}
+
+#modal-teacher .modal-header {
+  flex: 0 0 auto;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+#modal-teacher #teacher-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+#modal-teacher #teacher-skills-table-wrap {
+  max-height: clamp(240px, 34vh, 420px) !important;
+}
+
+#modal-teacher #teacher-students-table-wrap {
+  max-height: clamp(320px, 46vh, 580px) !important;
+}
+
+#modal-teacher .pixel-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+#modal-teacher .pixel-table {
+  font-size: 0.86rem !important;
+}
+
+@media (max-width: 768px) {
+  #modal-teacher {
+    padding: 6px;
+  }
+  #modal-teacher .teacher-modal-box {
+    width: 98vw;
+    max-width: 98vw;
+    height: 96vh;
+    max-height: 96vh;
+    padding: 12px;
+  }
+}

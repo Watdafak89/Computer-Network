@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=15" />
+  <link rel="stylesheet" href="css/style.css?v=16" />
 </head>
 <body>
   <div class="pixel-bg-grid"></div>
@@ -428,10 +428,13 @@
 
   <!-- MODAL: TEACHER MODE -->
   <div id="modal-teacher" class="modal-backdrop hidden">
-    <div class="modal-box">
+    <div class="modal-box teacher-modal-box">
       <div class="modal-header">
         <h2 class="pixel-title" style="color:var(--cyan);">👨‍🏫 โหมดครูผู้สอน (Teacher Dashboard)</h2>
-        <button class="px-btn px-btn-sm" onclick="App.closeModal('modal-teacher')">✖ ปิด</button>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="btn-teacher-expand" class="px-btn px-btn-cyan px-btn-sm" onclick="App.toggleTeacherModalExpand()" title="ขยาย/ย่อหน้าต่างโหมดครูให้เต็มจอ">⛶ เต็มจอ</button>
+          <button class="px-btn px-btn-sm" onclick="App.closeModal('modal-teacher')">✖ ปิด</button>
+        </div>
       </div>
       <div id="teacher-body"></div>
     </div>
@@ -449,6 +452,6 @@
   <script src="js/firebase-config.js?v=2"></script>
   <script src="js/firebase-service.js?v=14"></script>
   <script src="js/battle-city.js?v=7"></script>
-  <script src="js/app.js?v=36"></script>
+  <script src="js/app.js?v=37"></script>
 </body>
 </html>

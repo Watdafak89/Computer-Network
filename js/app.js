@@ -1080,6 +1080,15 @@
       document.getElementById(id).classList.add('hidden');
     },
 
+    toggleTeacherModalExpand() {
+      soundFX.playSelect();
+      const modal = document.getElementById('modal-teacher');
+      const btn = document.getElementById('btn-teacher-expand');
+      if (!modal) return;
+      const expanded = modal.classList.toggle('teacher-modal-expanded');
+      if (btn) btn.textContent = expanded ? '🗗 ย่อหน้าต่าง' : '⛶ เต็มจอ';
+    },
+
     toggleSFX() {
       const on = soundFX.toggleSFX();
       document.getElementById('btn-sfx').textContent = on ? '🔊 SFX' : '🔇 SFX';
