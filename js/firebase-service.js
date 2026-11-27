@@ -747,7 +747,11 @@
         updatedState = {
           ...freshDefaultState,
           profile: preservedProfile,
-          badges: ['first_login']
+          xp: 0,
+          coins: 0,
+          equipment: [],
+          badges: [],
+          arcadeHighScore: 0
         };
         updatedSummary = {
           studentId: preservedProfile.studentId,
@@ -757,7 +761,7 @@
           level: 1,
           xp: 0,
           unitsCleared: 0,
-          badgeCount: 1,
+          badgeCount: 0,
           arcadeHighScore: 0,
           updatedAt: new Date().toISOString().slice(0, 10)
         };
@@ -820,7 +824,16 @@
             state: updatedState,
             updatedAtServer: global.firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
-          localStorage.setItem(LOCAL_BACKUP_PREFIX + uid, JSON.stringify(updatedState));
+          try {
+            localStorage.setItem(LOCAL_BACKUP_PREFIX + uid, JSON.stringify(updatedState));
+          } catch (e) { /* ignore */ }
+          if (mode === 'full') {
+            try { await this.deleteStudentSkillSubmissions(uid); } catch (e) { /* non-fatal */ }
+            try {
+              localStorage.removeItem(`netquest_boss_streak_${uid}`);
+              if (preservedProfile.studentId) localStorage.removeItem(`netquest_boss_streak_${preservedProfile.studentId}`);
+            } catch (e) { /* ignore */ }
+          }
           return { ok: true, updatedDoc: { uid, ...updatedSummary, state: updatedState } };
         } catch (err) {
           return { ok: false, error: translateFirebaseError(err) };
@@ -836,8 +849,51 @@
       accounts[key].summary = updatedSummary;
       accounts[key].state = updatedState;
       this.saveLocalAccounts(accounts);
-      localStorage.setItem(LOCAL_BACKUP_PREFIX + uid, JSON.stringify(updatedState));
+      try {
+        localStorage.setItem(LOCAL_BACKUP_PREFIX + uid, JSON.stringify(updatedState));
+      } catch (e) { /* ignore */ }
+      if (mode === 'full') {
+        try { await this.deleteStudentSkillSubmissions(uid); } catch (e) { /* non-fatal */ }
+        try {
+          localStorage.removeItem(`netquest_boss_streak_${uid}`);
+          if (preservedProfile.studentId) localStorage.removeItem(`netquest_boss_streak_${preservedProfile.studentId}`);
+        } catch (e) { /* ignore */ }
+      }
       return { ok: true, updatedDoc: { uid, ...updatedSummary, state: updatedState } };
+    },
+
+    async deleteStudentSkillSubmissions(uid) {
+      if (!uid) return { ok: true, deletedCount: 0 };
+      let deletedCount = 0;
+
+      if (this.isCloud() && this.auth && this.auth.currentUser) {
+        try {
+          const snap = await this.db.collection('skillSubmissions')
+            .where('uid', '==', uid)
+            .get();
+          if (!snap.empty) {
+            await Promise.all(snap.docs.map((doc) => doc.ref.delete()));
+            deletedCount = snap.size;
+          }
+        } catch (err) {
+          console.warn('[NetQuest] deleteStudentSkillSubmissions cloud warning:', err);
+        }
+      }
+
+      const localMap = this.getLocalSkillSubmissions();
+      let localChanged = false;
+      Object.keys(localMap).forEach((docId) => {
+        const item = localMap[docId];
+        if ((item && item.uid === uid) || docId.startsWith(`${uid}_u`)) {
+          delete localMap[docId];
+          localChanged = true;
+          if (!this.isCloud()) deletedCount++;
+        }
+      });
+      if (localChanged) {
+        this.saveLocalSkillSubmissions(localMap);
+      }
+      return { ok: true, deletedCount };
     },
 
     async resetAllStudentsProgress(studentDocs, mode, createFreshStateFn) {

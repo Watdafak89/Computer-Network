@@ -262,6 +262,7 @@
       }
       if (this.currentUid && typeof FirebaseService.subscribeStudentDoc === 'function') {
         FirebaseService.subscribeStudentDoc(this.currentUid, (docData) => {
+          if (this.isTeacher) return;
           const remoteBadges = docData && docData.state && Array.isArray(docData.state.badges)
             ? docData.state.badges
             : null;
@@ -284,8 +285,65 @@
       }
     },
 
+    applyTeacherUnlocks(shouldSave = true) {
+      if (!this.isTeacher) return false;
+      let changed = false;
+
+      // 1. ปลดล็อกเหรียญตราทั้งหมด (All Badges: ปกติ + พิเศษ)
+      const allBadgeIds = GameData.BADGES.map((b) => b.id);
+      const currentBadges = Array.isArray(this.state.badges) ? this.state.badges : [];
+      const mergedBadges = [...new Set([...currentBadges.filter((id) => allBadgeIds.includes(id)), ...allBadgeIds])];
+      if (mergedBadges.length !== currentBadges.length || allBadgeIds.some((id) => !currentBadges.includes(id))) {
+        this.state.badges = mergedBadges;
+        changed = true;
+      }
+
+      // 2. ปลดล็อกเลเวลสูงสุดทั้งหมด (Max Rank LV.10)
+      const maxRank = GameData.RANKS[GameData.RANKS.length - 1];
+      const maxRankXp = maxRank ? maxRank.minXp : 6000;
+      const curXp = Math.max(0, Math.round(Number(this.state.xp) || 0));
+      if (curXp < maxRankXp) {
+        this.state.xp = maxRankXp;
+        changed = true;
+      }
+
+      // 3. ปลดล็อกความคืบหน้าครบทุกหน่วยการเรียนรู้ (All 10 Units / Stages)
+      if (!this.state.unitProgress || typeof this.state.unitProgress !== 'object') {
+        this.state.unitProgress = createDefaultState().unitProgress;
+        changed = true;
+      }
+      for (const u of GameData.UNITS) {
+        const up = this.state.unitProgress[u.id] || { labCleared: false, bossCleared: false, bestScore: 0, stars: 0 };
+        const curBest = Math.round(Number(up.bestScore) || 0);
+        const curStars = Math.round(Number(up.stars) || 0);
+        if (!up.labCleared || !up.bossCleared || curBest < 100 || curStars < 3) {
+          this.state.unitProgress[u.id] = {
+            ...up,
+            labCleared: true,
+            bossCleared: true,
+            bestScore: Math.max(100, curBest),
+            stars: Math.max(3, curStars)
+          };
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        const stats = this.getPlayerStats();
+        if (this.state.hp < stats.maxHp) {
+          this.state.hp = stats.maxHp;
+        }
+        if (shouldSave) {
+          this.saveState(true);
+        }
+      }
+      return changed;
+    },
+
     ensureTeacherDefaultProfile(teacherId) {
-      if (this.isTeacher && !this.state.profile.created) {
+      if (!this.isTeacher) return;
+      let changed = false;
+      if (!this.state.profile.created) {
         const cleanLabel = teacherId || 'teacher';
         const mage = this.getClassObj('mage');
         this.state.profile = {
@@ -296,9 +354,12 @@
           created: true
         };
         this.state.hp = mage.baseHp;
-        if (!this.state.badges.includes('first_login')) {
-          this.state.badges.push('first_login');
-        }
+        changed = true;
+      }
+      if (this.applyTeacherUnlocks(false)) {
+        changed = true;
+      }
+      if (changed) {
         this.saveState(true);
       }
     },
@@ -504,6 +565,10 @@
     },
 
     checkBadges() {
+      if (this.isTeacher) {
+        this.applyTeacherUnlocks(false);
+        return;
+      }
       if (this.state.profile.created) this.unlockBadge('first_login');
       const totalUnits = GameData.UNITS.length;
       let clearedCount = 0;
@@ -830,6 +895,7 @@
       this.currentUid = res.uid;
       this.isTeacher = Boolean(res.isTeacher);
       this.applyLoadedState(res.state, res.studentId);
+      this.loadBossStreak();
       this.ensureTeacherDefaultProfile(res.studentId);
       this.syncDailyReset();
       await this.refreshCloudCourseData();
@@ -4493,23 +4559,24 @@
 
           <div class="pixel-box pixel-box-gold" style="padding:14px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
-              <h4 style="color:var(--amber); margin:0;">👥 จัดการนักเรียน, มอบเหรียญ "🎓 เกรด4 แน่นอน" และรีเซ็ต EXP / เหรียญ</h4>
+              <h4 style="color:var(--amber); margin:0;">👥 จัดการนักเรียน, มอบเหรียญ "🎓 เกรด4 แน่นอน" และล้างสถิติ</h4>
               ${canManageQuestions ? `
                 <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
                   <span id="teacher-grade4-counter" class="grade4-pill">🎓 เกรด4 แน่นอน: 0 คน</span>
-                  <button class="px-btn px-btn-amber px-btn-sm" onclick="App.resetAllStudentsUI('exp')" title="รีเซ็ต EXP นักศึกษาทั้งหมด (ตามรายการที่กรอง ไม่รวมบัญชีครู)">🔄 รีเซ็ต EXP ทั้งหมด</button>
-                  <button class="px-btn px-btn-crimson px-btn-sm" onclick="App.resetAllStudentsUI('coins')" title="รีเซ็ตเหรียญ BitCoins นักศึกษาทั้งหมด (ตามรายการที่กรอง ไม่รวมบัญชีครู)">🪙 รีเซ็ตเหรียญทั้งหมด</button>
+                  <button class="px-btn px-btn-amber px-btn-sm" onclick="App.resetAllStudentsUI('exp')" title="รีเซ็ต EXP นักศึกษาทั้งหมด (ตามห้อง/รายการที่กรอง ไม่รวมบัญชีครู)">🔄 รีเซ็ต EXP ทั้งหมด</button>
+                  <button class="px-btn px-btn-cyan px-btn-sm" onclick="App.resetAllStudentsUI('coins')" title="รีเซ็ตเหรียญ BitCoins นักศึกษาทั้งหมด (ตามห้อง/รายการที่กรอง ไม่รวมบัญชีครู)">🪙 รีเซ็ตเหรียญทั้งหมด</button>
+                  <button id="btn-reset-all-full" class="px-btn px-btn-crimson px-btn-sm" onclick="App.resetAllStudentsUI('full')" title="ล้างสถิติทุกอย่างของนักศึกษาทั้งห้อง/ตามที่กรอง (XP, เลเวล, เหรียญ, อุปกรณ์, ด่าน 1-10, เหรียญตรา, Arcade และใบงานแบบฝึกทักษะ — ไม่รวมบัญชีครู)">🧹 ล้างสถิติทุกอย่าง (ทุกห้อง)</button>
                   <button class="px-btn px-btn-sm" onclick="App.reloadTeacherStudentsUI()">🔄 โหลดรายชื่อใหม่</button>
                 </div>
               ` : ''}
             </div>
             ${!canManageQuestions ? `
               <div class="teacher-lock-box">
-                🔒 <b>ล็อกสิทธิ์สำหรับครูผู้สอนเท่านั้น</b> — เฉพาะบัญชีครูที่มี Custom Claim <code>teacher: true</code> จึงจะดูรายชื่อ มอบเหรียญตรา "เกรด4 แน่นอน" และรีเซ็ต EXP นักเรียนรายบุคคลได้
+                🔒 <b>ล็อกสิทธิ์สำหรับครูผู้สอนเท่านั้น</b> — เฉพาะบัญชีครูที่มี Custom Claim <code>teacher: true</code> จึงจะดูรายชื่อ มอบเหรียญตรา "เกรด4 แน่นอน" และล้างสถิตินักเรียนได้
               </div>
             ` : `
               <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:8px;">
-                กด <b>🎓 +เกรด4 แน่นอน</b> เพื่อมอบเหรียญตราเกียรติยศพิเศษให้นักศึกษา (กดซ้ำเพื่อถอนคืนได้) • กด <b>🔄 รีเซ็ต EXP ทั้งหมด</b> หรือ <b>🪙 รีเซ็ตเหรียญทั้งหมด</b> เพื่อล้างค่าตามรายการที่กรอง (ข้ามบัญชีครูอัตโนมัติ)
+                กด <b>🎓 +เกรด4 แน่นอน</b> เพื่อมอบเหรียญตราพิเศษ • เลือกห้องเรียนด้านล่างแล้วกด <b>🧹 ล้างสถิติทุกอย่าง</b> เพื่อล้างสถิติทั้งห้อง หรือกดปุ่ม <b>🧹 ล้างสถิติ</b> รายบุคคลในตาราง (ข้ามบัญชีครูอัตโนมัติ)
               </p>
               <div style="display:grid; grid-template-columns:1fr 140px; gap:8px; margin-bottom:10px;">
                 <input id="teacher-student-search" class="px-input" value="${this.teacherStudentFilter || ''}" placeholder="🔍 ค้นหาด้วย รหัสนักศึกษา, ชื่อ หรือ ห้อง..." oninput="App.filterTeacherStudents(this.value)" />
@@ -4891,6 +4958,16 @@
 
       const q = (this.teacherStudentFilter || '').trim().toLowerCase();
       const rFilter = this.teacherStudentRoomFilter || 'all';
+      const resetAllFullBtn = document.getElementById('btn-reset-all-full');
+      if (resetAllFullBtn) {
+        if (rFilter !== 'all') {
+          resetAllFullBtn.textContent = `🧹 ล้างสถิติทุกอย่าง (${rFilter})`;
+        } else if (q) {
+          resetAllFullBtn.textContent = '🧹 ล้างสถิติทุกอย่าง (ตามที่ค้นหา)';
+        } else {
+          resetAllFullBtn.textContent = '🧹 ล้างสถิติทุกอย่าง (ทุกห้อง)';
+        }
+      }
       const filtered = allList.filter((s) => {
         if (rFilter !== 'all' && String(s.classRoom || '') !== String(rFilter)) return false;
         if (!q) return true;
@@ -4937,8 +5014,8 @@
                   }
                   <button class="px-btn px-btn-amber px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'exp')" title="รีเซ็ตเฉพาะ EXP เป็น 0">🔄 EXP</button>
                   <button class="px-btn px-btn-cyan px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'coins')" title="รีเซ็ตเฉพาะเหรียญ BitCoins เป็น 0">🪙 เหรียญ</button>
-                  <button class="px-btn px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'full')" title="รีเซ็ต EXP + เหรียญ + หน่วย + เหรียญตราทั้งหมด">🧹 ทั้งหมด</button>
-                  ${s.uid !== this.currentUid ? `<button class="px-btn px-btn-crimson px-btn-sm" onclick="App.deleteStudentRecordUI('${s.uid}', '${s.studentId}')" title="ลบบัญชีนี้ออกจากตาราง">🗑️</button>` : ''}
+                  <button class="px-btn px-btn-crimson px-btn-sm" onclick="App.resetStudentExpUI('${s.uid}', 'full')" title="ล้างสถิติทุกอย่างของนักศึกษาคนนี้ (XP, เลเวล, เหรียญ 0, อุปกรณ์, ด่าน 1-10, เหรียญตรา, Arcade และใบงานแบบฝึกทักษะ)">🧹 ล้างสถิติ</button>
+                  ${s.uid !== this.currentUid ? `<button class="px-btn px-btn-sm" onclick="App.deleteStudentRecordUI('${s.uid}', '${s.studentId}')" title="ลบบัญชีนี้ออกจากตาราง">🗑️</button>` : ''}
                 </td>
               </tr>
               `;
@@ -4996,7 +5073,7 @@
       if (!target) return;
       const curCoins = (target.state && typeof target.state.coins === 'number') ? target.state.coins : 0;
       const label = mode === 'full'
-        ? `รีเซ็ตข้อมูลการเล่นทั้งหมด (EXP, เหรียญ, ด่านที่ผ่าน, เหรียญตรา) ของ "${target.name}" (${target.studentId})?\n(ชื่อและห้องเรียนจะยังคงอยู่)`
+        ? `⚠️ ยืนยันล้างสถิติทุกอย่างของ "${target.name}" (${target.studentId})?\n\nจะถูกล้างทั้งหมด:\n• XP เป็น 0 และเลเวลกลับเป็น LV.1\n• เหรียญ BitCoins เป็น 0 🪙 และอุปกรณ์สวมใส่ทั้งหมด\n• ความคืบหน้า Lab / Boss / ดาว ทั้ง 10 หน่วย\n• เหรียญตราทั้งหมด (0/${GameData.BADGES.length}) รวมถึงเกรด4 แน่นอน\n• สถิติ Arcade และใบงานแบบฝึกทักษะที่ส่งไว้ทั้งหมด\n\n(บัญชีเข้าสู่ระบบ ชื่อ-นามสกุล และห้องเรียนจะยังคงอยู่)`
         : (mode === 'coins'
           ? `รีเซ็ตเหรียญ BitCoins ของ "${target.name}" (${target.studentId}) จาก ${curCoins} 🪙 ให้กลับเป็น 0 🪙 หรือไม่?`
           : `รีเซ็ต EXP ของ "${target.name}" (${target.studentId}) จาก ${target.xp || 0} XP ให้กลับเป็น 0 XP (LV.1) หรือไม่?`);
@@ -5011,6 +5088,15 @@
 
       const idx = this.teacherStudentsList.findIndex((s) => s.uid === uid);
       if (idx >= 0) this.teacherStudentsList[idx] = res.updatedDoc;
+      if (mode === 'full') {
+        this.teacherSkillSubmissions = (this.teacherSkillSubmissions || []).filter((sub) => sub.uid !== uid);
+        if (this.activeGradingDocId && String(this.activeGradingDocId).startsWith(`${uid}_u`)) {
+          this.activeGradingDocId = null;
+          const graderBox = document.getElementById('teacher-skill-grader');
+          if (graderBox) graderBox.classList.add('hidden');
+        }
+        this.renderTeacherSkillsTable();
+      }
       if (uid === this.currentUid) {
         this.applyLoadedState(res.updatedDoc.state, res.updatedDoc.studentId);
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); } catch (e) { /* ignore */ }
@@ -5020,7 +5106,7 @@
       this.renderTeacherStudentsTable();
       soundFX.playPowerUp();
       this.toast(mode === 'full'
-        ? `🧹 รีเซ็ตข้อมูลทั้งหมดของ ${target.name} (${target.studentId}) เรียบร้อย!`
+        ? `🧹 ล้างสถิติทุกอย่างของ ${target.name} (${target.studentId}) เรียบร้อย!`
         : (mode === 'coins'
           ? `🪙 รีเซ็ตเหรียญของ ${target.name} (${target.studentId}) เป็น 0 🪙 เรียบร้อย!`
           : `🔄 รีเซ็ต EXP ของ ${target.name} (${target.studentId}) เป็น 0 XP (LV.1) เรียบร้อย!`));
@@ -5030,8 +5116,8 @@
       const q = (this.teacherStudentFilter || '').trim().toLowerCase();
       const rFilter = this.teacherStudentRoomFilter || 'all';
       const targets = (this.teacherStudentsList || []).filter((s) => {
-        // Always skip current teacher account & known teacher ID to prevent accidental self-wipe
-        if (s.uid === this.currentUid || String(s.studentId || '').toLowerCase() === 'watdafak') return false;
+        // Always skip current teacher account & known teacher IDs to prevent accidental self-wipe
+        if (s.uid === this.currentUid || this.isTeacherRow(s)) return false;
         if (rFilter !== 'all' && String(s.classRoom || '') !== String(rFilter)) return false;
         if (!q) return true;
         return String(s.studentId || '').toLowerCase().includes(q)
@@ -5040,33 +5126,43 @@
       });
 
       if (targets.length === 0) {
-        alert('ไม่พบรายชื่อนักศึกษาที่จะรีเซ็ต (ระบบข้ามบัญชีครูโดยอัตโนมัติ)');
+        alert('ไม่พบรายชื่อนักศึกษาที่จะล้างข้อมูล (ระบบข้ามบัญชีครูโดยอัตโนมัติ)');
         return;
       }
 
       const scopeParts = [];
       if (rFilter !== 'all') scopeParts.push(`ห้อง "${rFilter}"`);
       if (q) scopeParts.push(`ที่ตรงกับคำค้นหา "${this.teacherStudentFilter.trim()}"`);
-      const scopeText = scopeParts.length > 0 ? scopeParts.join(' ') : 'ทั้งหมดในระบบ';
-      const actionText = mode === 'coins'
-        ? 'รีเซ็ตเหรียญ BitCoins เป็น 0 🪙'
-        : 'รีเซ็ต EXP เป็น 0 XP (LV.1)';
+      const scopeText = scopeParts.length > 0 ? scopeParts.join(' ') : 'ทั้งหมดทุกห้องในระบบ';
+      const actionText = mode === 'full'
+        ? 'ล้างสถิติทุกอย่าง (XP/LV.1, เหรียญ 0, อุปกรณ์, ด่าน 1-10, เหรียญตราทั้งหมด, สถิติ Arcade และใบงานแบบฝึกทักษะ)'
+        : (mode === 'coins'
+          ? 'รีเซ็ตเหรียญ BitCoins เป็น 0 🪙'
+          : 'รีเซ็ต EXP เป็น 0 XP (LV.1)');
 
-      if (!confirm(`⚠️ ยืนยันการ${actionText}\nสำหรับนักศึกษา${scopeText} จำนวน ${targets.length} คน หรือไม่?\n(ไม่รวมบัญชีครูผู้สอน)`)) {
+      if (!confirm(`⚠️ ยืนยันการ${actionText}\nสำหรับนักศึกษา${scopeText} จำนวน ${targets.length} คน หรือไม่?\n(บัญชีเข้าสู่ระบบและชื่อ-ห้องจะยังคงอยู่ และข้ามบัญชีครูผู้สอนอัตโนมัติ)`)) {
         return;
       }
       if (!confirm(`⚠️ ยืนยันครั้งที่ 2: การ${actionText} ให้ทั้ง ${targets.length} คน ไม่สามารถย้อนกลับได้ กด "ตกลง" เพื่อดำเนินการ`)) {
         return;
       }
 
-      this.toast(`⏳ กำลัง${actionText} ให้นักศึกษา ${targets.length} คน...`);
+      this.toast(`⏳ กำลัง${mode === 'full' ? 'ล้างสถิติทุกอย่าง' : actionText} ให้นักศึกษา ${targets.length} คน...`);
       const res = await FirebaseService.resetAllStudentsProgress(targets, mode, () => createDefaultState());
       this.teacherStudentsList = (this.teacherStudentsList || []).map((s) => res.updatedMap[s.uid] || s);
+      if (mode === 'full') {
+        const wipedUids = new Set(Object.keys(res.updatedMap || {}));
+        this.teacherSkillSubmissions = (this.teacherSkillSubmissions || []).filter((sub) => !wipedUids.has(sub.uid));
+        const graderBox = document.getElementById('teacher-skill-grader');
+        if (graderBox) graderBox.classList.add('hidden');
+        this.activeGradingDocId = null;
+        this.renderTeacherSkillsTable();
+      }
       this.renderTeacherStudentsTable();
 
       if (res.failCount === 0) {
         soundFX.playPowerUp();
-        this.toast(`✅ ${actionText} เรียบร้อยแล้ว ${res.successCount}/${targets.length} คน!`);
+        this.toast(`✅ ${mode === 'full' ? 'ล้างสถิติทุกอย่าง' : actionText} เรียบร้อยแล้ว ${res.successCount}/${targets.length} คน!`);
       } else {
         soundFX.playPlayerHurt();
         alert(`ดำเนินการสำเร็จ ${res.successCount} คน, ไม่สำเร็จ ${res.failCount} คน กรุณากดโหลดรายชื่อใหม่แล้วลองอีกครั้ง`);
@@ -5091,10 +5187,14 @@
       if (!global.FirebaseService) return;
       const ok = await FirebaseService.refreshTeacherClaim();
       this.isTeacher = ok;
+      if (ok) {
+        this.ensureTeacherDefaultProfile(this.state.profile.studentId);
+      }
       this.renderHUD();
+      this.renderDashboard();
       if (ok) {
         soundFX.playPowerUp();
-        this.toast('👑 ยืนยันสิทธิ์ครูผู้สอน (teacher: true) สำเร็จ!');
+        this.toast('👑 ยืนยันสิทธิ์ครูผู้สอน (teacher: true) สำเร็จ! ปลดล็อกเลเวลและเหรียญตราทั้งหมดแล้ว');
       } else {
         soundFX.playSelect();
         this.toast('ℹ️ บัญชีนี้ยังไม่มีสิทธิ์ teacher: true');
